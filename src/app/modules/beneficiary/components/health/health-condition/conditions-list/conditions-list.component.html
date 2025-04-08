@@ -36,7 +36,7 @@
     }
   </div>
   <div class="h-container">
-    <h2>Distintivos</h2>
+    <h2>Tatuajes</h2>
     @if(activeBeneficiary?.health_data?.medical_info?.condition){
     <app-secondary-card style="width: 100%">
       <div class="h-card">
@@ -44,6 +44,24 @@
           {{
             activeBeneficiary?.health_data?.medical_info?.condition
               ?.tatuajes_descripcion
+          }}
+        </p>
+      </div>
+    </app-secondary-card>
+    }@else {
+    <p>No hay distintivos registrados</p>
+    }
+  </div>
+
+  <div class="h-container">
+    <h2>Cicatrices</h2>
+    @if(activeBeneficiary?.health_data?.medical_info?.condition){
+    <app-secondary-card style="width: 100%">
+      <div class="h-card">
+        <p>
+          {{
+            activeBeneficiary?.health_data?.medical_info?.condition
+              ?.cicatrices_descripcion
           }}
         </p>
       </div>

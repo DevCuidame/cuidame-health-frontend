@@ -37,7 +37,7 @@ export class HealthConditionFormComponent implements OnInit {
     private fb: FormBuilder,
     private beneficiaryService: BeneficiaryService,
     private healthDataService: HealthDataService,
-    private navCtrL: NavController,
+    private navCtrl: NavController,
     private toastService: ToastService
   ) {
     this.form = this.fb.group({
@@ -57,63 +57,67 @@ export class HealthConditionFormComponent implements OnInit {
   initializeForm() {
     if (!this.activeBeneficiary) return;
 
-    // Inicializar el formArray de enfermedades (alergias)
-    this.form.setControl(
-      'diseases',
-      this.fb.array(
-        this.activeBeneficiary.health_data?.medical_info?.diseases?.map((disease) =>
-          this.fb.group({
-            id: disease.id,
-            paciente_id: this.activeBeneficiary?.id,
-            disease: [disease.enfermedad, [Validators.required]]
-          })
-        ) || []
-      )
-    );
+    // Inicializar el formArray de enfermedades
+    if (this.activeBeneficiary.health_data?.medical_info?.diseases) {
+      this.form.setControl(
+        'diseases',
+        this.fb.array(
+          this.activeBeneficiary.health_data.medical_info.diseases.map(
+            (disease) =>
+              this.fb.group({
+                id: disease.id,
+                id_paciente: this.activeBeneficiary?.id,
+                enfermedad: [disease.enfermedad, [Validators.required]],
+              })
+          ) || []
+        )
+      );
+    }
 
     // Inicializar el formArray de discapacidades
-    // Considerando que la condición es un objeto único, no un array
-    const condition = this.activeBeneficiary.health_data?.medical_info?.condition;
-    this.form.setControl(
-      'disabilities',
-      this.fb.array(
-        condition ? [
+    const condition =
+      this.activeBeneficiary.health_data?.medical_info?.condition;
+    if (condition?.discapacidad) {
+      this.form.setControl(
+        'disabilities',
+        this.fb.array([
           this.fb.group({
             id: condition.id,
-            paciente_id: this.activeBeneficiary?.id,
+            id_paciente: this.activeBeneficiary?.id,
             name: [condition.discapacidad, [Validators.required]],
-          })
-        ] : []
-      )
-    );
+          }),
+        ])
+      );
+    }
 
     // Inicializar el formArray de rasgos distintivos
-    // Usamos cicatrices y tatuajes como rasgos distintivos
     const distinctives = [];
-    const condition2 = this.activeBeneficiary.health_data?.medical_info?.condition;
-    
-    if (condition2?.cicatrices_descripcion) {
+
+    if (condition?.cicatrices_descripcion) {
       distinctives.push(
         this.fb.group({
-          id: condition2.id,
-          paciente_id: this.activeBeneficiary?.id,
-          description: [condition2.cicatrices_descripcion, [Validators.required]],
-          type: ['cicatrices']
+          id: condition.id,
+          id_paciente: this.activeBeneficiary?.id,
+          description: [
+            condition.cicatrices_descripcion,
+            [Validators.required],
+          ],
+          type: ['cicatrices'],
         })
       );
     }
-    
-    if (condition2?.tatuajes_descripcion) {
+
+    if (condition?.tatuajes_descripcion) {
       distinctives.push(
         this.fb.group({
-          id: condition2.id,
-          paciente_id: this.activeBeneficiary?.id,
-          description: [condition2.tatuajes_descripcion, [Validators.required]],
-          type: ['tatuajes']
+          id: condition.id,
+          id_paciente: this.activeBeneficiary?.id,
+          description: [condition.tatuajes_descripcion, [Validators.required]],
+          type: ['tatuajes'],
         })
       );
     }
-    
+
     this.form.setControl('distinctives', this.fb.array(distinctives));
   }
 
@@ -124,7 +128,7 @@ export class HealthConditionFormComponent implements OnInit {
       (this.distinctives.length > 0 && this.distinctives.valid)
     );
   }
-  
+
   get diseases(): FormArray {
     return this.form.get('diseases') as FormArray;
   }
@@ -155,24 +159,23 @@ export class HealthConditionFormComponent implements OnInit {
 
   newDisease(): FormGroup {
     return this.fb.group({
-      paciente_id: this.activeBeneficiary?.id,
-      disease: ['', [Validators.required]],
-      descripcion: ['', [Validators.required]],
+      id_paciente: this.activeBeneficiary?.id,
+      enfermedad: ['', [Validators.required]],
     });
   }
 
   newDisability(): FormGroup {
     return this.fb.group({
-      paciente_id: this.activeBeneficiary?.id,
+      id_paciente: this.activeBeneficiary?.id,
       name: ['', [Validators.required]],
     });
   }
 
   newDistinctive(): FormGroup {
     return this.fb.group({
-      paciente_id: this.activeBeneficiary?.id,
+      id_paciente: this.activeBeneficiary?.id,
       description: ['', [Validators.required]],
-      type: ['cicatrices'], // Por defecto cicatrices, esto se podría hacer seleccionable
+      type: ['cicatrices'],
     });
   }
 
@@ -197,8 +200,10 @@ export class HealthConditionFormComponent implements OnInit {
   }
 
   addDistinctive() {
-    this.distinctives.push(this.newDistinctive());
-    this.form.updateValueAndValidity();
+    if (this.distinctives.length < 2) {
+      this.distinctives.push(this.newDistinctive());
+      this.form.updateValueAndValidity();
+    }
   }
 
   removeDistinctive(index: number) {
@@ -208,65 +213,101 @@ export class HealthConditionFormComponent implements OnInit {
 
   async submitForm() {
     if (this.form.valid && this.activeBeneficiary) {
-      // Preparamos un payload adaptado a lo que espera el backend
-      const payload = {
+      // Preparar los datos de enfermedades para enviar al endpoint
+      const diseasesPayload = {
         id_paciente: this.activeBeneficiary.id,
-        allergies: this.form.value.diseases.map((d: any) => ({
-          tipo_alergia: d.disease,
-          descripcion: d.descripcion
+        enfermedades: this.diseases.value.map((d: any) => ({
+          enfermedad: d.enfermedad,
         })),
-        condition: {
-          discapacidad: this.form.value.disabilities.length > 0 
-            ? this.form.value.disabilities[0].name 
-            : null,
-          cicatrices_descripcion: this.form.value.distinctives.find((d: any) => d.type === 'cicatrices')?.description || null,
-          tatuajes_descripcion: this.form.value.distinctives.find((d: any) => d.type === 'tatuajes')?.description || null
-        }
       };
 
-      this.healthDataService.saveHealthCondition(payload).subscribe(
-        async (response) => {
-          if (response.success) {
-            // Actualizar el beneficiario con los datos actualizados
-            if (!this.activeBeneficiary?.id) {
-              return;
-            }
+      // Preparar la información de condición médica
+      // Este es un objeto único, no un array
+      const conditionPayload = {
+        id_paciente: this.activeBeneficiary.id,
+        discapacidad:
+          this.disabilities.length > 0
+            ? this.disabilities.at(0).get('name')?.value
+            : null,
+        cicatrices_descripcion:
+          this.distinctives.value.find((d: any) => d.type === 'cicatrices')
+            ?.description || null,
+        tatuajes_descripcion:
+          this.distinctives.value.find((d: any) => d.type === 'tatuajes')
+            ?.description || null,
+      };
 
-            // Crear una estructura actualizada que coincida con la estructura esperada
-            const updatedActiveBeneficiary = {
-              ...this.activeBeneficiary,
-              health_data: {
-                ...this.activeBeneficiary.health_data,
-                medical_info: {
-                  ...this.activeBeneficiary.health_data.medical_info,
-                  allergies: response.data.allergies || this.activeBeneficiary.health_data.medical_info.allergies,
-                  condition: response.data.condition || this.activeBeneficiary.health_data.medical_info.condition
+      console.log('Enviando condition:', conditionPayload);
+
+      // Primero, enviar las enfermedades
+      this.healthDataService.syncDiseases(diseasesPayload).subscribe(
+        async (diseasesResponse) => {
+          console.log('Respuesta diseases:', diseasesResponse);
+
+          // Después, enviar la condición médica
+          this.healthDataService
+            .saveHealthCondition(conditionPayload)
+            .subscribe(
+              async (conditionResponse) => {
+                console.log('Respuesta condition:', conditionResponse);
+
+                // Actualizar el beneficiario con los datos actualizados
+                if (!this.activeBeneficiary?.id) {
+                  return;
                 }
+
+                // Crear una estructura actualizada que coincida con la estructura esperada
+                const updatedActiveBeneficiary = {
+                  ...this.activeBeneficiary,
+                  health_data: {
+                    ...this.activeBeneficiary.health_data,
+                    medical_info: {
+                      ...this.activeBeneficiary.health_data.medical_info,
+                      diseases:
+                        diseasesResponse.data?.maintained ||
+                        this.activeBeneficiary.health_data.medical_info
+                          .diseases,
+                      condition:
+                        conditionResponse.data?.maintained ||
+                        this.activeBeneficiary.health_data.medical_info
+                          .condition,
+                    },
+                  },
+                };
+
+                this.beneficiaryService.setActiveBeneficiary(
+                  updatedActiveBeneficiary
+                );
+
+                const updatedBeneficiaries = this.beneficiaryService
+                  .getBeneficiaries()
+                  .map((b) =>
+                    b.id === updatedActiveBeneficiary.id
+                      ? updatedActiveBeneficiary
+                      : b
+                  );
+
+                this.beneficiaryService.setBeneficiaries(updatedBeneficiaries);
+
+                await this.toastService.presentToast(
+                  'Datos guardados correctamente',
+                  'success'
+                );
+                this.navCtrl.navigateRoot('/beneficiary/home/conditions');
+              },
+              async (error) => {
+                console.error('Error al guardar la condición:', error);
+                await this.toastService.presentToast(
+                  'Error al guardar la condición médica',
+                  'danger'
+                );
               }
-            };
-
-            this.beneficiaryService.setActiveBeneficiary(updatedActiveBeneficiary);
-
-            const updatedBeneficiaries = this.beneficiaryService
-              .getBeneficiaries()
-              .map((b) =>
-                b.id === updatedActiveBeneficiary.id
-                  ? updatedActiveBeneficiary
-                  : b
-              );
-
-            this.beneficiaryService.setBeneficiaries(updatedBeneficiaries);
-          }
-
-          await this.toastService.presentToast(
-            response.message || 'Datos guardados correctamente',
-            'success'
-          );
-          this.navCtrL.navigateRoot('/beneficiary/home/conditions');
+            );
         },
-        async (error) => {
+        async (error: any) => {
+          console.error('Error al guardar las enfermedades:', error);
           await this.toastService.presentToast(
-            error.message || 'Error al guardar los datos',
+            'Error al guardar las enfermedades',
             'danger'
           );
         }

@@ -65,32 +65,32 @@ export class AddBeneficiaryComponent implements OnInit {
   ) {
     this.beneficiaryForm = this.fb.group({
       id: [''],
-      first_name: [
+      nombre: [
         '',
         [Validators.required, Validators.pattern('^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$')],
       ],
-      last_name: [
+      apellido: [
         '',
         [Validators.required, Validators.pattern('^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$')],
       ],
-      identification_type: ['', Validators.required],
-      identification_number: [
+      tipoid: ['', Validators.required],
+      numeroid: [
         '',
         [Validators.required, Validators.pattern('^[0-9]+$')],
       ],
-      address: ['', Validators.required],
+      direccion: ['', Validators.required],
       city_id: ['', Validators.required],
-      department: ['', Validators.required],
-      phone: ['', [Validators.required, Validators.pattern('^[0-9-]+$')]],
-      birth_date: ['', Validators.required],
-      gender: ['', Validators.required],
-      blood_type: [''],
-      health_provider: [''],
-      prepaid_health: [''],
-      work_risk_insurance: [''],
-      funeral_insurance: [''],
+      departamento: ['', Validators.required],
+      telefono: ['', [Validators.required, Validators.pattern('^[0-9-]+$')]],
+      fecha_nacimiento: ['', Validators.required],
+      genero: ['', Validators.required],
+      rh: [''],
+      eps: [''],
+      prepagada: [''],
+      arl: [''],
+      seguro_funerario: [''],
       public_name: ['', Validators.maxLength(50)],
-      base_64: [''],
+      photourl: [''],
     });
 
     this.setupRealTimeValidation();

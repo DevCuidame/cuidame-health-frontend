@@ -6,7 +6,7 @@
         label="Vacuna"
         type="text"
         placeholder="Ej. Hepatitis B"
-        [control]="getFormControl(getVaccinationFormGroup(i), 'vaccine')"
+        [control]="getFormControl(getVaccinationFormGroup(i), 'vacuna')"
       ></app-input>
 
       <button type="button" class="remove" (click)="removeVaccination(i)">
@@ -20,11 +20,10 @@
   </div>
 
   <app-custom-button
-  label="Guardar"
-  type="submit"
-  [disabled]="!isFormValid()"
-  [textColor]="'var(--ion-color-ligh)'"
-  [backgroundImage]="buttonBackground"
-></app-custom-button>
-
+    label="Guardar"
+    type="submit"
+    [disabled]="!isFormValid()"
+    [textColor]="'var(--ion-color-light)'"
+    [backgroundImage]="buttonBackground"
+  ></app-custom-button>
 </form>

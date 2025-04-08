@@ -34,7 +34,7 @@ export class BeneficiaryService {
 
     const beneficiary = {
       ...data,
-      user_id: user.id,
+      a_cargo_id: user.id,
     };
 
     return this.http

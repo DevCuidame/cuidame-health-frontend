@@ -36,18 +36,10 @@
         placeholder="Ej. Ceguera"
         [control]="getFormControl(getDisabilityFormGroup(i), 'name')"
       ></app-input>
-
-      <button type="button" class="remove" (click)="removeDisability(i)">
-        Quitar
-      </button>
     </div>
   </div>
 
-  <div class="add-box">
-    <button type="button" class="add" (click)="addDisability()">Añadir</button>
-  </div>
-
-  <h2>¿Tu ser querido tiene algún rasgo distinivo?</h2>
+  <h2>¿Tu ser querido tiene algún rasgo distintivo?</h2>
   <div formArrayName="distinctives">
     <div
       class="container-item"
@@ -55,7 +47,17 @@
       [formGroup]="getDistinctiveFormGroup(i)"
     >
       <app-input
-        label="Nombre"
+        label="Tipo"
+        type="select"
+        [options]="[
+          { value: 'cicatrices', label: 'Cicatrices' },
+          { value: 'tatuajes', label: 'Tatuajes' }
+        ]"
+        [control]="getFormControl(getDistinctiveFormGroup(i), 'type')"
+      ></app-input>
+
+      <app-input
+        label="Descripción"
         type="text"
         placeholder="Ej. Lunar grande en la mejilla"
         [control]="getFormControl(getDistinctiveFormGroup(i), 'description')"

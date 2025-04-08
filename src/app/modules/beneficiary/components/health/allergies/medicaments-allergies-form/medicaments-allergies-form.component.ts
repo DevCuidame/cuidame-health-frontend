@@ -33,21 +33,14 @@ export class MedicamentsAllergiesFormComponent implements OnInit {
 
   form: FormGroup;
 
-  severityOptions = [
-    { value: 'MILD', label: 'Leve' },
-    { value: 'MODERATE', label: 'Moderada' },
-    { value: 'SEVERE', label: 'Grave' },
-  ];
-
   constructor(
     private fb: FormBuilder,
     private beneficiaryService: BeneficiaryService,
     private healthDataService: HealthDataService,
-    private navCtrL: NavController,
+    private navCtrl: NavController,
     private toastService: ToastService
   ) {
     this.form = this.fb.group({
-      medications: this.fb.array([]),
       allergies: this.fb.array([]),
     });
 
@@ -55,8 +48,6 @@ export class MedicamentsAllergiesFormComponent implements OnInit {
       this.activeBeneficiary = beneficiary;
       this.initializeForm();
     });
-    
-    // Se eliminaron las llamadas automáticas a addMedication() y addAllergy()
   }
 
   ngOnInit() {}
@@ -71,7 +62,7 @@ export class MedicamentsAllergiesFormComponent implements OnInit {
           this.activeBeneficiary.health_data?.medical_info?.allergies?.map((a) =>
             this.fb.group({
               id: a.id,
-              paciente_id: this.activeBeneficiary?.id,
+              id_paciente: this.activeBeneficiary?.id,
               tipo_alergia: [a.tipo_alergia, [Validators.required]],
               descripcion: [a.descripcion, [Validators.required]],
             })
@@ -86,13 +77,7 @@ export class MedicamentsAllergiesFormComponent implements OnInit {
 
   isFormValid(): boolean {
     // Solo validamos si hay elementos en los arrays
-    if (this.allergies.length === 0) {
-      return false;
-    }
-    
-    return (
-      (this.allergies.length > 0 && this.allergies.valid)
-    );
+    return this.allergies.length > 0 && this.allergies.valid;
   }
 
   get allergies(): FormArray {
@@ -107,15 +92,13 @@ export class MedicamentsAllergiesFormComponent implements OnInit {
     return formGroup.get(fieldName) as FormControl;
   }
 
-
   newAllergy(): FormGroup {
     return this.fb.group({
-      paciente_id: this.activeBeneficiary?.id,
+      id_paciente: this.activeBeneficiary?.id,
       tipo_alergia: ['', [Validators.required]],
       descripcion: ['', [Validators.required]]
     });
   }
-
 
   addAllergy() {
     this.allergies.push(this.newAllergy());
@@ -130,15 +113,21 @@ export class MedicamentsAllergiesFormComponent implements OnInit {
   async submitForm() {
     if (this.form.valid && this.activeBeneficiary) {
       const payload = {
-        allergies: this.form.value.allergies
+        id_paciente: this.activeBeneficiary.id,
+        alergias: this.allergies.value.map((a: any) => ({
+          tipo_alergia: a.tipo_alergia,
+          descripcion: a.descripcion
+        }))
       };
 
-      this.healthDataService.saveAllergiesAndMedications(payload).subscribe(
+      console.log('Enviando alergias:', payload);
+
+      this.healthDataService.syncAllergies(payload).subscribe(
         async (response) => {
-          if (
-            response.data?.allergies?.length
-          ) {
-            const updatedAllergies = response.data.allergies || [];
+          console.log('Respuesta alergias:', response);
+          
+          if (response.data?.maintained) {
+            const updatedAllergies = response.data.maintained || [];
 
             if (!this.activeBeneficiary?.id) {
               return;
@@ -146,12 +135,16 @@ export class MedicamentsAllergiesFormComponent implements OnInit {
 
             const updatedActiveBeneficiary = {
               ...this.activeBeneficiary,
-              allergies: updatedAllergies,
+              health_data: {
+                ...this.activeBeneficiary.health_data,
+                medical_info: {
+                  ...this.activeBeneficiary.health_data.medical_info,
+                  allergies: updatedAllergies
+                }
+              }
             };
 
-            this.beneficiaryService.setActiveBeneficiary(
-              updatedActiveBeneficiary
-            );
+            this.beneficiaryService.setActiveBeneficiary(updatedActiveBeneficiary);
 
             const updatedBeneficiaries = this.beneficiaryService
               .getBeneficiaries()
@@ -162,14 +155,19 @@ export class MedicamentsAllergiesFormComponent implements OnInit {
               );
             this.beneficiaryService.setBeneficiaries(updatedBeneficiaries);
           }
+          
           await this.toastService.presentToast(
-            response.data.message,
+            'Alergias guardadas correctamente',
             'success'
           );
-          this.navCtrL.navigateRoot('/beneficiary/home/medicaments-allergies');
+          this.navCtrl.navigateRoot('/beneficiary/home/medicaments-allergies');
         },
         async (error) => {
-          await this.toastService.presentToast(error.data.message, 'danger');
+          console.error('Error al guardar alergias:', error);
+          await this.toastService.presentToast(
+            'Error al guardar las alergias',
+            'danger'
+          );
         }
       );
     }

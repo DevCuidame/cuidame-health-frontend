@@ -9,7 +9,7 @@ const apiUrl = environment.url;
 
 @Injectable({ providedIn: 'root' })
 export class HealthDataService {
-  constructor(private http: HttpClient,  private userHealthService?: UserHealthService) {}
+  constructor(private http: HttpClient, private userHealthService?: UserHealthService) {}
 
   saveVaccinations(vaccinations: Vaccine[]): Observable<any> {
     return this.http.post(`${apiUrl}api/v1/beneficiary/vaccinations/create`, { vaccinations });
@@ -23,13 +23,38 @@ export class HealthDataService {
     return this.http.post(`${apiUrl}api/v1/beneficiary/health-data/create`, data);
   }
 
-  // En healthData.service.ts
-  saveHealthCondition(data: any) {
-    return this.http.post<any>(`${apiUrl}/medical-info/sync/condition`, data);
+  // Método para sincronizar condiciones médicas (objeto único, no array)
+  saveHealthCondition(data: any): Observable<any> {
+    return this.http.post<any>(`${apiUrl}api/medical-info/condition`, data);
   }
   
   saveAllergiesAndMedications(data: { allergies: Allergy[]}): Observable<any> {
     return this.http.post(`${apiUrl}api/v1/beneficiary/allergies-medications/create`, data);
+  }
+
+  // Método para sincronizar enfermedades
+  syncDiseases(data: any): Observable<any> {
+    return this.http.post<any>(`${apiUrl}api/medical-info/sync/diseases`, data);
+  }
+
+  // Método para sincronizar vacunas
+  syncVaccines(data: any): Observable<any> {
+    return this.http.post<any>(`${apiUrl}api/medical-info/sync/vaccines`, data);
+  }
+
+  // Método para sincronizar alergias
+  syncAllergies(data: any): Observable<any> {
+    return this.http.post<any>(`${apiUrl}api/medical-info/sync/allergies`, data);
+  }
+
+  // Método para sincronizar antecedentes médicos
+  syncBackgrounds(data: any): Observable<any> {
+    return this.http.post<any>(`${apiUrl}api/medical-info/sync/backgrounds`, data);
+  }
+
+  // Método para sincronizar antecedentes familiares
+  syncFamilyBackgrounds(data: any): Observable<any> {
+    return this.http.post<any>(`${apiUrl}api/medical-info/sync/family-backgrounds`, data);
   }
 
   getUserHealthData() {
@@ -44,5 +69,4 @@ export class HealthDataService {
       }
     }
   }
-
 }

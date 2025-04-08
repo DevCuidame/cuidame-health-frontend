@@ -41,43 +41,45 @@ export class VacinationsFormComponent implements OnInit {
     private fb: FormBuilder,
     private beneficiaryService: BeneficiaryService,
     private healthDataService: HealthDataService,
-    private navCtrL: NavController,
+    private navCtrl: NavController,
     private toastService: ToastService
   ) {
-    this.beneficiaryService.activeBeneficiary$.subscribe((beneficiary) => {
-      this.activeBeneficiary = beneficiary;
-    });
     this.form = this.fb.group({
       vaccinations: this.fb.array([]),
     });
 
-  }
-
-  ngOnInit() {
     this.beneficiaryService.activeBeneficiary$.subscribe((beneficiary) => {
       this.activeBeneficiary = beneficiary;
-
-      if (this.activeBeneficiary?.health_data?.medical_info.vaccines?.length) {
-        this.form.setControl(
-          'vaccinations',
-          this.fb.array(
-            this.activeBeneficiary.health_data?.medical_info.vaccines.map((v) =>
-              this.fb.group({
-                id: v.id,
-                paciente_id: this.activeBeneficiary?.id,
-                vaccine: [v.vacuna, Validators.required],
-              })
-            )
-          )
-        );
-      }
+      this.initializeForm();
     });
   }
 
+  initializeForm() {
+    if (!this.activeBeneficiary) return;
+
+    if (this.activeBeneficiary.health_data?.medical_info?.vaccines?.length) {
+      this.form.setControl(
+        'vaccinations',
+        this.fb.array(
+          this.activeBeneficiary.health_data?.medical_info.vaccines.map((v) =>
+            this.fb.group({
+              id: v.id,
+              id_paciente: this.activeBeneficiary?.id,
+              vacuna: [v.vacuna, Validators.required],
+            })
+          )
+        )
+      );
+    } else {
+      // Si no tiene datos, inicializamos un array vacío
+      this.form.setControl('vaccinations', this.fb.array([]));
+    }
+  }
+
+  ngOnInit() {}
+
   isFormValid(): boolean {
-    return (
-      (this.vaccinations.length > 0 && this.vaccinations.valid)
-    );
+    return this.vaccinations.length > 0 && this.vaccinations.valid;
   }
 
   get vaccinations(): FormArray {
@@ -90,9 +92,8 @@ export class VacinationsFormComponent implements OnInit {
 
   newVaccination(): FormGroup {
     return this.fb.group({
-      paciente_id: this.activeBeneficiary?.id,
-      vaccine: ['', [Validators.required]],
-      vaccination_date: ['', [Validators.required]],
+      id_paciente: this.activeBeneficiary?.id,
+      vacuna: ['', [Validators.required]],
     });
   }
 
@@ -104,7 +105,6 @@ export class VacinationsFormComponent implements OnInit {
   removeVaccination(index: number) {
     this.vaccinations.removeAt(index);
     this.form.updateValueAndValidity();
-    
   }
 
   getFormControl(formGroup: FormGroup, fieldName: string): FormControl {
@@ -113,50 +113,64 @@ export class VacinationsFormComponent implements OnInit {
 
   async submitForm() {
     if (this.form.valid && this.activeBeneficiary) {
-      this.healthDataService
-        .saveVaccinations(this.form.value.vaccinations)
-        .subscribe(
-          async (response) => {
-            if (response.data?.vaccinations?.length) {
-              const updatedVaccinations: Vaccine[] = response.data.vaccinations;
+      const payload = {
+        id_paciente: this.activeBeneficiary.id,
+        vacunas: this.vaccinations.value.map((v: any) => ({
+          vacuna: v.vacuna,
+        }))
+      };
+
+      console.log('Enviando vacunas:', payload);
+      
+      this.healthDataService.syncVaccines(payload).subscribe(
+        async (response) => {
+          console.log('Respuesta vacunas:', response);
+          
+          if (response.data?.maintained) {
+            const updatedVaccines: Vaccine[] = response.data.maintained;
   
-              if (!this.activeBeneficiary?.id) {
-                return;
-              }
-  
-              // Crear una copia profunda del objeto para evitar mutaciones no deseadas
-              const updatedActiveBeneficiary: Beneficiary = {
-                ...this.activeBeneficiary,
-                health_data: {
-                  ...this.activeBeneficiary.health_data,
-                  medical_info: {
-                    ...this.activeBeneficiary.health_data.medical_info,
-                    vaccines: updatedVaccinations
-                  }
-                }
-              };
-              
-              this.beneficiaryService.setActiveBeneficiary(updatedActiveBeneficiary);
-  
-              const updatedBeneficiaries = this.beneficiaryService
-                .getBeneficiaries()
-                .map((b) =>
-                  b.id === updatedActiveBeneficiary.id
-                    ? updatedActiveBeneficiary
-                    : b
-                );
-              this.beneficiaryService.setBeneficiaries(updatedBeneficiaries);
+            if (!this.activeBeneficiary?.id) {
+              return;
             }
-            await this.toastService.presentToast(
-              response.data.message,
-              'success'
-            );
-            this.navCtrL.navigateRoot('/beneficiary/home/conditions');
-          },
-          async (error) => {
-            await this.toastService.presentToast(error.data.message, 'danger');
+  
+            // Crear una copia profunda del objeto para evitar mutaciones no deseadas
+            const updatedActiveBeneficiary: Beneficiary = {
+              ...this.activeBeneficiary,
+              health_data: {
+                ...this.activeBeneficiary.health_data,
+                medical_info: {
+                  ...this.activeBeneficiary.health_data.medical_info,
+                  vaccines: updatedVaccines
+                }
+              }
+            };
+              
+            this.beneficiaryService.setActiveBeneficiary(updatedActiveBeneficiary);
+  
+            const updatedBeneficiaries = this.beneficiaryService
+              .getBeneficiaries()
+              .map((b) =>
+                b.id === updatedActiveBeneficiary.id
+                  ? updatedActiveBeneficiary
+                  : b
+              );
+            this.beneficiaryService.setBeneficiaries(updatedBeneficiaries);
           }
-        );
+          
+          await this.toastService.presentToast(
+            'Vacunas guardadas correctamente',
+            'success'
+          );
+          this.navCtrl.navigateRoot('/beneficiary/home/vacinations');
+        },
+        async (error) => {
+          console.error('Error al guardar vacunas:', error);
+          await this.toastService.presentToast(
+            'Error al guardar las vacunas',
+            'danger'
+          );
+        }
+      );
     }
   }
 }
