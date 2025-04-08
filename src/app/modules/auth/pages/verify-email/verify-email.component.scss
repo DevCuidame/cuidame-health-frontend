@@ -1,0 +1,96 @@
+ion-content {
+  --background: url("../../../../../assets/background/background.svg") no-repeat
+    center center / cover;
+}
+
+.verify-email-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .loading-state,
+  .success-state,
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  ion-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--ion-color-light);
+  }
+  
+  p {
+    font-size: 16px;
+    color: var(--ion-color-medium);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  
+  ion-button {
+    margin-top: 20px;
+    --border-radius: 8px;
+    font-weight: 500;
+  }
+  
+  .loading-state ion-spinner {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+  }
+  
+  .success-state ion-icon {
+    color: var(--ion-color-success);
+  }
+  
+  .error-state ion-icon {
+    color: var(--ion-color-danger);
+  }
+  
+  /* Animación para el estado de éxito */
+  @keyframes scale-in {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .success-state ion-icon {
+    animation: scale-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+  
+  /* Responsive */
+  @media (max-width: 576px) {
+    h2 {
+      font-size: 20px;
+    }
+    
+    p {
+      font-size: 14px;
+    }
+    
+    ion-icon {
+      font-size: 60px;
+    }
+  }

@@ -1,0 +1,30 @@
+<div class="card-container">
+  <!-- Only show beneficiaries if not individual plan -->
+    @for (beneficiary of sortedBeneficiaries; track beneficiary.id ) {
+    <div class="card" (click)="goToBeneficiary(beneficiary)">
+      @if(beneficiary.image && beneficiary.photourl) {
+      <img
+        [src]="environment + beneficiary.photourl.replace('\\', '/') || beneficiary.imagebs64"
+        [alt]="beneficiary.nombre"
+      />
+      }@else {
+      <img
+        src="/src/assets/images/default_user.png"
+        [alt]="beneficiary.nombre"
+      />
+      }
+
+      <h3 appResizeText>{{ beneficiary.nombre }}</h3>
+      <img class="crown" src="/assets/icon/crown.svg" alt="basic" />
+    </div>
+    } @empty {
+    <!-- <li>There are no items.</li> -->
+    }
+
+  <!-- Botón para agregar un nuevo beneficiario (always show but logic handles restrictions) -->
+  <div class="add-card" (click)="createBeneficiary()">
+    <div class="add-circle">
+      <ion-icon name="add-circle"></ion-icon>
+    </div>
+  </div>
+</div>

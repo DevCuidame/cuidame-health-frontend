@@ -1,0 +1,31 @@
+<ion-footer *ngIf="isVisible">
+  <div class="tab-bar" [ngStyle]="{ 'background': background }">
+    @for(button of buttons; track button; let i = $index) {
+      <ng-container>
+        @if (button.visible) {
+          <div class="tab-button" (click)="i === 1 ? toggleMenu() : navigate(button.route)">
+            <ion-icon [name]="button.icon"></ion-icon>
+            
+            <!-- Menú desplegable solo para el botón del centro -->
+            @if (i === 1 && showMenu) {
+              <div class="menu-dropdown">
+                <div class="menu-arrow"></div>
+                <ul>
+                  @for(item of menuItems; track item) {
+                    <li (click)="item.action()">
+                      <ion-icon [name]="item.icon"></ion-icon>
+                      <span>{{ item.label }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+              <div class="menu-backdrop" (click)="hideMenu()"></div>
+            }
+          </div>
+        } @else {
+          <div class="tab-button empty"></div>
+        }
+      </ng-container>
+    }
+  </div>
+</ion-footer>

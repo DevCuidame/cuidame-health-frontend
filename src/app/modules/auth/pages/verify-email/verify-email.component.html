@@ -1,0 +1,39 @@
+<ion-content class="ion-padding">
+  <div class="verify-email-container">
+    
+    <!-- Estado de carga -->
+    <div *ngIf="verificationStatus === 'loading'" class="loading-state">
+      <ion-spinner name="circular"></ion-spinner>
+      <h2>Verificando tu correo electrónico</h2>
+      <p>Estamos procesando tu solicitud...</p>
+    </div>
+
+    <!-- Estado de éxito -->
+    <div *ngIf="verificationStatus === 'success'" class="success-state">
+      <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+      <h2>¡Correo verificado!</h2>
+      <p>Tu correo electrónico ha sido verificado correctamente.</p>
+      <p>Ya puedes iniciar sesión en tu cuenta.</p>
+      <ion-button expand="block" (click)="goToLogin()">
+        Iniciar sesión
+      </ion-button>
+    </div>
+
+    <!-- Estado de error -->
+    <div *ngIf="verificationStatus === 'error'" class="error-state">
+      <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
+      <h2>Error de verificación</h2>
+      <p>Lo sentimos, no pudimos verificar tu correo electrónico.</p>
+      <ion-button expand="block" (click)="verifyEmail()">
+        Intentar nuevamente
+      </ion-button>
+      <ion-button expand="block" fill="outline" (click)="showError()">
+        Ver detalles del error
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="goToLogin()">
+        Volver al inicio de sesión
+      </ion-button>
+    </div>
+
+  </div>
+</ion-content>

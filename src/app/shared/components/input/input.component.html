@@ -1,0 +1,20 @@
+<div class="input-container">
+  <label [ngStyle]="{'color': textColor}">{{ label }}</label>
+
+  @if (type !== 'select') {
+    <div class="field-wrapper">
+      <input [type]="type" [formControl]="control" [placeholder]="placeholder" [ngStyle]="{'border-bottom': borderBottom, 'color': inputTextColor}" />
+      @if (showCounter) {
+        <span class="counter">{{ control.value?.length || 0 }}</span>
+      }
+    </div>
+  } @else {
+    <select [formControl]="control" [ngStyle]="{'border-bottom': borderBottom}" [ngStyle]="{'color': textColor}">
+      <option *ngFor="let option of options" [value]="option.value" [ngStyle]="{'color': textColor}">
+        {{ option.label }}
+      </option>
+    </select>
+  }
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+</div>

@@ -1,0 +1,45 @@
+<ion-content scrollY="false">
+  <app-beneficiary-header></app-beneficiary-header>
+
+  <div class="container">
+    <div class="options-container">
+      <div class="options">
+        @for (option of categories; track option) {
+        <div
+          [ngClass]="{ selected: isSelected(option.label) }"
+          (click)="selectOption(option.route)"
+        >
+          {{ option.label }}
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Contenedor para el router-outlet con scroll -->
+    <div class="scrollable-content">
+      <router-outlet></router-outlet>
+
+      @if(showBasicData){
+      <app-basic-data
+        fontColor="var(--ion-color-dark)"
+        iconColor="var(--ion-color-tertiary)"
+        opacity="46%"
+        maxHeight="340px"
+        [beneficiary]="activeBeneficiary"
+      >
+      </app-basic-data>
+      <app-edit-button route="/beneficiary/add"></app-edit-button>
+      }
+    </div>
+  </div>
+</ion-content>
+
+<app-tab-bar
+  [isVisible]="true"
+  [buttons]="[
+    { icon: 'arrow-back-outline', route: '/', visible: true },
+    { icon: 'menu-outline', route: '/', visible: true },
+    { icon: 'exit-outline', route: '/', visible: true }
+  ]"
+  [background]="'var(--ion-color-light)'"
+></app-tab-bar>

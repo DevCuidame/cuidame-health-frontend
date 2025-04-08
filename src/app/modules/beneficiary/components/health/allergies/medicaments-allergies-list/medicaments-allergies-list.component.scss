@@ -1,0 +1,68 @@
+.medical_history-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--ion-color-dark);
+  width: 100%;
+}
+
+h2 {
+  text-align: start;
+  width: 100%;
+}
+
+.h-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+}
+
+.h-card p:nth-child(1) {
+  font-size: 1.25rem;
+  text-align: end;
+  font-weight: bold;
+}
+
+.h-card p {
+  font-size: 1.25rem;
+  text-align: end;
+}
+
+.h-card-left p:nth-child(1) {
+  font-size: 1.25rem;
+  text-align: start;
+  font-weight: bold;
+}
+
+.h-card-left p {
+  font-size: 1.25rem;
+  text-align: start;
+}
+
+.allergies-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(145px, 1fr));
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+.allergy-card {
+  max-width: 170px;
+  width: 100%;
+}
+
+.medicament-box {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+fa-icon {
+    font-size: 2rem;
+    padding: 0 10px;
+    color: var(--ion-color-primary);
+}

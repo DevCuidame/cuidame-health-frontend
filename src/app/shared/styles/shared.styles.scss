@@ -1,0 +1,88 @@
+form {
+  padding: 1.5rem 1.5rem 5rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  text-align: start;
+  width: 100%;
+  color: var(--ion-color-dark);
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+}
+
+/* Contenedor de elementos */
+.container-item {
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  background-color: var(--ion-color-dark);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.container-item:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Botones */
+.add, .remove {
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.add {
+  background-color: rgba(var(--ion-color-secondary-rgb), 0.1);
+  color: var(--ion-color-secondary);
+  font-size: 1rem;
+}
+
+.add:hover {
+  background-color: rgba(var(--ion-color-secondary-rgb), 0.2);
+  transform: translateY(-1px);
+}
+
+.add:before {
+  content: "+";
+  margin-right: 5px;
+  font-size: 1.2rem;
+}
+
+.remove {
+  background-color: var(--ion-color-danger);
+  color: var(--ion-color-light);
+  font-size: 0.9rem;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
+.remove:hover {
+  background-color: rgba(var(--ion-color-primary-rgb), 0.2);
+}
+
+.remove:before {
+  content: "−";
+  margin-right: 5px;
+  font-size: 1.2rem;
+}
+
+.add-box {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin: 0.5rem 0 1.5rem 0;
+}
+
+

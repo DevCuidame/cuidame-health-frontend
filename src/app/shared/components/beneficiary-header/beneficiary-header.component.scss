@@ -1,0 +1,39 @@
+.beneficiary-header {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: url("../../../../assets/background/background.png") no-repeat
+    center center / cover;
+  background-size: cover;
+  background-position: top;
+  background-repeat: no-repeat;
+  opacity: 1;
+  border-radius: 0 0px 20px 20px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  z-index: 10;
+  position: relative;
+  width: 100%;
+}
+
+.beneficiary-name {
+  color: var(--ion-color-light);
+  font-size: 3.5vw;
+  font-weight: bold;
+}
+
+.beneficiary-name .normal {
+  font-weight: normal !important;
+}
+
+.circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  min-height: 120px;
+}

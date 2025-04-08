@@ -1,0 +1,7 @@
+{
+  "name": "Cuídame Health",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

@@ -1,0 +1,19 @@
+<div class="beneficiary-header">
+    <div class="info">
+      <div class="beneficiary-name" style="font-size: 4.5vw">
+        <p>
+          <span class="bold">{{activeBeneficiary?.nombre}} {{activeBeneficiary?.apellido}}</span>
+        </p>
+      </div>
+      <div class="beneficiary-name">
+        <p>
+          <span class="normal">¡Información vital</span> <br />
+          <span class="normal">al instante!</span>
+        </p>
+      </div>
+    </div>
+    <div class="circle">
+      <img [src]="environment + activeBeneficiary?.photourl" [alt]="activeBeneficiary?.nombre" />
+      <img/>
+    </div>
+  </div>

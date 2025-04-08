@@ -1,0 +1,33 @@
+.medical_history-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--ion-color-dark);
+  width: 100%;
+}
+
+.h-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+}
+
+.h-card {
+}
+
+.h-card p:nth-child(1) {
+  font-size: 1.25rem;
+  text-align: end;
+  font-weight: bold;
+}
+
+.h-card p:nth-child(2) {
+  font-size: 1.25rem;
+  text-align: end;
+}
+
+.h-card p:nth-child(3) {
+    font-size: 1.25rem;
+    text-align: end;
+  }

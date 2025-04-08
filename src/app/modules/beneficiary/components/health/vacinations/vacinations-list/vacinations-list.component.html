@@ -1,0 +1,20 @@
+<h2>Vacunas</h2>
+<div class="h-container">
+  @if (activeBeneficiary?.health_data?.medical_info?.vaccines) { @for (item of
+  activeBeneficiary?.health_data?.medical_info?.vaccines; track item){
+  <app-secondary-card style="width: 100%">
+    <div class="vaccine-box">
+      <fa-icon [icon]="faSyringe"></fa-icon>
+      <div class="h-card">
+        <p>{{ item.vacuna }}</p>
+      </div>
+    </div>
+  </app-secondary-card>
+  } }@else {
+  <p style="text-align: start; width: 100%; color: var(--ion-color-dark)">
+    No hay vacunas registradas.
+  </p>
+  }
+</div>
+
+<app-edit-button route="/beneficiary/home/vacinations/form"></app-edit-button>

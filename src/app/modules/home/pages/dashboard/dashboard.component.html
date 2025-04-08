@@ -1,0 +1,34 @@
+<ion-content scroll-y="false">
+  <app-greeting [userName]="user?.name"></app-greeting>
+
+  <div class="card">
+    <div class="profile-container">
+      <div class="circle left">
+        <img [src]="user.imagebs64" [alt]="user?.name" />
+      </div>
+      <div class="content">
+        <div class="user-name">
+          {{ user.name.split(" ")[0] }} {{ user.lastname.split(" ")[0] }}
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Beneficiary Cards -->
+
+    <app-beneficiary-card
+      [beneficiaries]="beneficiaries"
+      [plan]="user.plan"
+    ></app-beneficiary-card>
+  </div>
+</ion-content>
+
+<app-tab-bar
+  [isVisible]="true"
+  [buttons]="[
+    { icon: 'arrow-back-outline', route: '/', visible: true },
+    { icon: 'menu-outline', route: '/', visible: true },
+    { icon: 'exit-outline', route: '/', visible: true }
+  ]"
+  [background]="'var(--ion-color-light)'"
+></app-tab-bar>

@@ -1,0 +1,77 @@
+ion-content {
+  --background: url("../../../../../assets/background/background.png") no-repeat
+    center center / cover;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 30px 10px 10px 10px;
+}
+
+.custom-input {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 5px 0;
+  font-size: 1.063rem;
+  font-weight: bold;
+}
+
+.custom-input input {
+  background: transparent;
+  border: 1px solid var(--ion-color-dark);
+  border-radius: 20px;
+  padding: 10px;
+  transition: border-color 0.3s ease-in-out;
+  outline: none;
+}
+
+.custom-input input:focus {
+  border-color: var(--ion-color-primary);
+}
+
+
+.error-text {
+  color: var(--ion-color-danger);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.signup-text {
+  text-align: center;
+}
+
+
+.button-container {
+  margin: 10px 0;
+
+}
+
+ion-item.show-pass {
+  --background: transparent !important;
+  --border-color: transparent !important;
+  --inner-border-width: 0px !important;
+  --highlight-color-focused: transparent !important;
+  --ion-item-background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+
+  ion-label{
+    color: #192a54;
+
+    &:hover{
+      color:  #192a54;
+    }
+  }
+
+  &:hover{
+    background-color: white;
+  }
+}
+
+ion-checkbox {
+  --border-color: #192a54  !important;
+}

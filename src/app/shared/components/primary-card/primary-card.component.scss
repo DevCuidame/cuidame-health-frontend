@@ -1,0 +1,14 @@
+.basic-data-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 20px 20px 50px 20px;
+    border-radius: 30px;
+    background: linear-gradient(to bottom right, #d9eaf1, #9db5cd);
+    width: 100%;
+    min-height: 240px;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  

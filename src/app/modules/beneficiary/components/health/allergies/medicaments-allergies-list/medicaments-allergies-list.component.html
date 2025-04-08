@@ -1,0 +1,45 @@
+<div class="medical_history-box">
+  <h2>Medicamentos</h2>
+  <div class="h-container">
+    <!-- @if (activeBeneficiary?.health_data?.medical_info) { @for (item of
+      activeBeneficiary?.health_data?.medical_info; track item){
+      <app-secondary-card style="width: 100%;">
+        <div class="medicament-box
+        ">
+          <div>
+            <fa-icon [icon]="faPills"></fa-icon>
+          </div>
+          <div class="h-card">
+            <p>{{ item.medicament_name }}</p>
+            <p>{{ item.pharmacy }}</p>
+            <p>{{ item.dose }}</p>
+          </div>
+        </div>
+      </app-secondary-card>
+      } }@else {
+      <p style="text-align: start; width: 100%">
+        No hay medicamentos registrados.
+      </p>
+      } -->
+  </div>
+  <div class="h-container" style="align-items: flex-start !important">
+    <h2>Alergias</h2>
+    <div class="allergies-box">
+      @if(activeBeneficiary?.health_data?.medical_info?.allergies){ @for (item
+      of activeBeneficiary?.health_data?.medical_info?.allergies; track item){
+      <app-secondary-card class="allergy-card">
+        <div class="h-card-left">
+          <p>{{ item.tipo_alergia }}</p>
+          <p>{{ item.descripcion }}</p>
+        </div>
+      </app-secondary-card>
+
+      } }@else {
+      <p>No hay alergias registradas.</p>
+      }
+    </div>
+  </div>
+</div>
+<app-edit-button
+  route="/beneficiary/home/medicaments-allergies/form"
+></app-edit-button>

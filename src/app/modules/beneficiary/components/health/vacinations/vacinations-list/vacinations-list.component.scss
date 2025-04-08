@@ -1,0 +1,38 @@
+h2 {
+    text-align: start;
+    width: 100%;
+    color: var(--ion-color-dark);
+  }
+
+.h-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+  width: 100%;
+  color: var(--ion-color-dark);
+}
+
+.h-card p:nth-child(1) {
+  font-size: 1.25rem;
+  text-align: end;
+  font-weight: bold;
+}
+
+.h-card p {
+  font-size: 1.25rem;
+  text-align: end;
+}
+
+.vaccine-box{
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+fa-icon {
+  font-size: 2rem;
+  padding: 0 10px;
+  color: var(--ion-color-primary);
+}

@@ -1,0 +1,30 @@
+.health-conditions-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--ion-color-dark);
+  width: 100%;
+  padding-bottom: 20px;
+}
+
+h2 {
+  text-align: start;
+  width: 100%;
+}
+
+.h-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+}
+
+.h-card {
+
+}
+
+.h-card p:nth-child(1) {
+  font-size: 1.25rem;
+  text-align: end;
+  font-weight: bold;
+}

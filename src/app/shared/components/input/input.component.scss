@@ -1,0 +1,100 @@
+.input-container {
+  display: flex;
+  flex-direction: column;
+  color: var(--ion-color-dark);
+  margin-bottom: 1.2rem;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--ion-color-light);
+}
+
+.field-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+input, select {
+  width: 100%;
+  border: none;
+  color: #fff;
+  border-bottom: 1px solid var(--ion-color-light);
+  padding: 10px 0;
+  font-size: 1rem;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-bottom-color: var(--ion-color-primary);
+}
+
+input[type="date"]::placeholder {
+  color: var(--ion-color-medium-tint) !important;
+  opacity: 1;
+}
+
+input[type="date"] {
+  color: var(--ion-color-medium-tint);
+}
+
+
+input::placeholder {
+  color: var(--ion-color-medium-tint);
+  opacity: 0.7;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0 center;
+  background-size: 1.2em;
+  padding-right: 1.5em;
+}
+
+.counter {
+  position: absolute;
+  right: 0;
+  bottom: 10px;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+}
+
+.error {
+  color: var(--ion-color-danger);
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+/* Estilos para el botón de Guardar */
+app-custom-button {
+  display: block;
+  margin-top: 2rem;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .container-item {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+  
+  .remove {
+    grid-column: -1;
+    justify-self: end;
+    position: relative;
+    top: 0;
+    right: 0;
+  }
+}
+

@@ -1,0 +1,23 @@
+.button-box {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+ion-icon {
+  font-size: 2.5rem;
+}
+
+p {
+  font-size: 1rem;
+}
+
+button {
+  border-radius: 15px;
+  padding: 15px 10px;
+  color: var(--ion-color-dark);
+  background: var(--ion-color-secondary);
+  position: relative;
+  right: 40px;
+  top: -30px;
+}

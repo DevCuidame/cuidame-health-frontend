@@ -1,0 +1,129 @@
+<ion-content scrollY="false">
+  <div class="card">
+    <div class="user-profile">
+      <div class="image-circle" (click)="selectImage()">
+        <img *ngIf="selectedImage && newImage" [src]="selectedImage" />
+        <img *ngIf="!newImage" [src]="imageLoaded" />
+        <div *ngIf="!selectedImage" class="upload-icon"></div>
+        <div class="small-circle">
+          <ion-icon class="camera-icon" name="camera"></ion-icon>
+        </div>
+      </div>
+      <input type="file" id="imageInput" (change)="onImageSelected($event)" hidden />
+    </div>
+
+    <form [formGroup]="beneficiaryForm" (ngSubmit)="saveBeneficiary()">
+      <h3>Por favor, ingresa la información del beneficiario:</h3>
+
+      <div class="form-container">
+        <div class="separator">
+          <h4>Datos Personales</h4>
+        </div>
+
+        <ion-item>
+          <ion-input label="Nombres" labelPlacement="floating" type="text" formControlName="first_name" required></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Apellidos" labelPlacement="floating" type="text" formControlName="last_name" required></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-select label="Tipo de Identificación" interface="popover" labelPlacement="floating" formControlName="identification_type">
+            <ion-select-option value="CC">Cédula</ion-select-option>
+            <ion-select-option value="TI">Tarjeta de Identidad</ion-select-option>
+            <ion-select-option value="PASSPORT">Pasaporte</ion-select-option>
+            <ion-select-option value="OTHER">Otro</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Número de Identificación" labelPlacement="floating" type="text" formControlName="identification_number" required></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Fecha de Nacimiento" labelPlacement="floating" type="date" formControlName="birth_date" required></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-select label="Género" interface="popover" labelPlacement="floating" formControlName="gender">
+            <ion-select-option value="M">Masculino</ion-select-option>
+            <ion-select-option value="F">Femenino</ion-select-option>
+            <ion-select-option value="Other">Otro</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <div class="separator">
+          <h4>Datos de contacto</h4>
+        </div>
+
+        <ion-item>
+          <ion-input label="Dirección" labelPlacement="floating" type="text" formControlName="address" required></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-select label="Departamento" labelPlacement="floating" interface="popover" formControlName="department" required>
+            <ion-select-option *ngFor="let department of departments" [value]="department.id">
+              {{ department.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        
+        <ion-item>
+          <ion-select label="Ciudad" labelPlacement="floating" interface="popover" formControlName="city_id" required>
+            <ion-select-option *ngFor="let city of cities" [value]="city.id">
+              {{ city.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        
+
+        <ion-item>
+          <ion-input label="Teléfono" labelPlacement="floating" type="text" formControlName="phone" required></ion-input>
+        </ion-item>
+
+        <div class="separator">
+          <h4>Información de salud</h4>
+        </div>
+
+        <ion-item>
+          <ion-input label="Tipo de sangre (RH)" labelPlacement="floating" type="text" formControlName="blood_type"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="EPS" labelPlacement="floating" type="text" formControlName="health_provider"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Prepagada" labelPlacement="floating" type="text" formControlName="prepaid_health"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="ARL" labelPlacement="floating" type="text" formControlName="work_risk_insurance"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Seguro funerario" labelPlacement="floating" type="text" formControlName="funeral_insurance"></ion-input>
+        </ion-item>
+
+        <app-custom-button
+        label="Guardar"
+        type="submit"
+        [disabled]="beneficiaryForm.invalid"
+        [textColor]="'var(--ion-color-light)'"
+        [backgroundImage]="buttonBackground"
+      ></app-custom-button>
+      </div>
+    </form>
+  </div>
+</ion-content>
+
+<app-tab-bar
+  [isVisible]="true"
+  [buttons]="[
+    { icon: 'arrow-back-outline', route: '/', visible: true },
+    { icon: 'menu-outline', route: '/', visible: true },
+    { icon: 'exit-outline', route: '/', visible: true }
+  ]"
+  [background]="'var(--ion-color-light)'"
+></app-tab-bar>

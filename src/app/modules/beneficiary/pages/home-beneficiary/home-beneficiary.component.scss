@@ -1,0 +1,71 @@
+ion-content {
+  --background: var(--ion-color-light);
+}
+
+.container {
+  padding: 0 20px;
+}
+
+.scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 300px);
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+
+// ----------------------------- Options Container -----------------------------------
+
+.options-container {
+  display: flex;
+  justify-content: center;
+}
+
+.options {
+  color: #fff;
+  display: grid;
+  gap: 15px;
+  border-radius: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0 0 20px 0;
+  position: relative;
+  top: -5px;
+}
+
+.options div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  padding: 15px 8px;
+  border-radius: 0px 0 8px 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  text-align: center;
+  min-width: 80px;
+  font-size: clamp(9px, 1vw, 16px);
+  transition: background 0.3sease;
+}
+
+.option-icon {
+  font-size: 1.2rem;
+}
+
+.selected {
+  background: var(--ion-color-primary);
+  color: white;
+  font-weight: bold;
+}
+
+.options div:nth-child(even) {
+  background-color: var(--ion-color-secondary);
+}
+
+.options div:nth-child(odd) {
+  background-color: var(--ion-color-primary);
+}

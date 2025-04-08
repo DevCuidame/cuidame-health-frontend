@@ -1,0 +1,15 @@
+<button
+  [type]="type"
+  [disabled]="disabled"
+  (click)="handleClick()"
+  [ngStyle]="{
+    'background': background,
+    'background-image': backgroundImage ? 'url(' + backgroundImage + ')' : 'none',
+    'color': textColor,
+    'font-size': fontSize,
+    'padding': padding,
+    'box-shadow': boxShadow,
+  }"
+>
+  {{ label }}
+</button>

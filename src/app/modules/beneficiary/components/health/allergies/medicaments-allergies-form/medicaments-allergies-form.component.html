@@ -1,0 +1,41 @@
+<h2>Registro de Alergias</h2>
+<form [formGroup]="form" (ngSubmit)="submitForm()">
+  <div formArrayName="allergies">
+    <div
+      class="container-item"
+      *ngFor="let allergy of allergies.controls; let i = index"
+      [formGroup]="getAllergyFormGroup(i)"
+    >
+      <app-input
+        label="Tipo de Alergia"
+        type="text"
+        placeholder="Ej. Polen"
+        [control]="getFormControl(getAllergyFormGroup(i), 'tipo_alergia')"
+      >
+      </app-input>
+
+      <app-input
+        label="Descripción"
+        type="text"
+        placeholder="Ej. Estornudos frecuentes"
+        [control]="getFormControl(getAllergyFormGroup(i), 'descripcion')"
+      >
+      </app-input>
+      <button type="button" class="remove" (click)="removeAllergy(i)">
+        Quitar
+      </button>
+    </div>
+  </div>
+
+  <div class="add-box">
+    <button type="button" class="add" (click)="addAllergy()">Añadir</button>
+  </div>
+
+  <app-custom-button
+    label="Guardar"
+    type="submit"
+    [disabled]="!isFormValid()"
+    [textColor]="'var(--ion-color-light)'"
+    [backgroundImage]="buttonBackground"
+  ></app-custom-button>
+</form>

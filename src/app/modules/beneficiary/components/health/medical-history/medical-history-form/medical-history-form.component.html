@@ -1,0 +1,94 @@
+<h2>¿Tu ser querido tiene algún antecedente personal de salud?</h2>
+<form [formGroup]="form" (ngSubmit)="submitForm()">
+  <div formArrayName="medicalHistory">
+    <div
+      class="container-item"
+      *ngFor="let history of medicalHistory.controls; let i = index"
+      [formGroup]="getMedicalHistoryFormGroup(i)"
+    >
+      <app-input
+        label="Tipo de Historial"
+        type="text"
+        placeholder="Ej. Cirugía"
+        [control]="
+          getFormControl(getMedicalHistoryFormGroup(i), 'tipo_antecedente')
+        "
+      ></app-input>
+
+      <app-input
+        label="Descripción"
+        type="text"
+        placeholder="Ej. Apendicectomía"
+        [control]="getFormControl(getMedicalHistoryFormGroup(i), 'descripcion_antecedente')"
+      ></app-input>
+
+      <app-input
+        label="Fecha"
+        type="date"
+        [control]="
+          getFormControl(getMedicalHistoryFormGroup(i), 'fecha_antecedente')
+        "
+      ></app-input>
+
+      <button type="button" class="remove" (click)="removeMedicalHistory(i)">
+        Quitar
+      </button>
+    </div>
+  </div>
+
+  <div class="add-box">
+    <button type="button" class="add" (click)="addMedicalHistory()">
+      Añadir
+    </button>
+  </div>
+
+  <h2>¿Tú ser querido tiene algún antecedente familiar de salud?</h2>
+  <div formArrayName="familyHistory">
+    <div
+      class="container-item"
+      *ngFor="let family of familyHistory.controls; let i = index"
+      [formGroup]="getFamilyHistoryFormGroup(i)"
+    >
+      <app-input
+        label="Tipo de Historial"
+        type="select"
+        placeholder="Ej. Patológico"
+        [control]="getFormControl(getFamilyHistoryFormGroup(i), 'tipo_antecedente')"
+        [options]="historyTypeOptions"
+      ></app-input>
+
+      <app-input
+        label="Relación"
+        type="select"
+        placeholder="Ej. Padre"
+        [control]="getFormControl(getFamilyHistoryFormGroup(i), 'parentesco')"
+        [options]="relativeOptions"
+      ></app-input>
+
+      <app-input
+        label="Descripción"
+        type="text"
+        placeholder="Ej. Diagnosticado a los 50 años"
+        [control]="getFormControl(getFamilyHistoryFormGroup(i), 'descripcion_antecedente')"
+      ></app-input>
+
+      <button type="button" class="remove" (click)="removeFamilyHistory(i)">
+        - Quitar
+      </button>
+    </div>
+  </div>
+
+  <div class="add-box">
+    <button type="button" class="add" (click)="addFamilyHistory()">
+      Añadir
+    </button>
+  </div>
+
+  <app-custom-button
+    label="Guardar"
+    type="submit"
+    [disabled]="!isFormValid()"
+    [textColor]="'var(--ion-color-light)'"
+    [backgroundImage]="buttonBackground"
+  ></app-custom-button>
+</form>
