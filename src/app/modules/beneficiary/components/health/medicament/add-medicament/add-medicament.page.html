@@ -1,5 +1,5 @@
 <div class="medicament-order">
-  <form #frm="ngForm" class="form" novalidate>
+  <form #frm="ngForm" class="form" novalidate (ngSubmit)="selectedStep === 3 ? submitForm(frm) : null">
     <div class="buttons-container">
       <div
         class="selected-indicator"
@@ -28,8 +28,7 @@
       </div>
     </div>
 
-    <!-- steps -->
-
+    <!-- Pasos -->
     <div class="steps" [ngClass]="{'hidden': selectedStep !== 1}">
       <div class="step" *ngFor="let step of [1, 2, 3]; let i = index">
         <div
@@ -44,387 +43,411 @@
       </div>
     </div>
 
-    @if(selectedStep === 1){
-    <div class="opt" style="width: 100%">
-      <div><p>Requiere:</p></div>
-      <div class="medicament-checkbox">
-        <!-- <ion-checkbox [(ngModel)]="formData.mipres" name="mipres"
-          >Mipres</ion-checkbox
-        > -->
-        <!-- <ion-checkbox
-          [(ngModel)]="formData.controlled_substances"
-          name="controlled_substances"
-          >Estupefacientes</ion-checkbox
-        > -->
-        <!-- <ion-checkbox
-          [(ngModel)]="formData.eps_authorization"
-          name="eps_authorization"
-          >Autorización EPS</ion-checkbox
-        > -->
-      </div>
-    </div>
-    } @if(selectedStep === 1){
-    <div style="display: flex; flex-direction: column">
-      <div class="file-box">
-        <div class="element" [ngClass]="{'loaded': fileNames['medical_order']}">
-          <label for="medical-order">
-            Order Médica
-            <p *ngIf="fileNames['medical_order']">
-              {{ fileNames['medical_order'] }}
-            </p>
-          </label>
-          <i
-            class="fa-solid fa-camera"
-            (click)="triggerFileInput('medical-order')"
-          ></i>
-          <input
-            id="medical-order"
-            type="file"
-            accept=".pdf, image/jpeg, image/png, image/heic, image/heif"
-            (change)="onFileChange($event, 'medical_order')"
-            [hidden]="!!fileNames['medical_order'] || updateFlag"
-            [disabled]="!!fileNames['medical_order'] || updateFlag"
-            [hidden]="true"
-          />
-        </div>
-
-        <div class="element" [ngClass]="{'loaded': fileNames['mipres']}">
-          <label for="mipres">
-            Mipres
-            <p *ngIf="fileNames['mipres']">{{ fileNames['mipres'] }}</p>
-          </label>
-          <i
-            class="fa-solid fa-camera"
-            (click)="triggerFileInput('mipres')"
-          ></i>
-          <input
-            id="mipres"
-            type="file"
-            accept=".pdf, image/jpeg, image/png, image/heic, image/heif"
-            (change)="onFileChange($event, 'mipres')"
-            [hidden]="!!fileNames['mipres'] || updateFlag"
-            [disabled]="!!fileNames['mipres'] || updateFlag"
-            [hidden]="true"
-          />
-        </div>
-
-        <div
-          class="element"
-          [ngClass]="{'loaded': fileNames['controlled_med_order']}"
-        >
-          <label for="controlled-med-order">
-            Orden Medicamento Controlado
-            <p *ngIf="fileNames['controlled_med_order']">
-              {{ fileNames['controlled_med_order'] }}
-            </p>
-          </label>
-          <i
-            class="fa-solid fa-camera"
-            (click)="triggerFileInput('controlled-med-order')"
-          ></i>
-          <input
-            id="controlled-med-order"
-            type="file"
-            accept=".pdf, image/jpeg, image/png, image/heic, image/heif"
-            (change)="onFileChange($event, 'controlled_med_order')"
-            [hidden]="!!fileNames['controlled_med_order'] || updateFlag"
-            [disabled]="!!fileNames['controlled_med_order'] || updateFlag"
-            [hidden]="true"
-          />
+    <!-- Paso 1: Ordenar -->
+    <ng-container *ngIf="selectedStep === 1">
+      <div class="opt" style="width: 100%">
+        <div><p>Requiere:</p></div>
+        <div class="medicament-checkbox">
+          <ion-checkbox [(ngModel)]="formData.mipres" name="mipres">Mipres</ion-checkbox>
+          <ion-checkbox
+            [(ngModel)]="formData.controlled_substances"
+            name="controlled_substances"
+          >Estupefacientes</ion-checkbox>
+          <ion-checkbox
+            [(ngModel)]="formData.eps_authorization"
+            name="eps_authorization"
+          >Autorización EPS</ion-checkbox>
         </div>
       </div>
-
+      
       <div style="display: flex; flex-direction: column">
+        <div class="file-box">
+          <div class="element" [ngClass]="{'loaded': fileNames['medical_order']}">
+            <label for="medical-order">
+              Order Médica
+              <p *ngIf="fileNames['medical_order']">
+                {{ fileNames['medical_order'] }}
+              </p>
+            </label>
+            <i
+              class="fa-solid fa-camera"
+              (click)="triggerFileInput('medical-order')"
+            ></i>
+            <input
+              id="medical-order"
+              type="file"
+              accept=".pdf, image/jpeg, image/png, image/heic, image/heif"
+              (change)="onFileChange($event, 'medical_order')"
+              [hidden]="true"
+            />
+          </div>
+
+          <div class="element" [ngClass]="{'loaded': fileNames['mipres']}" *ngIf="formData.mipres">
+            <label for="mipres">
+              Mipres
+              <p *ngIf="fileNames['mipres']">{{ fileNames['mipres'] }}</p>
+            </label>
+            <i
+              class="fa-solid fa-camera"
+              (click)="triggerFileInput('mipres')"
+            ></i>
+            <input
+              id="mipres"
+              type="file"
+              accept=".pdf, image/jpeg, image/png, image/heic, image/heif"
+              (change)="onFileChange($event, 'mipres')"
+              [hidden]="true"
+            />
+          </div>
+
+          <div
+            class="element"
+            [ngClass]="{'loaded': fileNames['controlled_med_order']}"
+            *ngIf="formData.controlled_substances"
+          >
+            <label for="controlled-med-order">
+              Orden Medicamento Controlado
+              <p *ngIf="fileNames['controlled_med_order']">
+                {{ fileNames['controlled_med_order'] }}
+              </p>
+            </label>
+            <i
+              class="fa-solid fa-camera"
+              (click)="triggerFileInput('controlled-med-order')"
+            ></i>
+            <input
+              id="controlled-med-order"
+              type="file"
+              accept=".pdf, image/jpeg, image/png, image/heic, image/heif"
+              (change)="onFileChange($event, 'controlled_med_order')"
+              [hidden]="true"
+            />
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column">
+          <div class="item">
+            <ion-input
+              type="text"
+              id="medicament_name"
+              placeholder="Nombre del Medicamento"
+              name="medicament_name"
+              required
+              minlength="3"
+              maxlength="50"
+              [(ngModel)]="formData.medicament_name"
+              #medicamentName="ngModel"
+              [ngClass]="{ 'invalid-input': medicamentName.invalid && medicamentName.touched }"
+            ></ion-input>
+            <small class="error-message" *ngIf="medicamentName.invalid && medicamentName.touched">
+              El nombre del medicamento es requerido (mínimo 3 caracteres)
+            </small>
+          </div>
+
+          <div class="item-block">
+            <div class="item" style="flex-basis: calc(50% - 5px)">
+              <ion-input
+                type="date"
+                id="date_order"
+                label="Fecha de la Orden"
+                placeholder="Fecha de la Orden"
+                name="date_order"
+                required
+                [(ngModel)]="formData.date_order"
+                #dateOrder="ngModel"
+                [ngClass]="{ 'invalid-input': dateOrder.invalid && dateOrder.touched }"
+              ></ion-input>
+              <small class="error-message" *ngIf="dateOrder.invalid && dateOrder.touched">
+                La fecha de la orden es requerida
+              </small>
+            </div>
+            <div class="item" style="flex-basis: calc(50% - 5px)">
+              <ion-input
+                type="text"
+                id="duration"
+                placeholder="Duración"
+                name="duration"
+                required
+                [(ngModel)]="formData.duration"
+                #duration="ngModel"
+                [ngClass]="{ 'invalid-input': duration.invalid && duration.touched }"
+              ></ion-input>
+              <small class="error-message" *ngIf="duration.invalid && duration.touched">
+                La duración es requerida
+              </small>
+            </div>
+          </div>
+          <div class="item-block">
+            <div class="item" style="flex-basis: calc(33% - 5px)">
+              <ion-input
+                type="text"
+                id="dose"
+                placeholder="Dósis"
+                name="dose"
+                required
+                [(ngModel)]="formData.dose"
+                #dose="ngModel"
+                [ngClass]="{ 'invalid-input': dose.invalid && dose.touched }"
+              ></ion-input>
+              <small class="error-message" *ngIf="dose.invalid && dose.touched">
+                La dosis es requerida
+              </small>
+            </div>
+            <div class="item" style="flex-basis: calc(33% - 5px)">
+              <ion-input
+                type="text"
+                id="frequency"
+                placeholder="Frecuencia"
+                name="frequency"
+                required
+                [(ngModel)]="formData.frequency"
+                #frequency="ngModel"
+                [ngClass]="{ 'invalid-input': frequency.invalid && frequency.touched }"
+              ></ion-input>
+              <small class="error-message" *ngIf="frequency.invalid && frequency.touched">
+                La frecuencia es requerida
+              </small>
+            </div>
+            <div class="item" style="flex-basis: calc(33% - 5px)">
+              <ion-input
+                type="text"
+                id="quantity"
+                placeholder="Cantidad"
+                name="quantity"
+                required
+                [(ngModel)]="formData.quantity"
+                #quantity="ngModel"
+                [ngClass]="{ 'invalid-input': quantity.invalid && quantity.touched }"
+              ></ion-input>
+              <small class="error-message" *ngIf="quantity.invalid && quantity.touched">
+                La cantidad es requerida
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Paso 2: Autorizar -->
+    <ng-container *ngIf="selectedStep === 2">
+      <div class="medicament-checkbox" style="margin: 0">
+        <ion-checkbox
+          (ionChange)="isChecked($event)"
+          [(ngModel)]="formData.authorized"
+          name="authorized"
+        >No autorizado</ion-checkbox>
+      </div>
+      
+      <ng-container *ngIf="!formData.authorized">
+        <div class="file-box" style="margin-bottom: 20px" *ngIf="formData.eps_authorization">
+          <div class="element" [ngClass]="{'loaded': fileNames['eps_auth']}">
+            <label for="eps_auth">
+              Autorización de la EPS
+              <p *ngIf="fileNames['eps_auth']">{{ fileNames['eps_auth'] }}</p>
+            </label>
+            <i
+              class="fa-solid fa-camera"
+              (click)="triggerFileInput('eps_auth')"
+            ></i>
+            <input
+              id="eps_auth"
+              type="file"
+              accept=".pdf, image/jpeg, image/png, image/heic, image/heif"
+              (change)="onFileChange($event, 'eps_auth')"
+              [hidden]="true"
+            />
+          </div>
+        </div>
+      
+        <div style="display: flex; flex-direction: column; width: 100%">
+          <div class="item">
+            <ion-input
+              type="text"
+              id="pharmacy"
+              placeholder="Farmacia o institución"
+              name="pharmacy"
+              required
+              [(ngModel)]="formData.pharmacy"
+              #pharmacy="ngModel"
+              [ngClass]="{ 'invalid-input': pharmacy.invalid && pharmacy.touched }"
+            ></ion-input>
+            <small class="error-message" *ngIf="pharmacy.invalid && pharmacy.touched">
+              La farmacia es requerida
+            </small>
+          </div>
+          <div class="item-block">
+            <div class="item" style="flex-basis: calc(50% - 5px)">
+              <ion-input
+                type="date"
+                id="date_auth"
+                placeholder="Fecha Autorización"
+                label="Fecha Autorización"
+                name="date_auth"
+                required
+                [(ngModel)]="formData.date_auth"
+                #date_auth="ngModel"
+                [ngClass]="{ 'invalid-input': date_auth.invalid && date_auth.touched }"
+              ></ion-input>
+              <small class="error-message" *ngIf="date_auth.invalid && date_auth.touched">
+                La fecha de autorización es requerida
+              </small>
+            </div>
+            <div class="item" style="flex-basis: calc(50% - 5px)">
+              <ion-input
+                type="tel"
+                id="phone"
+                placeholder="Teléfono"
+                name="phone"
+                required
+                [(ngModel)]="formData.phone"
+                #phone="ngModel"
+                pattern="[0-9]*"
+                minlength="7"
+                maxlength="10"
+                [ngClass]="{ 'invalid-input': phone.invalid && phone.touched }"
+              ></ion-input>
+              <small class="error-message" *ngIf="phone.invalid && phone.touched">
+                El teléfono es requerido (formato numérico)
+              </small>
+            </div>
+          </div>
+          <div class="item">
+            <ion-input
+              type="text"
+              id="address"
+              placeholder="Dirección"
+              name="address"
+              required
+              [(ngModel)]="formData.address"
+              #address="ngModel"
+              [ngClass]="{ 'invalid-input': address.invalid && address.touched }"
+            ></ion-input>
+            <small class="error-message" *ngIf="address.invalid && address.touched">
+              La dirección es requerida
+            </small>
+          </div>
+        </div>
+      </ng-container>
+      
+      <div class="item" *ngIf="formData.authorized">
+        <ion-textarea
+          name="description"
+          placeholder="¿Por qué no se autorizó?"
+          rows="4"
+          [autoGrow]="true"
+          maxlength="300"
+          required
+          id="description"
+          [(ngModel)]="formData.description"
+          #description="ngModel"
+          [ngClass]="{ 'invalid-input': description.invalid && description.touched }"
+        ></ion-textarea>
+        <small class="error-message" *ngIf="description.invalid && description.touched">
+          Es necesario indicar el motivo por el que no se autorizó
+        </small>
+      </div>
+    </ng-container>
+
+    <!-- Paso 3: Entregar -->
+    <ng-container *ngIf="selectedStep === 3">
+      <div style="display: flex; flex-direction: column; width: 100%">
         <div class="item">
-          <!-- <ion-input
-            type="text"
-            id="medicament_name"
-            placeholder="Nombre del Medicamento"
-            name="medicament_name"
+          <ion-select
+            interface="popover"
+            name="delivery_status"
+            label="Estado de la entrega"
+            placeholder="Selecciona"
             required
-            minlength="3"
-            maxlength="50"
-            [(ngModel)]="formData.medicament_name"
-            #medicamentName="ngModel"
-            [ngClass]="{ 'invalid-input': medicamentName.invalid && medicamentName.touched }"
-          ></ion-input> -->
+            id="delivery_status"
+            labelPlacement="start"
+            [(ngModel)]="formData.delivery_status"
+            #delivery_status="ngModel"
+            [ngClass]="{ 'invalid-input': delivery_status.invalid && delivery_status.touched }"
+          >
+            <ion-select-option value="Programado">Programado</ion-select-option>
+            <ion-select-option value="Entregado">Entregado</ion-select-option>
+            <ion-select-option value="No entregado">No entregado</ion-select-option>
+            <ion-select-option value="Pendiente">Pendiente</ion-select-option>
+          </ion-select>
+          <small class="error-message" *ngIf="delivery_status.invalid && delivery_status.touched">
+            El estado de entrega es requerido
+          </small>
         </div>
-
-        <div class="item-block">
-          <div class="item" style="flex-basis: calc(30% - 2.5px)">
-            <!-- <ion-input
+        
+        <div class="item-block" *ngIf="formData.delivery_status === 'Programado'">
+          <div class="item" style="flex-basis: 100%">
+            <ion-input
               type="date"
-              id="date_order"
-              label="Fecha de la Orden"
-              placeholder="Fecha de la Orden"
-              name="date_order"
+              label="Fecha programada"
+              fill="outline"
+              shape="round"
+              id="delivery_date"
+              placeholder="Fecha programada"
+              name="delivery_date"
               required
-              [(ngModel)]="formData.date_order"
-              #dateOrder="ngModel"
-              [ngClass]="{ 'invalid-input': dateOrder.invalid && dateOrder.touched }"
-            ></ion-input> -->
-          </div>
-          <div class="item" style="flex-basis: calc(30% - 2.5px)">
-            <!-- <ion-input
-              type="email"
-              id="duration"
-              placeholder="Duración"
-              name="duration"
-              required
-              [(ngModel)]="formData.duration"
-              #duration="ngModel"
-              [ngClass]="{ 'invalid-input': duration.invalid && duration.touched }"
-            ></ion-input> -->
-          </div>
-        </div>
-        <div class="item-block">
-          <div class="item" style="flex-basis: calc(33% - 2.5px)">
-            <!-- <ion-input
-              type="text"
-              id="dose"
-              placeholder="Dósis"
-              name="dose"
-              required
-              [(ngModel)]="formData.dose"
-              #dose="ngModel"
-              [ngClass]="{ 'invalid-input': dose.invalid && dose.touched }"
-            ></ion-input> -->
-          </div>
-          <div class="item" style="flex-basis: calc(33% - 2.5px)">
-            <!-- <ion-input
-              type="text"
-              id="frequency"
-              placeholder="Frecuencia"
-              name="frequency"
-              required
-              [(ngModel)]="formData.frequency"
-              #frequency="ngModel"
-              [ngClass]="{ 'invalid-input': frequency.invalid && frequency.touched }"
-            ></ion-input> -->
-          </div>
-          <div class="item" style="flex-basis: calc(33% - 2.5px)">
-            <!-- <ion-input
-              type="email"
-              id="quantity"
-              placeholder="Cantidad"
-              name="quantity"
-              required
-              [(ngModel)]="formData.quantity"
-              #quantity="ngModel"
-              [ngClass]="{ 'invalid-input': quantity.invalid && quantity.touched }"
-            ></ion-input> -->
+              [(ngModel)]="formData.delivery_date"
+              #delivery_date="ngModel"
+              [ngClass]="{ 'invalid-input': delivery_date.invalid && delivery_date.touched }"
+            ></ion-input>
+            <small class="error-message" *ngIf="delivery_date.invalid && delivery_date.touched">
+              La fecha programada es requerida
+            </small>
           </div>
         </div>
       </div>
-    </div>
-    } @else if (selectedStep === 2){
+      
+      <div
+        class="file-box"
+        style="margin-bottom: 20px"
+        *ngIf="formData.delivery_status === 'Pendiente'"
+      >
+        <div class="element" [ngClass]="{'loaded': fileNames['pending']}">
+          <label for="pending">
+            Comprobante de pendiente
+            <p *ngIf="fileNames['pending']">{{ fileNames['pending'] }}</p>
+          </label>
+          <i class="fa-solid fa-camera" (click)="triggerFileInput('pending')"></i>
+          <input
+            id="pending"
+            type="file"
+            accept=".pdf, image/jpeg, image/png, image/heic, image/heif"
+            (change)="onFileChange($event, 'pending')"
+            [hidden]="true"
+          />
+        </div>
+      </div>
 
-    <div
-      class="medicament-checkbox"
-      style="margin: 0"
-      [ngClass]="{'hidden': selectedStep !== 2}"
-    >
-      <!-- <ion-checkbox
-        (ionChange)="isChecked($event)"
-        [(ngModel)]="formData.authorized"
-        name="authorized"
-        >No autorizado</ion-checkbox
-      > -->
-    </div>
-    @if(true){
-      <!-- !formData.authorized -->
-    <div
-      class="file-box"
-      [ngClass]="{'hidden': selectedStep !== 2}"
-      style="margin-bottom: 20px"
-    >
-      <div class="element" [ngClass]="{'loaded': fileNames['eps_auth']}">
-        <label for="eps_auth">
-          Autorización de la EPS
-          <p *ngIf="fileNames['eps_auth']">{{ fileNames['eps_auth'] }}</p>
-        </label>
-        <i
-          class="fa-solid fa-camera"
-          (click)="triggerFileInput('eps_auth')"
-        ></i>
-        <input
-          id="eps_auth"
-          type="file"
-          accept=".pdf, image/jpeg, image/png, image/heic, image/heif"
-          (change)="onFileChange($event, 'eps_auth')"
-          [hidden]="!!fileNames['eps_auth'] || updateFlag"
-          [disabled]="!!fileNames['eps_auth'] || updateFlag"
-          [hidden]="true"
-        />
-      </div>
-    </div>
-    } @if (true){ 
-      <!-- !formData.authorized -->
-    <div style="display: flex; flex-direction: column; width: 100%">
       <div class="item">
-        <!-- <ion-input
-          type="text"
-          id="pharmacy"
-          placeholder="Farmacia o institución"
-          name="pharmacy"
-          required
-          [(ngModel)]="formData.pharmacy"
-          #pharmacy="ngModel"
-          [ngClass]="{ 'invalid-input': pharmacy.invalid && pharmacy.touched }"
-        ></ion-input> -->
+        <ion-textarea
+          name="comments"
+          placeholder="Observaciones"
+          rows="4"
+          [autoGrow]="true"
+          maxlength="300"
+          id="comments"
+          [(ngModel)]="formData.comments"
+          #comments="ngModel"
+        ></ion-textarea>
       </div>
-      <div class="item-block">
-        <div class="item" style="flex-basis: calc(30% - 2.5px)">
-          <!-- <ion-input
-            type="date"
-            id="date_auth"
-            placeholder="Fecha Autorización"
-            label="Fecha Autorización"
-            name="date_auth"
-            required
-            [(ngModel)]="formData.date_auth"
-            #date_auth="ngModel"
-            [ngClass]="{ 'invalid-input': date_auth.invalid && date_auth.touched }"
-          ></ion-input> -->
-        </div>
-        <div class="item" style="flex-basis: calc(30% - 2.5px)">
-          <!-- <ion-input
-            type="number"
-            id="phone"
-            placeholder="Teléfono"
-            name="phone"
-            required
-            [(ngModel)]="formData.phone"
-            #phone="ngModel"
-            [ngClass]="{ 'invalid-input': phone.invalid && phone.touched }"
-          ></ion-input> -->
-        </div>
-      </div>
-      <div class="item">
-        <!-- <ion-input
-          type="text"
-          id="address"
-          placeholder="Dirección"
-          name="address"
-          required
-          [(ngModel)]="formData.address"
-          #address="ngModel"
-          [ngClass]="{ 'invalid-input': address.invalid && address.touched }"
-        ></ion-input> -->
-      </div>
-    </div>
-    } @else {
-    <!-- <div class="item" [ngClass]="{'hidden': !formData.authorized}">
-      <ion-textarea
-        name="description"
-        placeholder="¿Por qué no se autorizó?"
-        rows="4"
-        [autoGrow]="true"
-        maxlength="300"
-        required
-        id="description"
-        [(ngModel)]="formData.description"
-        #description="ngModel"
-        [ngClass]="{ 'invalid-input': description.invalid && description.touched }"
-      ></ion-textarea>
-    </div> -->
-    } }@else {
-    <div
-      style="display: flex; flex-direction: column; width: 100%"
-      [ngClass]="{'hidden': selectedStep !== 3}"
-    >
-      <div class="item">
-        <!-- <ion-select
-          interface="popover"
-          name="delivery_status"
-          label="Estado de la entrega"
-          placeholder="Selecciona"
-          required
-          id="delivery_status"
-          labelPlacement="start"
-          [(ngModel)]="formData.delivery_status"
-          #delivery_status="ngModel"
-          [ngClass]="{ 'invalid-input': delivery_status.invalid && delivery_status.touched }"
-        >
-          <ion-select-option value="Programado" required>
-            Programado
-          </ion-select-option>
-          <ion-select-option value="Entregado" required>
-            Entregado
-          </ion-select-option>
-          <ion-select-option value="No entregado" required>
-            No entregado
-          </ion-select-option>
-          <ion-select-option value="Pendiente" required>
-            Pendiente
-          </ion-select-option>
-        </ion-select> -->
-      </div>
-      <!-- <div class="item-block" *ngIf="formData.delivery_status === 'Programado'">
-        <div class="item" style="flex-basis: calc(30% - 2.5px)">
-          <ion-input
-            type="date"
-            label="Fecha programada"
-            fill="outline"
-            shape="round"
-            id="delivery_date"
-            placeholder="Fecha programada"
-            name="delivery_date"
-            required
-            [(ngModel)]="formData.delivery_date"
-            #delivery_date="ngModel"
-            [ngClass]="{ 'invalid-input': delivery_date.invalid && delivery_date.touched }"
-          ></ion-input>
-        </div>
-      </div> -->
-    </div>
-    <!-- <div
-      class="file-box"
-      style="margin-bottom: 20px"
-      *ngIf="formData.delivery_status === 'Pendiente'"
-    >
-      <div class="element" [ngClass]="{'loaded': fileNames['pending']}">
-        <label for="pending">
-          Pendiente
-          <p *ngIf="fileNames['pending']">{{ fileNames['pending'] }}</p>
-        </label>
-        <i class="fa-solid fa-camera" (click)="triggerFileInput('pending')"></i>
-        <input
-          id="pending"
-          type="file"
-          accept=".pdf, image/jpeg, image/png, image.heic, image.heif"
-          (change)="onFileChange($event, 'pending')"
-          [hidden]="!!fileNames['pending'] || updateFlag"
-          [disabled]="!!fileNames['pending'] || updateFlag"
-          [hidden]="true"
-        />
-      </div>
-    </div> -->
-
-    <!-- <div class="item">
-      <ion-textarea
-        name="comments"
-        placeholder="Observaciones"
-        rows="4"
-        fill="outline"
-        [autoGrow]="true"
-        maxlength="300"
-        required
-        id="comments"
-        [(ngModel)]="formData.comments"
-        #comments="ngModel"
-        [ngClass]="{ 'invalid-input': comments.invalid && comments.touched }"
-      ></ion-textarea>
-    </div> -->
-    }
+    </ng-container>
 
     <button
+      type="button"
       class="button"
       style="padding: 0 30px"
-      (click)="selectedStep === 3 ? submitForm(frm) : goToNextStep()"
+      (click)="selectedStep === 3 ? submitForm(frm) : goToNextStep(frm)"
+      [disabled]="(selectedStep === 3 && frm.invalid) || isSubmitting"
     >
-    {{ updateFlag && selectedStep === 3 ? 'Actualizar' : (selectedStep === 3 ? 'Guardar' : 'Siguiente') }}
-
+      {{ updateFlag && selectedStep === 3 ? 'Actualizar' : (selectedStep === 3 ? 'Guardar' : 'Siguiente') }}
     </button>
   </form>
+  
+  <ion-toast
+    [isOpen]="toastMessageVisible"
+    [message]="toastMessage"
+    [color]="toastColor"
+    [duration]="3000"
+    position="top"
+    (didDismiss)="clearErrorMessage()"
+  ></ion-toast>
 </div>

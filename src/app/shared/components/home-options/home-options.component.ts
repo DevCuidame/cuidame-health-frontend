@@ -34,5 +34,8 @@ export class HomeOptionsComponent implements OnInit {
     if (option === 'parameters') {
       this.navCtrl.navigateForward('/beneficiary/home/parameters');
     }
+    if (option === 'medicament') {
+      this.navCtrl.navigateForward('/beneficiary/home/control-medicaments');
+    }
   }
 }

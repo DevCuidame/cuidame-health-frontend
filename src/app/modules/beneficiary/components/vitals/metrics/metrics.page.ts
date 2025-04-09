@@ -17,11 +17,10 @@ import { faHeartPulse, faDroplet, faWaveSquare, faCubesStacked, faLungs } from '
     FontAwesomeModule
   ],
   template: `
-    <ion-content>
-      <div class="metrics-header">
+      <!-- <div class="metrics-header">
         <h2>Signos Vitales</h2>
         <p>Registra y monitoriza los parámetros de salud</p>
-      </div>
+      </div> -->
       
       <div class="metrics-container">
         <div class="metric-button" (click)="navigateToMetric('Presión Arterial')">
@@ -109,7 +108,6 @@ import { faHeartPulse, faDroplet, faWaveSquare, faCubesStacked, faLungs } from '
           </p>
         </div>
       </div>
-    </ion-content>
   `,
   styles: [`
     .metrics-header {
@@ -191,7 +189,7 @@ import { faHeartPulse, faDroplet, faWaveSquare, faCubesStacked, faLungs } from '
     }
     
     .info-panel {
-      margin: 0 16px 24px;
+      margin: 0 16px 100px;
       background: white;
       border-radius: 12px;
       overflow: hidden;

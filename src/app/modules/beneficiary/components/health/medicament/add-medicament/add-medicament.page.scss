@@ -1,5 +1,3 @@
-
-
 form {
   display: flex;
   align-items: center;
@@ -10,6 +8,19 @@ form {
 .item {
   width: 100%;
   flex: 1 1 100%;
+  margin-bottom: 5px;
+  position: relative;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 2px;
+  display: block;
+}
+
+.invalid-input {
+  border-color: #e74c3c !important;
 }
 
 .item input,
@@ -30,20 +41,30 @@ ion-select, ion-input {
   color: #275289;
 }
 
+.item ion-textarea {
+  background: #fff;
+  margin-top: 10px;
+  border-radius: 15px; // Less round for textareas
+  border: 1px solid #d8e7ee;
+  font-size: 15px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 9px;
+  color: #275289;
+}
+
 .item ion-select {
   font-size: 15px !important;
 }
 
-ion-input{
+ion-input {
   padding: 8px 5px !important;
 }
 
 .item input::placeholder,
 select::placeholder,
 ion-select::placeholder {
-  color: #275289    ; 
+  color: #275289; 
 }
-
 
 .item-block {
   display: flex;
@@ -51,287 +72,293 @@ ion-select::placeholder {
   gap: 5px;
   width: 100%;
   align-items: center;
+  margin-bottom: 5px;
 }
 
-
 .button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  margin: 15px 0px 0px auto;
+  width: 100%;
+  height: 50px;
+  border-radius: 100px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  background-image: url("/assets/images/bg_btn_login.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
 
-    margin: 15px 0px 0px auto;
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
-    width: 100%;
-    height: 50px;
+  label {
+    font-family: "Quicksand", sans-serif;
+    font-weight: bold;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+}
 
-    border-radius: 100px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+.medicament-order {
+  color: #275289;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 175px 0px 100px;
+  overflow-y: scroll;
+  max-height: calc(100vh - 150px);
+  box-sizing: border-box;
+  scrollbar-width: none;
+}
 
-    background-image: url("/assets/images/bg_btn_login.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+.medicament-order::-webkit-scrollbar {
+  display: none;
+}
+
+// Checkbox
+ion-checkbox {
+  --size: 20px;
+  --checkbox-background-checked: #F58418;
+}
+
+ion-checkbox::part(container) {
+  border: 2px solid #275289;
+}
+
+p {
+  margin: 0;
+}
+
+.medicament-checkbox {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.file-box {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 10px 0 10px 0;
+}
+
+.file-box div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.element {
+  display: flex;
+  align-items: center;
+  position: relative; /* To allow positioning of child elements */
+  gap: 10px;
+}
+
+.element label {
+  position: relative; /* Ensures `<p>` is positioned relative to the label */
+  font-size: 16px;
+  cursor: pointer;
+  min-height: 24px; /* Reserve space for the text even if it's empty */
+  display: inline-block;
+}
+
+.element p {
+  position: absolute; /* Position the text over the label */
+  bottom: -20px; /* Adjust spacing so it doesn't overlap */
+  left: 0;
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+  white-space: nowrap; /* Prevent line breaks */
+  overflow: hidden; /* Ensure long file names don't overflow visually */
+  text-overflow: ellipsis; /* Add "..." for truncated text */
+  max-width: 200px; /* Limit the width of the file name */
+}
+
+.element i {
+  cursor: pointer;
+  color: #275289;
+  transition: color 0.3s ease;
+  
+  &:hover {
+    color: #F58418;
+  }
+}
+
+.element.loaded i {
+  color: #4CAF50; /* Indicate a file has been uploaded */
+}
+
+.steps {
+  display: flex;
+  position: relative; 
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 20px 0;
+}
+
+.steps::before {
+  content: '';
+  position: absolute;
+  top: 28%; 
+  left: 3%;
+  right: 3%;
+  height: 2px;
+  background-color: #707070;
+  z-index: 1;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2; 
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.step div {
+  background-color: #DBE9EF;
+  padding: 1px 20px;
+  border-radius: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.step div.active {
+  background-color: #F7910F !important;
+  padding: 1px 20px;
+  border-radius: 20px;
+}
+
+.buttons-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 5px 30px;
+  overflow: hidden;
+  margin: 20px 0 !important;
+} 
+
+.buttons {
+  display: flex;
+  width: 100%;
+  position: relative;
+}
+
+.switch {
+  padding: 20px;
+  color: #90baca;
+  background-color: #fff;
+  width: 100%;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: color 0.3s;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.switch:first-child {
+  border-radius: 20px 0 0 20px;
+}
+
+.switch:last-child {
+  border-radius: 0 20px 20px 0;
+}
+
+.selected-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  background: linear-gradient(90deg, #ffba52 0%, #ff6a00 100%);
+  transition: left 0.5s, right 0.5s, width 0.5s, border-radius 1s;
+  z-index: 5;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+
+.selected-indicator:before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: -2px;
+  right: -2px;
+  border-radius: inherit;
+  border: 2px solid transparent;
+}
+
+.switch:focus {
+  outline: none;
+}
+
+.switch.on {
+  color: white;
+  z-index: 4;
+}
+
+.switch.on span {
+  position: relative;
+  z-index: 3;
+}
+
+.form, .item, .opt, .file-box, .medicament-checkbox {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.form.hidden, .item.hidden, .opt.hidden, .file-box.hidden, .medicament-checkbox.hidden {
+  animation: fadeOut 0.5s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
     opacity: 1;
-    padding: 10px;
+    transform: translateY(0);
+  }
+}
 
-    label {
-      font-family: "Quicksand", sans-serif;
-      font-weight: bold;
-      margin-top: auto;
-      margin-bottom: auto;
-    }
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
   }
-
-  .medicament-order {
-    color: #275289;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 175px 0px 100px;
-    overflow-y: scroll;
-    max-height: calc(100vh - 150px);
-    box-sizing: border-box;
-    scrollbar-width: none;
+  to {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  
-  .medicament-order::-webkit-scrollbar {
-    display: none;
-  }
-  
-
-
-  // Checkbox
-
-  ion-checkbox {
-    --size: 20px;
-    --checkbox-background-checked: #F58418;
-  }
-  
-  ion-checkbox::part(container) {
-    border: 2px solid #275289;
-  }
-
-  p {
-    margin: 0;
-  }
-
-  .medicament-checkbox{
-    display: flex;
-    align-items: center;
-    width: 100%;
-    justify-content: flex-start;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin: 20px 0;
-  }
-
-  .file-box{
-    display: flex;
-    align-items: center;
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin: 10px 0 10px 0;
-  }
-
-  .file-box div{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    
-  }
-
-  
-  .element {
-    display: flex;
-    align-items: center;
-    position: relative; /* To allow positioning of child elements */
-    gap: 10px;
-  }
-  
-  .element label {
-    position: relative; /* Ensures `<p>` is positioned relative to the label */
-    font-size: 16px;
-    cursor: pointer;
-    min-height: 24px; /* Reserve space for the text even if it's empty */
-    display: inline-block;
-  }
-  
-  .element p {
-    position: absolute; /* Position the text over the label */
-    bottom: -20px; /* Adjust spacing so it doesn't overlap */
-    left: 0;
-    margin: 0;
-    font-size: 14px;
-    color: #555;
-    white-space: nowrap; /* Prevent line breaks */
-    overflow: hidden; /* Ensure long file names don't overflow visually */
-    text-overflow: ellipsis; /* Add "..." for truncated text */
-    max-width: 200px; /* Limit the width of the file name */
-  }
-
-  
-  .element .loaded i {
-    color: green; /* Indicate a file has been uploaded */
-  }
-  
-
-  .steps {
-    display: flex;
-    position: relative; 
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0 0 20px 0;
-  }
-  
-  .steps::before {
-    content: '';
-    position: absolute;
-    top: 28%; 
-    left: 3%;
-    right: 3%;
-    height: 2px;
-    background-color: #707070;
-    z-index: 1;
-  }
-  
-  .step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 2; 
-    background-color: transparent;
-  }
-  
-  .step div {
-    background-color: #DBE9EF;
-    padding: 1px 20px;
-    border-radius: 20px;
-  }
-
-    
-  .step div.active {
-    background-color: #F7910F !important;
-    padding: 1px 20px;
-    border-radius: 20px;
-  }
-  
-  .buttons-container {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 5px 30px;
-    overflow: hidden;
-    margin: 20px 0 !important;
-  } 
-
-  .buttons {
-    display: flex;
-    width: 100%;
-    position: relative;
-  }
-  
-  .switch {
-    padding: 20px;
-    color: #90baca;
-    background-color: #fff;
-    width: 100%;
-    border: none;
-    font-size: 1rem;
-    font-weight: bold;
-    transition: color 0.3s;
-    position: relative;
-    z-index: 2;
-  }
-  
-  .switch:first-child {
-    border-radius: 20px 0 0 20px;
-  }
-  
-  .switch:last-child {
-    border-radius: 0 20px 20px 0;
-  }
-  
-  .selected-indicator {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 50%;
-    background: linear-gradient(90deg, #ffba52 0%, #ff6a00 100%);
-    transition: left 0.5s, right 0.5s, width 0.5s, border-radius 1s;
-    z-index: 3;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-  }
-  
-  .selected-indicator:before {
-    content: "";
-    position: absolute;
-    top: -2px;
-    bottom: -2px;
-    left: -2px;
-    right: -2px;
-    border-radius: inherit;
-    border: 2px solid transparent;
-  }
-  
-  .switch:focus {
-    outline: none;
-  }
-  
-  .switch.on {
-    color: white;
-    z-index: 2;
-  }
-  
-  .switch.on span {
-    position: relative;
-    z-index: 3;
-  }
-  // .opt {
-  //   // margin: 0 0 20px 0;
-  // }
-
-  .form, .item, .opt, .file-box, .medicament-checkbox {
-    animation: fadeIn 0.5s ease forwards;
-  }
-  
-  .form.hidden, .item.hidden, .opt.hidden, .file-box.hidden, .medicament-checkbox.hidden{
-    animation: fadeOut 0.5s ease forwards;
-    pointer-events: none;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  @keyframes fadeOut {
-    from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-  }
+}
