@@ -1,0 +1,42 @@
+.bottom-options {
+  display: flex;
+  padding: 5px;
+  gap: 5px;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.bottom-options.hidden {
+  animation: fadeOut 0.5s ease forwards;
+  pointer-events: none;
+}
+
+.o-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #35b6d9;
+  border-radius: 20px;
+  width: 100%;
+  min-width: 60px;
+  // max-width: 66px;
+  background: #fff;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 10px 0;
+  cursor: pointer;
+  gap: 5px;
+}
+
+.o-button fa-icon {
+  color: #f58419;
+  font-size: 2rem;
+}
+
+.o-button p {
+  color: #236596;
+  font-family: "Quicksand Light", sans-serif;
+  font-weight: 500 !important;
+  font-size: 2.5vw;
+  text-align: center;
+  margin: 0;
+}

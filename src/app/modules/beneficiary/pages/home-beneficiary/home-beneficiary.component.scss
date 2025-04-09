@@ -69,3 +69,9 @@ ion-content {
 .options div:nth-child(odd) {
   background-color: var(--ion-color-primary);
 }
+
+.bottom{
+  position: absolute;
+    width: 100%;
+    bottom: 0;
+}

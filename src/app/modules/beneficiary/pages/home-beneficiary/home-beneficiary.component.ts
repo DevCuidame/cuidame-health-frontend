@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { BeneficiaryService } from '../../../../core/services/beneficiary.service';
 import { EditButtonComponent } from 'src/app/shared/components/edit-button/edit-button.component';
+import { HomeOptionsComponent } from 'src/app/shared/components/home-options/home-options.component';
 
 @Component({
   selector: 'app-home-beneficiary',
@@ -20,6 +21,7 @@ import { EditButtonComponent } from 'src/app/shared/components/edit-button/edit-
     BasicDataComponent,
     RouterModule,
     EditButtonComponent,
+    HomeOptionsComponent
   ],
   templateUrl: './home-beneficiary.component.html',
   styleUrls: ['./home-beneficiary.component.scss'],

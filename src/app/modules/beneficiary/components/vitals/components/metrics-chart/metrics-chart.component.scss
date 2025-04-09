@@ -1,0 +1,65 @@
+.filters {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .filters button {
+    background-color: #236596;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    margin: 0 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .filters button:hover {
+    background-color: #1a4c73;
+  }
+  
+  .navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .navigation button {
+    background-color: #f58418;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 0 20px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navigation button:hover {
+    background-color: #cc6c12;
+  }
+  
+  .navigation span {
+    font-size: 4vw;
+    font-weight: bold;
+    color: #1a4c73;
+  }
+  
+
+  .filters button.active {
+    background-color: white;
+    color: #1a4c73; 
+    transform: scale(1.1); 
+  }
+  
+  .filters button:hover {
+    background-color: #1a4c73;
+  }
+  
+  .filters button.active:hover {
+    background-color: white;
+    color: #1a4c73; 
+  }

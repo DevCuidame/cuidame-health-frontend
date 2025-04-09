@@ -1,0 +1,107 @@
+<!-- <ion-header>
+  <ion-toolbar>
+    <ion-title>{{ title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<div class="form-container">
+  <form [formGroup]="metricForm" (ngSubmit)="onSubmit()">
+    <div class="carousel-container">
+      @if(title === 'Presión Arterial'){
+      <div class="m-labels">
+        <div class="carousel-label">Sistólica (mmHg)</div>
+        <div class="carousel-label">Diastólica (mmHg)</div>
+      </div>
+      <div class="pickers">
+        <ion-input
+          type="number"
+          (ionChange)="updateSystolic($event)"
+          [formControlName]="'systolic'"
+        ></ion-input>
+        <ion-input
+          type="number"
+          (ionChange)="updateDiastolic($event)"
+          [formControlName]="'diastolic'"
+        ></ion-input>
+      </div>
+      }
+    </div>
+
+    @if(title === 'Frecuencia Cardiaca' || title === 'Frecuencia Respiratoria'){
+    <div class="carousel-container">
+      <div class="carousel-label">
+        {{
+          title === "Frecuencia Cardiaca"
+            ? "Ritmo Cardiaco (ppm)"
+            : "Frecuencia Respiratoria (rpm)"
+        }}
+      </div>
+      <div class="carousel">
+        <ion-input
+          type="number"
+      
+          (ionChange)="updateRate($event)"
+          [formControlName]="'rate'"
+        ></ion-input>
+      </div>
+    </div>
+    } @else if(title === 'Glucosa en la Sangre'){
+    <div class="carousel-container">
+      <div class="carousel-label">{{ title }} (mg/dL)</div>
+      <div class="carousel">
+        <ion-input
+          type="number"
+          (ionChange)="updateRate($event)"
+          [formControlName]="'rate'"
+        ></ion-input>
+      </div>
+    </div>
+    }@else if(title === 'Oxigeno en la sangre'){
+    <div class="carousel-container">
+      <div class="carousel-label">{{ title }} (%)</div>
+      <div class="carousel">
+        <ion-input
+          type="number"
+          (ionChange)="updateRate($event)"
+          [formControlName]="'rate'"
+        ></ion-input>
+        Valor personalizado
+               Ordenar por fecha
+               Mostrar una por día del menor valor 
+               Filtro de PM y AM
+               
+               
+               Módulo asistente, funcionaría para todos
+               Peso para la persona Formato Riesgo Cardiovascular y metabólico 
+      </div>
+    </div>
+    }
+
+    <div class="datetime-container">
+      <div class="m-labels">
+        <div class="m-label">Fecha</div>
+        <div class="m-label">Hora</div>
+      </div>
+      <div class="datetime-picker">
+        <input
+          type="date"
+          formControlName="date"
+          (change)="updateSelectedDate($event)"
+        />
+        <input
+          type="time"
+          formControlName="time"
+          (change)="updateSelectedTime($event)"
+        />
+      </div>
+    </div>
+
+    <div class="button-container" style="gap: 10px">
+      <button type="submit" class="submit-button">Actualizar</button>
+      <button (click)="onDelete()" type="button" class="delete-button">Eliminar</button>
+    </div>
+  </form>
+</div> -->

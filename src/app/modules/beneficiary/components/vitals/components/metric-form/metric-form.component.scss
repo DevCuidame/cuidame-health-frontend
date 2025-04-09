@@ -1,0 +1,143 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  height: 100%;
+  justify-content: center;
+}
+
+form {
+  display: flex;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  gap: 20px;
+  flex-direction: column;
+}
+
+.carousel-container {
+  margin: 16px 0;
+  width: 100%;
+  text-align: center;
+
+  .carousel-label {
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .carousel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px;
+
+    &.disabled {
+      opacity: 0.5;
+    }
+
+    .carousel-input {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      position: relative;
+      background: #fff;
+      margin-top: 10px;
+      min-height: 100% !important;
+      border-radius: 100px;
+      border: 1px solid #d8e7ee;
+      font-size: 15px;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+      padding: 9px;
+    }
+  }
+}
+
+.button-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.datetime-container {
+  margin: 16px 0;
+  width: 100%;
+  text-align: center;
+
+  .datetime-button {
+    padding: 8px 16px;
+    font-size: 16px;
+    background-color: #fff;
+    color: #275289;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  .datetime-picker {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+
+    input[type="date"],
+    input[type="time"] {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      position: relative;
+      background: #fff;
+      margin-top: 10px;
+      min-height: 100% !important;
+      border-radius: 100px;
+      border: 1px solid #d8e7ee;
+      font-size: 15px;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+      padding: 9px;
+      margin: 5px;
+    }
+  }
+}
+
+ion-input {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  position: relative;
+  background: #fff;
+  margin-top: 10px;
+  border-radius: 100px;
+  border: 1px solid #d8e7ee;
+  font-size: 15px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.m-label {
+  width: 100%;
+  display: flex;
+  font-size: 1.5rem;
+}
+.submit-button {
+  padding: 15px 61px;
+  font-size: 16px;
+  background: linear-gradient(90deg, #ffba52 0%, #ff6a00 100%);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.m-labels {
+  display: flex;
+  gap: 20px;
+  color: #275289;
+  padding: 0 5px;
+}
+
+.pickers {
+  display: flex;
+  gap: 10px;
+}

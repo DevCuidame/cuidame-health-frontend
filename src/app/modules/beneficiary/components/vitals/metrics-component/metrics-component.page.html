@@ -1,0 +1,111 @@
+<!-- <div class="metric-header">
+  <ion-icon name="chevron-back-outline" (click)="back()"></ion-icon>
+  <p>{{title}}</p>
+  <ion-icon name="add-outline" (click)="addMetric()"></ion-icon>
+</div>
+
+<ng-container *ngIf="showChart">
+  <app-metrics-chart
+    [title]="title"
+    [bloodPressureMetrics]="bloodPressureMetrics"
+    [bloodGlucoseMetrics]="bloodGlucoseMetrics"
+    [bloodOxygenMetrics]="bloodOxygenMetrics"
+    [heartRateMetrics]="heartRateMetrics"
+    [respiratoryRateMetrics]="respiratoryRateMetrics"
+  ></app-metrics-chart>
+</ng-container>
+
+<div class="data-summary">
+  @if(title ==='Frecuencia Cardiaca'){
+  <p>
+    El ritmo cardiaco se mide en pulsaciones por minuto (ppm), y puede aumentar
+    con la actividad, el estrés o la exitación.
+  </p>
+
+  }@else if(title ==='Presión Arterial') {
+  <p>
+    La presión arterial se mide en milímetros de mercurio (mmHg), y las lecturas
+    de la presión sistólica y diastólica son un indicador de la salud del
+    corazón.
+  </p>
+
+  } @else if(title === 'Frecuencia Respiratoria') {
+  <p>
+    La frecuencia respiratoria se mide en respiraciones por minuto (rpm) y puede
+    aumentar mientras se hace ejercicio o ante una enfermedad.
+  </p>
+  } @else if(title === 'Glucosa en la Sangre') {
+  <p>
+    La glucosa en la sangre es la principal fuente de energía del cuerpo y se
+    mide en miligramos por decilitro (mg/dL). Sus niveles pueden variar después
+    de comer o ante condiciones de salud como la diabetes.
+  </p>
+  } @else if(title === 'Oxigeno en la sangre') {
+  <p>
+    El oxígeno en la sangre indica la cantidad de oxígeno transportado por los
+    glóbulos rojos y se mide en porcentaje (%). Los niveles normales suelen
+    estar entre 95% y 100%, y pueden bajar ante problemas respiratorios o
+    enfermedades.
+  </p>
+  }
+</div>
+
+@if (heartRateMetrics.length || bloodPressureMetrics.length ||
+respiratoryRateMetrics.length || bloodGlucoseMetrics.length || bloodOxygenMetrics.length){
+
+<div class="data">
+  @if(title ==='Frecuencia Cardiaca'){ @for (metric of filteredMetrics; track
+  metric) {
+  <ng-container>
+    <div  class="metric-item" (click)="handleAnimation($event); updateMetric(metric)">
+      <div class="metric-date">{{metric.date | date:'mediumDate'}}</div>
+      <div class="metric-time">{{metric.date | date:'shortTime'}}</div>
+      <div class="metric-value">{{metric.rate}} ppm</div>
+    </div>
+  </ng-container>
+  } } @else if(title ==='Presión Arterial') { @for (metric of
+  filteredMetrics; track metric) {
+  <ng-container>
+    <div  class="metric-item" (click)="handleAnimation($event); updateMetric(metric)" >
+      <div class="metric-date">{{metric.date | date:'mediumDate'}}</div>
+      <div class="metric-time">{{metric.date | date:'shortTime'}}</div>
+      <div class="metric-value">
+        {{metric.systolic}}/{{metric.diastolic}} mmHg
+      </div>
+    </div>
+  </ng-container>
+  } } @else if(title ==='Glucosa en la Sangre') { @for (metric of
+  filteredMetrics; track metric) {
+  <ng-container>
+    <div  class="metric-item" (click)="handleAnimation($event); updateMetric(metric)">
+      <div class="metric-date">{{metric.date | date:'mediumDate'}}</div>
+      <div class="metric-time">{{metric.date | date:'shortTime'}}</div>
+      <div class="metric-value">{{metric.rate}} mg/dL</div>
+    </div>
+  </ng-container>
+  } } @else if(title ==='Oxigeno en la sangre') { @for (metric of
+  filteredMetrics; track metric) {
+  <ng-container>
+    <div  class="metric-item" (click)="handleAnimation($event); updateMetric(metric)">
+      <div class="metric-date">{{metric.date | date:'mediumDate'}}</div>
+      <div class="metric-time">{{metric.date | date:'shortTime'}}</div>
+      <div class="metric-value">{{metric.rate}} %</div>
+    </div>
+  </ng-container>
+  } } @else { @for (metric of filteredMetrics; track metric) {
+  <ng-container>
+    <div  class="metric-item" (click)="handleAnimation($event); updateMetric(metric)">
+      <div class="metric-date">{{metric.date | date:'mediumDate'}}</div>
+      <div class="metric-time">{{metric.date | date:'shortTime'}}</div>
+      <div class="metric-value">{{metric.rate}} rpm</div>
+    </div>
+  </ng-container>
+  } }
+</div>
+
+} @else {
+<div class="data">
+  <div  class="metric-item" (click)="handleAnimation($event)">No hay datos.</div>
+</div>
+
+} -->
