@@ -8,6 +8,8 @@ import {
   faFileWaveform,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { Router } from '@angular/router';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-home-options',
@@ -24,7 +26,13 @@ export class HomeOptionsComponent implements OnInit {
   public faBriefcase = faBriefcase;
   public faFileWaveform = faFileWaveform;
 
+  constructor(private navCtrl: NavController) {}
+
   ngOnInit() {}
 
-  selectOption(option: string) {}
+  selectOption(option: string) {
+    if (option === 'parameters') {
+      this.navCtrl.navigateForward('/beneficiary/home/parameters');
+    }
+  }
 }

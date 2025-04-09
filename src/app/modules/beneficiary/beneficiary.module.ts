@@ -19,6 +19,8 @@ import { VacinationsFormComponent } from './components/health/vacinations/vacina
 import { EditButtonComponent } from 'src/app/shared/components/edit-button/edit-button.component';
 import { InputComponent } from 'src/app/shared/components/input/input.component';
 import { SecondaryCardComponent } from 'src/app/shared/components/secondary-card/secondary-card.component';
+import { MetricsPage } from './components/vitals/metrics/metrics.page';
+import { MetricsComponentPage } from './components/vitals/metrics-component/metrics-component.page';
 
 const routes: Routes = [
   {
@@ -51,6 +53,16 @@ const routes: Routes = [
       {
         path: 'vacinations',
         component: VacinationsListComponent, 
+      },
+
+      {
+        path: 'parameters',
+        component: MetricsPage, 
+      },
+
+      {
+        path: 'metrics-component',
+        component: MetricsComponentPage, 
       },
 
       // **Rutas para los formularios**
