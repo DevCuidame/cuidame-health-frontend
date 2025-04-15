@@ -51,7 +51,6 @@ export class BeneficiaryCardComponent implements OnInit {
   }
 
   async createBeneficiary() {
-  
-    this.router.navigate(['/beneficiary/add'], { queryParams: { new: true } });
+    this.router.navigate(['/code/code-lookup']);
   }
 }

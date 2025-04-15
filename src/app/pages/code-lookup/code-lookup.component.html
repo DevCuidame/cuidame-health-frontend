@@ -1,0 +1,70 @@
+<div class="options">
+  <div class="band-info">
+    <p>¿Tienes un convenio o licencia?</p>
+  </div>
+
+  <form [formGroup]="codeForm">
+    <div class="item">
+      <ion-label color="primary" class="select-label">Convenio</ion-label>
+      <ion-select
+        interface="popover"
+        formControlName="agreement"
+        labelPlacement="start"
+        required
+      >
+        <ion-select-option
+          *ngFor="let agreement of agreements"
+          [value]="agreement.agreement"
+        >
+          {{ agreement.agreement }}
+        </ion-select-option>
+      </ion-select>
+    </div>
+    <div class="item">
+      <ion-label color="primary">Código de seguro</ion-label>
+      <ion-input type="text" formControlName="code" required></ion-input>
+    </div>
+
+    <div class="error-container">
+      <p
+        class="error-text"
+        *ngIf="
+          codeForm.get('agreement')?.invalid &&
+          codeForm.get('agreement')?.touched
+        "
+      >
+        Por favor, selecciona un convenio.
+      </p>
+      <p
+        class="error-text"
+        *ngIf="codeForm.get('code')?.invalid && codeForm.get('code')?.touched"
+      >
+        Por favor, ingresa el código de seguro.
+      </p>
+    </div>
+  </form>
+
+  <div class="link-container" (click)="buyInsurance()">
+    <label class="link">¡Compra un seguro para tu persona a cuidar!</label>
+  </div>
+
+  <section id="buttons">
+    <app-custom-button
+      label="Confirmar"
+      type="submit"
+      [disabled]="codeForm.invalid"
+      [textColor]="'var(--ion-color-light)'"
+      [backgroundImage]="buttonInsurance"
+      (click)="verifyInsurance()"
+    ></app-custom-button>
+
+    <app-custom-button
+      label="Continuar sin seguro"
+      type="submit"
+      [textColor]="'var(--ion-color-light)'"
+      [disabled]="false"
+      [backgroundImage]="buttonFree"
+      (click)="continueWithoutInsurance()"
+    ></app-custom-button>
+  </section>
+</div>

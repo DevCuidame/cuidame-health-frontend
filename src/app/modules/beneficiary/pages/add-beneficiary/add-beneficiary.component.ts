@@ -21,6 +21,7 @@ import { BeneficiaryService } from '../../../../core/services/beneficiary.servic
 import { environment } from 'src/environments/environment';
 
 import { ActivatedRoute } from '@angular/router';
+import { CodeService } from 'src/app/core/services/code.service';
 @Component({
   selector: 'app-add-beneficiary',
   standalone: true,
@@ -42,6 +43,7 @@ export class AddBeneficiaryComponent implements OnInit {
   public file_pub_name: any;
   public databs64: any;
   imageLoaded: string = '';
+  public code: string = '';
   public buttonBackground: string = 'assets/background/secondary_button_bg.svg';
 
   errorMessages: any = {
@@ -61,10 +63,15 @@ export class AddBeneficiaryComponent implements OnInit {
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     public navCtrl: NavController,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private codeService: CodeService
   ) {
+
+    this.code = this.codeService.getInsuranceCode();
+
     this.beneficiaryForm = this.fb.group({
       id: [''],
+      code: [''],
       nombre: [
         '',
         [Validators.required, Validators.pattern('^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$')],
@@ -91,6 +98,7 @@ export class AddBeneficiaryComponent implements OnInit {
       seguro_funerario: [''],
       public_name: ['', Validators.maxLength(50)],
       photourl: [''],
+      imagebs64: [''], 
     });
 
     this.setupRealTimeValidation();
@@ -107,7 +115,7 @@ export class AddBeneficiaryComponent implements OnInit {
     this.loadDepartments();
 
     this.beneficiaryForm
-      .get('department')
+      .get('departamento')
       ?.valueChanges.subscribe((departmentId) => {
         if (departmentId) {
           this.beneficiaryForm.patchValue({ city_id: '' });
@@ -124,7 +132,8 @@ export class AddBeneficiaryComponent implements OnInit {
     if (!beneficiary) {
       this.beneficiaryForm.reset();
       this.beneficiaryForm.patchValue({
-        id: ''
+        id: '',
+        code: this.code
       });
       return;
     }
@@ -133,7 +142,7 @@ export class AddBeneficiaryComponent implements OnInit {
       this.beneficiaryForm.patchValue(beneficiary);
 
       this.imageLoaded = beneficiary.imagebs64
-        ? `${environment.url}${beneficiary.imagebs64.replace('\\', '/')}`
+        ? `${environment.url}${beneficiary.photourl?.replace('\\', '/')}`
         : '';
 
       this.locationService.fetchDepartments();
@@ -192,11 +201,12 @@ export class AddBeneficiaryComponent implements OnInit {
 
       const beneficiaryData = { ...this.beneficiaryForm.value };
       const isEditing = !!beneficiaryData.id;
-
+      
       const action$ = isEditing
-        ? this.beneficiaryService.updateBeneficiary(beneficiaryData.id, beneficiaryData)
-        : this.beneficiaryService.addBeneficiary(beneficiaryData);
-
+      ? this.beneficiaryService.updateBeneficiary(beneficiaryData.id, beneficiaryData)
+      : this.beneficiaryService.addBeneficiary(beneficiaryData);
+      
+      console.log("🚀 ~ AddBeneficiaryComponent ~ saveBeneficiary ~ beneficiaryData:", beneficiaryData)
       action$.subscribe(
         async () => {
           await loading.dismiss();
@@ -205,6 +215,7 @@ export class AddBeneficiaryComponent implements OnInit {
             message: isEditing ? 'Beneficiario actualizado correctamente.' : 'Beneficiario agregado correctamente.',
             buttons: ['OK'],
           });
+          this.codeService.clearPersonData();
           await alert.present();
           this.navCtrl.navigateRoot('/home/dashboard');
         },
@@ -259,7 +270,7 @@ export class AddBeneficiaryComponent implements OnInit {
       this.newImage = true;
       this.selectedImage = e.target.result;
       this.beneficiaryForm.patchValue({
-        base_64: e.target.result,
+        imagebs64: e.target.result,
         public_name: file.name,
       });
     };

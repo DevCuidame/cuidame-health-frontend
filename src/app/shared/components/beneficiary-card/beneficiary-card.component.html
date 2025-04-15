@@ -2,7 +2,7 @@
   <!-- Only show beneficiaries if not individual plan -->
     @for (beneficiary of sortedBeneficiaries; track beneficiary.id ) {
     <div class="card" (click)="goToBeneficiary(beneficiary)">
-      @if(beneficiary.image && beneficiary.photourl) {
+      @if(beneficiary.photourl) {
       <img
         [src]="environment + beneficiary.photourl.replace('\\', '/') || beneficiary.imagebs64"
         [alt]="beneficiary.nombre"
