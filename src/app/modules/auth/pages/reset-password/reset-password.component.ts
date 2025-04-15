@@ -32,7 +32,7 @@ import { ResetPasswordService } from 'src/app/core/services/reset-password.servi
   encapsulation: ViewEncapsulation.None,
 })
 export class ResetPasswordComponent {
-  public buttonBackground: string = 'assets/background/primary_button_bg.svg';
+  public buttonBackground: string = 'assets/background/button_primary_bg.png';
   resetPasswordForm: FormGroup;
   isSubmitting: boolean = false;
 

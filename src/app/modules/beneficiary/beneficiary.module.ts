@@ -22,6 +22,7 @@ import { SecondaryCardComponent } from 'src/app/shared/components/secondary-card
 import { MetricsPage } from './components/vitals/metrics/metrics.page';
 import { MetricsComponentPage } from './components/vitals/metrics-component/metrics-component.page';
 import { AddMedicamentPage } from './components/health/medicament/add-medicament/add-medicament.page';
+import { HealthServicesComponent } from './pages/health-services/health-services.component';
 
 const routes: Routes = [
   {
@@ -64,6 +65,11 @@ const routes: Routes = [
       {
         path: 'control-medicaments',
         component: AddMedicamentPage, 
+      },
+
+      {
+        path: 'services',
+        component: HealthServicesComponent, 
       },
 
       {

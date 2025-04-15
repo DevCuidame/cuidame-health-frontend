@@ -2,7 +2,16 @@
   <app-beneficiary-header></app-beneficiary-header>
 
   <div class="container">
-    <div class="options-container">
+    <!-- Menú de categorías con animaciones -->
+    <div 
+      class="options-container" 
+      [ngClass]="{
+        'visible': showCategoriesMenu && !isMenuAnimating,
+        'hidden': !showCategoriesMenu && !isMenuAnimating,
+        'fade-in': showCategoriesMenu && isMenuAnimating,
+        'fade-out': !showCategoriesMenu && isMenuAnimating
+      }"
+    >
       <div class="options">
         @for (option of categories; track option) {
         <div

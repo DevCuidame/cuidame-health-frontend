@@ -1,0 +1,17 @@
+<ion-content scroll-y="false">
+  <div class="logo-container">
+    <ion-img class="logo" src="assets/logo/logo.png"></ion-img>
+  </div>
+  <div class="card">
+    <ng-content></ng-content>
+  </div>
+</ion-content>
+<app-tab-bar
+  [isVisible]="true"
+  [buttons]="[
+    { icon: 'arrow-back-outline', route: '/', visible: true },
+    { icon: 'menu-outline', route: '/', visible: false },
+    { icon: 'exit-outline', route: '/', visible: true }
+  ]"
+  [background]="'var(--ion-color-light)'"
+></app-tab-bar>

@@ -1,0 +1,47 @@
+/* src/app/modules/auth/components/auth-layout/auth-layout.component.scss */
+ion-content {
+  --background: url("../../../../../assets/background/background.png") no-repeat
+    center center / cover;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 10%;
+  width: 100%;
+}
+
+.logo {
+  width: 280px;
+  height: auto;
+  max-width: 160px;
+}
+
+.card {
+  background-color: var(--ion-color-light);
+  border-radius: 20px 20px 0% 0%;
+  position: absolute;
+  width: 100%;
+  color: var(--ion-color-dark);
+  padding-left: 5%;
+  padding-right: 5%;
+  max-height: 60vh;
+  min-height: 50%;
+  overflow-y: auto;
+  bottom: 0;
+}
+
+.toggle-text {
+  text-align: center;
+  margin-top: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--ion-color-blue-dark);
+}
+
+.toggle-text a {
+  text-decoration: none;
+  font-weight: 700;
+}

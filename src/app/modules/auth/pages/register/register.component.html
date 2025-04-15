@@ -14,7 +14,7 @@
     <div class="image-circle" (click)="selectImage()">
       <img
         *ngIf="selectedImage"
-        [src]="registerForm.get('base_64')?.value"
+        [src]="registerForm.get('imagebs64')?.value"
         alt="User Image"
       />
       <div *ngIf="!selectedImage" class="upload-icon"></div>
@@ -29,36 +29,30 @@
       hidden
       accept="image/*"
     />
-    <p class="error-text" *ngIf="getErrorMessage('first_name')">
-      {{ getErrorMessage("img_user") }}
+    <p class="error-text" *ngIf="getErrorMessage('imagebs64')">
+      {{ getErrorMessage("imagebs64") }}
     </p>
   </div>
 
   <div class="custom-input full-width">
-    <label for="first_name">Nombres</label>
-    <input id="first_name" type="text" formControlName="first_name" required />
-    <p class="error-text" *ngIf="getErrorMessage('first_name')">
-      {{ getErrorMessage("first_name") }}
+    <label for="name">Nombres</label>
+    <input id="name" type="text" formControlName="name" required />
+    <p class="error-text" *ngIf="getErrorMessage('name')">
+      {{ getErrorMessage("name") }}
     </p>
   </div>
   <div class="custom-input full-width">
-    <label for="last_name">Apellidos</label>
-    <input id="last_name" type="text" formControlName="last_name" required />
-    <p class="error-text" *ngIf="getErrorMessage('last_name')">
-      {{ getErrorMessage("last_name") }}
+    <label for="lastname">Apellidos</label>
+    <input id="lastname" type="text" formControlName="lastname" required />
+    <p class="error-text" *ngIf="getErrorMessage('lastname')">
+      {{ getErrorMessage("lastname") }}
     </p>
   </div>
-  <p class="error-text" *ngIf="getErrorMessage('first_name')">
-    {{ getErrorMessage("first_name") }}
-  </p>
-  <p class="error-text" *ngIf="getErrorMessage('last_name')">
-    {{ getErrorMessage("last_name") }}
-  </p>
 
   <div class="form-row">
     <div class="custom-input half-width">
-      <label for="identification_type">Tipo de Identificación</label>
-      <select id="identification_type" formControlName="identification_type">
+      <label for="typeid">Tipo de Identificación</label>
+      <select id="typeid" formControlName="typeid">
         <option value="CC">Cédula</option>
         <option value="TI">Tarjeta de Identidad</option>
         <option value="PASSPORT">Pasaporte</option>
@@ -67,15 +61,15 @@
     </div>
 
     <div class="custom-input half-width">
-      <label for="identification_number">Número de Identificación</label>
+      <label for="numberid">Número de Identificación</label>
       <input
-        id="identification_number"
+        id="numberid"
         type="text"
-        formControlName="identification_number"
+        formControlName="numberid"
         required
       />
-      <p class="error-text" *ngIf="getErrorMessage('identification_number')">
-        {{ getErrorMessage("identification_number") }}
+      <p class="error-text" *ngIf="getErrorMessage('numberid')">
+        {{ getErrorMessage("numberid") }}
       </p>
     </div>
   </div>
@@ -107,8 +101,6 @@
     </div>
   </div>
 
-
-
   <div class="custom-input full-width">
     <label for="address">Dirección</label>
     <input id="address" type="text" formControlName="address" required />
@@ -125,15 +117,14 @@
     </div>
 
     <div class="custom-input half-width">
-      <label for="city">Ciudad</label>
-      <select id="city" formControlName="city">
+      <label for="city_id">Ciudad</label>
+      <select id="city_id" formControlName="city_id">
         <option *ngFor="let city of cities" [value]="city.id">
           {{ city.name }}
         </option>
       </select>
     </div>
   </div>
-
 
   <div class="custom-input full-width">
     <label for="phone">Teléfono</label>
@@ -174,7 +165,6 @@
     <p class="error-text" *ngIf="registerForm.get('confirmPassword')?.hasError('mismatch')">
       Las contraseñas no coinciden.
     </p>
-
   </div>
 
   <div class="custom-checkbox">

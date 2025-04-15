@@ -8,6 +8,23 @@
   max-height: 500px;
 }
 
+/* Para Webkit (Chrome, Safari, Edge, Opera) */
+.card-container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Para Firefox */
+.card-container {
+  scrollbar-width: none;
+}
+
+/* Para IE y Edge antiguo */
+.card-container {
+  -ms-overflow-style: none;
+}
+
 .card {
   background-color: var(--ion-color-card);
   border-radius: 100px;

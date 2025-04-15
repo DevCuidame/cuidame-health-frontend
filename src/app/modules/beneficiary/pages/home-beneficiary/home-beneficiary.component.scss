@@ -4,25 +4,48 @@ ion-content {
 
 .container {
   padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .scrollable-content {
   flex: 1;
   overflow-y: auto;
   max-height: calc(100vh - 300px);
+  padding-bottom: 80px;
 }
-.container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
 
 // ----------------------------- Options Container -----------------------------------
 
 .options-container {
   display: flex;
   justify-content: center;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  opacity: 1;
+  transform: translateY(0);
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  &.hidden {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+    display: none;
+  }
+
+  &.fade-in {
+    animation: fadeInTop 0.5s ease forwards;
+  }
+
+  &.fade-out {
+    animation: fadeOutTop 0.5s ease forwards;
+    pointer-events: none;
+  }
 }
 
 .options {
@@ -34,6 +57,7 @@ ion-content {
   margin: 0 0 20px 0;
   position: relative;
   top: -5px;
+  width: 100%;
 }
 
 .options div {
@@ -45,11 +69,19 @@ ion-content {
   padding: 15px 8px;
   border-radius: 0px 0 8px 8px;
   cursor: pointer;
-  font-size: 1rem;
   text-align: center;
   min-width: 80px;
   font-size: clamp(9px, 1vw, 16px);
-  transition: background 0.3sease;
+  transition: all 0.3s ease;
+
+  &:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
 }
 
 .option-icon {
@@ -57,9 +89,10 @@ ion-content {
 }
 
 .selected {
-  background: var(--ion-color-primary);
+  background: var(--ion-color-primary) !important;
   color: white;
   font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .options div:nth-child(even) {
@@ -70,8 +103,41 @@ ion-content {
   background-color: var(--ion-color-primary);
 }
 
-.bottom{
+.bottom {
   position: absolute;
-    width: 100%;
-    bottom: 0;
+  width: 100%;
+  bottom: 0;
+  z-index: 6;
+}
+
+@keyframes fadeInTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutTop {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@media (max-width: 480px) {
+  .options {
+    gap: 10px;
+  }
+
+  .scrollable-content {
+    max-height: calc(100vh - 200px);
+  }
 }

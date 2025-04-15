@@ -1,0 +1,110 @@
+<!-- health-services.component.html -->
+<div class="data-container">
+  <div
+    class="card-container"
+    [ngClass]="{'active': activeCard === 'medicine'}"
+    (click)="selectCard('medicine'); goToVeterinarians()"
+  >
+    <div class="card">
+      <div class="background-gradient"></div>
+      <ion-img
+        class="background-img"
+        src="/assets/health/care/medicine.svg"
+        alt="Medicina General"
+      ></ion-img>
+      <div class="title">
+        <label>Medicina General</label>
+      </div>
+    </div>
+  </div>
+  
+  <div
+    class="card-container"
+    [ngClass]="{'active': activeCard === 'psychology'}"
+    (click)="selectCard('psychology'); openWhatsappBath()"
+  >
+    <div class="card">
+      <div class="background-gradient"></div>
+      <ion-img
+        class="background-img"
+        src="/assets/health/care/psychology.svg"
+        alt="Psicología"
+      ></ion-img>
+      <div class="title">
+        <label>Psicología</label>
+      </div>
+    </div>
+  </div>
+  
+  <div
+    class="card-container"
+    [ngClass]="{'active': activeCard === 'laboratory'}"
+    (click)="selectCard('laboratory'); openWhatsappHotel()"
+  >
+    <div class="card">
+      <div class="background-gradient"></div>
+      <ion-img
+        class="background-img"
+        src="/assets/health/care/laboratory.svg"
+        alt="Laboratorio"
+      ></ion-img>
+      <div class="title">
+        <label>Laboratorio</label>
+      </div>
+    </div>
+  </div>
+  
+  <div
+    class="card-container"
+    [ngClass]="{'active': activeCard === 'dentistry'}"
+    (click)="selectCard('dentistry'); openWhatsappSpa()"
+  >
+    <div class="card">
+      <div class="background-gradient"></div>
+      <ion-img
+        class="background-img"
+        src="/assets/health/care/dentistry.svg"
+        alt="Odontología"
+      ></ion-img>
+      <div class="title">
+        <label>Odontología</label>
+      </div>
+    </div>
+  </div>
+  
+  <div
+    class="card-container"
+    [ngClass]="{'active': activeCard === 'nursing'}"
+    (click)="selectCard('nursing'); openWhatsappSpa()"
+  >
+    <div class="card">
+      <div class="background-gradient"></div>
+      <ion-img
+        class="background-img"
+        src="/assets/health/care/nursing.svg"
+        alt="Cuidador y Enfermería"
+      ></ion-img>
+      <div class="title">
+        <label>Cuidador y Enfermería</label>
+      </div>
+    </div>
+  </div>
+  
+  <div
+    class="card-container"
+    [ngClass]="{'active': activeCard === 'procedures'}"
+    (click)="selectCard('procedures'); openWhatsappSpa()"
+  >
+    <div class="card">
+      <div class="background-gradient"></div>
+      <ion-img
+        class="background-img"
+        src="/assets/health/care/procedures.svg"
+        alt="Procedimientos"
+      ></ion-img>
+      <div class="title">
+        <label class="small-text">Procedimientos</label>
+      </div>
+    </div>
+  </div>
+</div>

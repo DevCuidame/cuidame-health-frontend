@@ -1,15 +1,38 @@
-// src/app/modules/beneficiary/components/vitals/components/metrics-chart/metrics-chart.component.ts
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+// metrics-chart.component.ts
+import { Component, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ApexAxisChartSeries,
+  ApexChart,
+  ApexXAxis,
+  ApexDataLabels,
+  ApexTooltip,
+  ApexStroke,
+  ApexTitleSubtitle,
+  ApexLegend,
+  ApexTheme,
+  ChartComponent,
+  NgApexchartsModule
+} from 'ng-apexcharts';
 import { MetricsFilterService } from 'src/app/core/services/Metrics/metricsFilter.service';
-import { IonicModule } from '@ionic/angular';
+
+export type ChartOptions = {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  xaxis: ApexXAxis;
+  stroke: ApexStroke;
+  tooltip: ApexTooltip;
+  dataLabels: ApexDataLabels;
+  title: ApexTitleSubtitle;
+  colors: string[];
+  legend: ApexLegend;
+  theme: ApexTheme;
+};
 
 @Component({
   selector: 'app-metrics-chart',
-  standalone: true,
-  imports: [CommonModule, IonicModule],
   template: `
-    <div class="chart-container">
+    <div class="metrics-chart-container">
       <div class="filters">
         <button 
           [class.active]="currentFilter === 'day'" 
@@ -32,20 +55,18 @@ import { IonicModule } from '@ionic/angular';
       </div>
 
       <div *ngIf="hasData" class="chart-area">
-        <!-- Aquí iría el componente de gráfico real -->
-        <!-- Por ahora, mostramos un placeholder del gráfico -->
-        <div class="chart-placeholder">
-          <div class="chart-bars">
-            <div *ngFor="let value of chartData" 
-                 class="chart-bar" 
-                 [style.height.%]="calculateBarHeight(value)">
-              <span class="bar-value">{{ formatValue(value) }}</span>
-            </div>
-          </div>
-          <div class="chart-labels">
-            <span *ngFor="let label of chartLabels">{{ label }}</span>
-          </div>
-        </div>
+        <apx-chart
+          [series]="chartOptions.series"
+          [chart]="chartOptions.chart"
+          [xaxis]="chartOptions.xaxis"
+          [title]="chartOptions.title"
+          [colors]="chartOptions.colors || []"
+          [stroke]="chartOptions.stroke"
+          [tooltip]="chartOptions.tooltip"
+          [dataLabels]="chartOptions.dataLabels"
+          [legend]="chartOptions.legend"
+          [theme]="chartOptions.theme"
+        ></apx-chart>
       </div>
       
       <div *ngIf="!hasData" class="no-data">
@@ -54,7 +75,7 @@ import { IonicModule } from '@ionic/angular';
     </div>
   `,
   styles: [`
-    .chart-container {
+    .metrics-chart-container {
       background-color: white;
       border-radius: 12px;
       padding: 15px;
@@ -124,55 +145,11 @@ import { IonicModule } from '@ionic/angular';
       font-weight: 600;
       color: #1a4c73;
     }
-    
+
     .chart-area {
-      height: 250px;
+      height: 350px;
       position: relative;
       margin-top: 20px;
-    }
-    
-    .chart-placeholder {
-      height: 200px;
-      width: 100%;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .chart-bars {
-      display: flex;
-      justify-content: space-around;
-      align-items: flex-end;
-      height: 180px;
-      width: 100%;
-      flex-grow: 1;
-    }
-    
-    .chart-bar {
-      width: 30px;
-      background-image: linear-gradient(to top, #4fd1c5, #2b6cb0);
-      border-radius: 4px 4px 0 0;
-      position: relative;
-      transition: all 0.5s ease;
-      margin: 0 2px;
-    }
-    
-    .bar-value {
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 12px;
-      color: #1a4c73;
-      font-weight: bold;
-    }
-    
-    .chart-labels {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
-      font-size: 12px;
-      color: #666;
     }
     
     .no-data {
@@ -186,19 +163,12 @@ import { IonicModule } from '@ionic/angular';
       border-radius: 8px;
       margin-top: 20px;
     }
-    
-    /* Animación para las barras del gráfico */
-    @keyframes grow-up {
-      from { height: 0; }
-      to { height: 100%; }
-    }
-    
-    .chart-bar {
-      animation: grow-up 0.8s ease;
-    }
-  `]
+  `],
+  standalone: true,
+  imports: [CommonModule, NgApexchartsModule]
 })
-export class MetricsChartComponent implements OnInit, OnChanges {
+export class MetricsChartComponent implements OnInit {
+  @ViewChild("chart") chart!: ChartComponent;
   @Input() title: string = '';
   @Input() bloodPressureMetrics: any[] = [];
   @Input() bloodGlucoseMetrics: any[] = [];
@@ -206,15 +176,98 @@ export class MetricsChartComponent implements OnInit, OnChanges {
   @Input() heartRateMetrics: any[] = [];
   @Input() respiratoryRateMetrics: any[] = [];
 
+  public chartOptions: ChartOptions;
   public currentFilter: 'day' | 'week' | 'month' | 'year' = 'day';
   public currentPeriod: Date = new Date();
   public currentPeriodLabel: string = '';
-  public chartData: number[] = [];
-  public chartLabels: string[] = [];
   public hasData: boolean = false;
-  public maxValue: number = 0;
 
-  constructor(private metricsFilterService: MetricsFilterService) {}
+  constructor(private metricsFilterService: MetricsFilterService) {
+    // Configuración base del chart
+    this.chartOptions = {
+      series: [{
+        name: '',
+        data: []
+      }],
+      chart: {
+        height: 350,
+        type: "area",
+        animations: {
+          enabled: true,
+          speed: 800,
+          animateGradually: {
+            enabled: true,
+            delay: 150
+          },
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        },
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: true,
+            zoom: true,
+            zoomin: true,
+            zoomout: true,
+            pan: true,
+            reset: true
+          }
+        },
+        dropShadow: {
+          enabled: true,
+          color: '#000',
+          top: 18,
+          left: 7,
+          blur: 10,
+          opacity: 0.2
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: "smooth",
+        width: 3
+      },
+      xaxis: {
+        categories: []
+      },
+      tooltip: {
+        x: {
+          format: "dd MMM, yyyy"
+        },
+        y: {
+          formatter: function(val) {
+            return val + " mmHg";
+          }
+        }
+      },
+      title: {
+        text: "",
+        align: 'left',
+        margin: 20,
+        style: {
+          fontSize: '20px',
+          fontWeight: 'bold',
+          color: '#236596'
+        }
+      },
+      legend: {
+        position: 'top',
+        horizontalAlign: 'right',
+        floating: true,
+        offsetY: -25,
+        offsetX: -5
+      },
+      theme: {
+        mode: 'light'
+      },
+      colors: ['#236596', '#F58418']
+    };
+  }
 
   ngOnInit(): void {
     this.updateChart();
@@ -237,208 +290,165 @@ export class MetricsChartComponent implements OnInit, OnChanges {
   }
 
   navigate(direction: 'prev' | 'next'): void {
-    const isForward = direction === 'next';
-    const adjustment = isForward ? 1 : -1;
-    
-    switch (this.currentFilter) {
-      case 'day':
-        this.currentPeriod.setDate(this.currentPeriod.getDate() + adjustment);
-        break;
-      case 'week':
-        this.currentPeriod.setDate(this.currentPeriod.getDate() + (adjustment * 7));
-        break;
-      case 'month':
-        this.currentPeriod.setMonth(this.currentPeriod.getMonth() + adjustment);
-        break;
-      case 'year':
-        this.currentPeriod.setFullYear(this.currentPeriod.getFullYear() + adjustment);
-        break;
+    if (this.currentFilter === 'day') {
+      this.currentPeriod.setDate(
+        this.currentPeriod.getDate() + (direction === 'next' ? 1 : -1)
+      );
+    } else if (this.currentFilter === 'week') {
+      this.currentPeriod.setDate(
+        this.currentPeriod.getDate() + (direction === 'next' ? 7 : -7)
+      );
+    } else if (this.currentFilter === 'month') {
+      this.currentPeriod.setMonth(
+        this.currentPeriod.getMonth() + (direction === 'next' ? 1 : -1)
+      );
+    } else if (this.currentFilter === 'year') {
+      this.currentPeriod.setFullYear(
+        this.currentPeriod.getFullYear() + (direction === 'next' ? 1 : -1)
+      );
     }
-    
     this.updateChart();
   }
 
   updateChart(): void {
-    // Obtener los datos métricos correctos según el título
-    const metrics = this.getMetricsByTitle();
-    
-    // Aplicar filtrado según el período seleccionado
-    const filteredData = this.filterMetricsByPeriod(metrics);
-    
-    // Actualizar el estado de filtrado compartido
+    let filteredData: any[] = [];
+
+    // Filtrar los datos según el filtro seleccionado
+    if (this.currentFilter === 'day') {
+      this.currentPeriodLabel = this.currentPeriod.toLocaleDateString();
+      filteredData = this.filterByDay(this.currentPeriod);
+    } else if (this.currentFilter === 'week') {
+      this.currentPeriodLabel = `Semana del ${this.getStartOfWeek(
+        this.currentPeriod
+      ).toLocaleDateString()}`;
+      filteredData = this.filterByWeek(this.currentPeriod);
+    } else if (this.currentFilter === 'month') {
+      this.currentPeriodLabel = this.currentPeriod.toLocaleString('default', {
+        month: 'long',
+        year: 'numeric',
+      });
+      filteredData = this.filterByMonth(this.currentPeriod);
+    } else if (this.currentFilter === 'year') {
+      this.currentPeriodLabel = this.currentPeriod.getFullYear().toString();
+      filteredData = this.filterByYear(this.currentPeriod);
+    }
+
+    // Actualizar las métricas filtradas en el servicio
     this.metricsFilterService.updateFilteredMetrics(filteredData);
-    
-    // Actualizar la etiqueta del período actual
-    this.updatePeriodLabel();
-    
-    // Si no hay datos, marcar hasData como falso
-    if (filteredData.length === 0) {
+
+    // Si no hay datos filtrados, mostrar un mensaje o una gráfica vacía
+    if (!filteredData || filteredData.length === 0) {
       this.hasData = false;
-      this.chartData = [];
-      this.chartLabels = [];
+      this.chartOptions.series = [{
+        name: '',
+        data: []
+      }];
+      this.chartOptions.xaxis.categories = [];
       return;
     }
 
-    // Preparar datos para el gráfico
-    this.prepareChartData(filteredData);
-    
-    // Indicar que hay datos para mostrar
     this.hasData = true;
-  }
 
-  getMetricsByTitle(): any[] {
-    switch (this.title) {
-      case 'Presión Arterial':
-        return this.bloodPressureMetrics;
-      case 'Frecuencia Cardiaca':
-        return this.heartRateMetrics;
-      case 'Frecuencia Respiratoria':
-        return this.respiratoryRateMetrics;
-      case 'Glucosa en la Sangre':
-        return this.bloodGlucoseMetrics;
-      case 'Oxigeno en la sangre':
-        return this.bloodOxygenMetrics;
-      default:
-        return [];
-    }
-  }
-
-  filterMetricsByPeriod(metrics: any[]): any[] {
-    if (!metrics || metrics.length === 0) {
-      return [];
-    }
-
-    const today = this.currentPeriod;
-    
-    switch (this.currentFilter) {
-      case 'day': {
-        // Filtrar métricas del día actual
-        const day = today.toISOString().split('T')[0];
-        return metrics.filter(metric => 
-          new Date(metric.date).toISOString().split('T')[0] === day
-        );
-      }
-      
-      case 'week': {
-        // Filtrar métricas de la semana actual
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-        startOfWeek.setHours(0, 0, 0, 0);
-        
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        endOfWeek.setHours(23, 59, 59, 999);
-        
-        return metrics.filter(metric => {
-          const date = new Date(metric.date);
-          return date >= startOfWeek && date <= endOfWeek;
-        });
-      }
-      
-      case 'month': {
-        // Filtrar métricas del mes actual
-        const year = today.getFullYear();
-        const month = today.getMonth();
-        
-        return metrics.filter(metric => {
-          const date = new Date(metric.date);
-          return date.getFullYear() === year && date.getMonth() === month;
-        });
-      }
-      
-      case 'year': {
-        // Filtrar métricas del año actual
-        const year = today.getFullYear();
-        
-        return metrics.filter(metric => 
-          new Date(metric.date).getFullYear() === year
-        );
-      }
-      
-      default:
-        return metrics;
-    }
-  }
-
-  updatePeriodLabel(): void {
-    const options: Intl.DateTimeFormatOptions = { 
-      day: '2-digit', 
-      month: 'short',
-      year: 'numeric'
-    };
-    
-    switch (this.currentFilter) {
-      case 'day':
-        this.currentPeriodLabel = this.currentPeriod.toLocaleDateString(undefined, options);
-        break;
-        
-      case 'week': {
-        const startOfWeek = new Date(this.currentPeriod);
-        startOfWeek.setDate(this.currentPeriod.getDate() - this.currentPeriod.getDay());
-        
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        
-        const startStr = startOfWeek.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
-        const endStr = endOfWeek.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
-        
-        this.currentPeriodLabel = `${startStr} - ${endStr}`;
-        break;
-      }
-        
-      case 'month':
-        this.currentPeriodLabel = this.currentPeriod.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-        break;
-        
-      case 'year':
-        this.currentPeriodLabel = this.currentPeriod.getFullYear().toString();
-        break;
-    }
-  }
-
-  prepareChartData(filteredData: any[]): void {
-    // Ordenar datos por fecha
-    const sortedData = [...filteredData].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    // Formatear fechas para el eje X
+    const formattedCategories = filteredData.map((metric) =>
+      this.formatDateForFilter(new Date(metric.date))
     );
-    
-    // Limitar a máximo 7 puntos de datos para mejor visualización
-    const dataPoints = this.limitDataPoints(sortedData, 7);
-    
-    // Preparar etiquetas y valores según el tipo de métrica
-    this.chartLabels = dataPoints.map(item => this.formatDateLabel(new Date(item.date)));
-    
+
+    // Configurar la gráfica según el tipo de métrica
     if (this.title === 'Presión Arterial') {
-      // Para presión arterial, mostrar valores sistólicos
-      this.chartData = dataPoints.map(item => item.systolic);
-      this.maxValue = Math.max(...this.chartData) * 1.2; // 20% más para margen visual
-    } else {
-      // Para otras métricas, mostrar valores de tasa
-      this.chartData = dataPoints.map(item => item.rate);
-      this.maxValue = Math.max(...this.chartData) * 1.2; // 20% más para margen visual
+      this.chartOptions.series = [
+        {
+          name: 'Sistólica',
+          data: filteredData.map((metric) => metric.systolic),
+        },
+        {
+          name: 'Diastólica',
+          data: filteredData.map((metric) => metric.diastolic),
+        },
+      ];
+      this.chartOptions.xaxis.categories = formattedCategories;
+      this.chartOptions.colors = ['#236596', '#F58418'];
+      this.chartOptions.tooltip = {
+        ...this.chartOptions.tooltip,
+        y: {
+          formatter: function(val) {
+            return val + " mmHg";
+          }
+        }
+      };
+    } else if (this.title === 'Frecuencia Cardiaca') {
+      this.chartOptions.series = [
+        {
+          name: 'Frecuencia Cardiaca',
+          data: filteredData.map((metric) => metric.rate),
+        },
+      ];
+      this.chartOptions.xaxis.categories = formattedCategories;
+      this.chartOptions.colors = ['#FF5733'];
+      this.chartOptions.tooltip = {
+        ...this.chartOptions.tooltip,
+        y: {
+          formatter: function(val) {
+            return val + " ppm";
+          }
+        }
+      };
+    } else if (this.title === 'Frecuencia Respiratoria') {
+      this.chartOptions.series = [
+        {
+          name: 'Frecuencia Respiratoria',
+          data: filteredData.map((metric) => metric.rate),
+        },
+      ];
+      this.chartOptions.xaxis.categories = formattedCategories;
+      this.chartOptions.colors = ['#33FF57'];
+      this.chartOptions.tooltip = {
+        ...this.chartOptions.tooltip,
+        y: {
+          formatter: function(val) {
+            return val + " rpm";
+          }
+        }
+      };
+    } else if (this.title === 'Glucosa en la Sangre') {
+      this.chartOptions.series = [
+        {
+          name: 'Glucosa en la Sangre',
+          data: filteredData.map((metric) => metric.rate),
+        },
+      ];
+      this.chartOptions.xaxis.categories = formattedCategories;
+      this.chartOptions.colors = ['#3357FF'];
+      this.chartOptions.tooltip = {
+        ...this.chartOptions.tooltip,
+        y: {
+          formatter: function(val) {
+            return val + " mg/dL";
+          }
+        }
+      };
+    } else if (this.title === 'Oxigeno en la sangre') {
+      this.chartOptions.series = [
+        {
+          name: 'Oxigeno en la sangre',
+          data: filteredData.map((metric) => metric.rate),
+        },
+      ];
+      this.chartOptions.xaxis.categories = formattedCategories;
+      this.chartOptions.colors = ['#9933FF'];
+      this.chartOptions.tooltip = {
+        ...this.chartOptions.tooltip,
+        y: {
+          formatter: function(val) {
+            return val + "%";
+          }
+        }
+      };
     }
   }
 
-  limitDataPoints(data: any[], maxPoints: number): any[] {
-    if (data.length <= maxPoints) {
-      return data;
-    }
-    
-    // Si hay más puntos que el máximo, tomar muestras distribuidas
-    const result = [];
-    const step = Math.floor(data.length / maxPoints);
-    
-    for (let i = 0; i < maxPoints - 1; i++) {
-      result.push(data[i * step]);
-    }
-    
-    // Asegurar que el último punto siempre esté incluido
-    result.push(data[data.length - 1]);
-    
-    return result;
-  }
-
-  formatDateLabel(date: Date): string {
+  // Formatea la fecha según el tipo de filtro seleccionado
+  private formatDateForFilter(date: Date): string {
     switch (this.currentFilter) {
       case 'day':
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -449,28 +459,68 @@ export class MetricsChartComponent implements OnInit, OnChanges {
       case 'year':
         return date.toLocaleDateString([], { month: 'short' });
       default:
-        return '';
+        return date.toLocaleDateString();
     }
   }
 
-  calculateBarHeight(value: number): number {
-    if (!this.maxValue) return 0;
-    return (value / this.maxValue) * 100;
+  filterByDay(date: Date): any[] {
+    const day = date.toISOString().split('T')[0];
+    return this.getMetrics().filter(
+      (metric) => new Date(metric.date).toISOString().split('T')[0] === day
+    );
   }
 
-  formatValue(value: number): string {
+  filterByWeek(date: Date): any[] {
+    const startOfWeek = this.getStartOfWeek(date);
+    const endOfWeek = this.getEndOfWeek(date);
+    return this.getMetrics().filter((metric) => {
+      const metricDate = new Date(metric.date);
+      return metricDate >= startOfWeek && metricDate <= endOfWeek;
+    });
+  }
+
+  filterByMonth(date: Date): any[] {
+    const month = date.getMonth();
+    const year = date.getFullYear();
+    return this.getMetrics().filter((metric) => {
+      const metricDate = new Date(metric.date);
+      return (
+        metricDate.getMonth() === month && metricDate.getFullYear() === year
+      );
+    });
+  }
+
+  filterByYear(date: Date): any[] {
+    const year = date.getFullYear();
+    return this.getMetrics().filter(
+      (metric) => new Date(metric.date).getFullYear() === year
+    );
+  }
+
+  getStartOfWeek(date: Date): Date {
+    const start = new Date(date);
+    const day = start.getDay();
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    return new Date(start.setDate(diff));
+  }
+
+  getEndOfWeek(date: Date): Date {
+    const startOfWeek = this.getStartOfWeek(date);
+    return new Date(startOfWeek.setDate(startOfWeek.getDate() + 6));
+  }
+
+  getMetrics(): any[] {
     if (this.title === 'Presión Arterial') {
-      // Para presión arterial
-      return value.toString();
+      return this.bloodPressureMetrics;
+    } else if (this.title === 'Frecuencia Cardiaca') {
+      return this.heartRateMetrics;
+    } else if (this.title === 'Frecuencia Respiratoria') {
+      return this.respiratoryRateMetrics;
     } else if (this.title === 'Glucosa en la Sangre') {
-      // Para glucosa
-      return `${value}`;
+      return this.bloodGlucoseMetrics;
     } else if (this.title === 'Oxigeno en la sangre') {
-      // Para oxígeno
-      return `${value}%`;
-    } else {
-      // Para frecuencias cardíaca y respiratoria
-      return value.toString();
+      return this.bloodOxygenMetrics;
     }
+    return [];
   }
 }

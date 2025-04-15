@@ -1,22 +1,30 @@
-<div class="bottom-options">
-    <div class="o-button" (click)="selectOption('parameters')">
-      <fa-icon [icon]="faFileWaveform"></fa-icon>
-      <p>Parámetros Médicos</p>
-    </div>
-    <div class="o-button" (click)="selectOption('servicehealth')">
-      <fa-icon [icon]="faBriefcase"></fa-icon>
-      <p>Servicios de Salud</p>
-    </div>
-    <div class="o-button" (click)="selectOption('medicament')">
-      <fa-icon [icon]="faSyringe"></fa-icon>
-      <p>Control de Medicamento</p>
-    </div>
-    <div class="o-button">
-      <fa-icon [icon]="faAddressBook" style="color: #707070;"></fa-icon>
-      <p>Control Citas</p>
-    </div>
-    <div class="o-button">
-      <fa-icon [icon]="faUserInjured" style="color: #707070;"></fa-icon>
-      <p>Seguimiento Sintomas</p>
-    </div>
+<div 
+  class="bottom-options" 
+  [ngClass]="{
+    'visible': isVisible && !isAnimating,
+    'hidden': !isVisible && !isAnimating,
+    'fade-in': isVisible && isAnimating,
+    'fade-out': !isVisible && isAnimating
+  }"
+>
+  <div class="o-button" (click)="selectOption('parameters')">
+    <fa-icon [icon]="faFileWaveform"></fa-icon>
+    <p>Parámetros Médicos</p>
   </div>
+  <div class="o-button" (click)="selectOption('servicehealth')">
+    <fa-icon [icon]="faBriefcase"></fa-icon>
+    <p>Servicios de Salud</p>
+  </div>
+  <div class="o-button" (click)="selectOption('medicament')">
+    <fa-icon [icon]="faSyringe"></fa-icon>
+    <p>Control de Medicamento</p>
+  </div>
+  <div class="o-button">
+    <fa-icon [icon]="faAddressBook" style="color: #707070;"></fa-icon>
+    <p>Control Citas</p>
+  </div>
+  <div class="o-button">
+    <fa-icon [icon]="faUserInjured" style="color: #707070;"></fa-icon>
+    <p>Seguimiento Sintomas</p>
+  </div>
+</div>

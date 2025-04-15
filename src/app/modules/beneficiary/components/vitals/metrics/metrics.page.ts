@@ -134,7 +134,7 @@ import { faHeartPulse, faDroplet, faWaveSquare, faCubesStacked, faLungs } from '
       display: flex;
       flex-direction: column;
       gap: 16px;
-      padding: 0 16px;
+      padding: 20px 0 0 0;
       margin-bottom: 24px;
     }
     

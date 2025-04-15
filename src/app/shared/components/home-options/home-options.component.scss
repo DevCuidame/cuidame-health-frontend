@@ -2,12 +2,29 @@
   display: flex;
   padding: 5px;
   gap: 5px;
-  animation: fadeIn 0.5s ease forwards;
-}
-
-.bottom-options.hidden {
-  animation: fadeOut 0.5s ease forwards;
-  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  opacity: 1;
+  transform: translateY(0);
+  
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  &.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+  }
+  
+  &.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+  
+  &.fade-out {
+    animation: fadeOut 0.5s ease forwards;
+    pointer-events: none;
+  }
 }
 
 .o-button {
@@ -19,24 +36,88 @@
   border-radius: 20px;
   width: 100%;
   min-width: 60px;
-  // max-width: 66px;
   background: #fff;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-  padding: 10px 0;
+  padding: 10px 5px;
   cursor: pointer;
   gap: 5px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover, &:active {
+    transform: translateY(-2px);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  fa-icon {
+    color: #f58419;
+    font-size: 1.75rem;
+    transition: transform 0.2s ease;
+  }
+  
+  p {
+    color: #236596;
+    font-family: "Quicksand", sans-serif;
+    font-weight: 500 !important;
+    font-size: clamp(11px, 2.5vw, 14px); 
+    text-align: center;
+    margin: 0;
+    line-height: 1.2;
+  }
 }
 
-.o-button fa-icon {
-  color: #f58419;
-  font-size: 2rem;
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.o-button p {
-  color: #236596;
-  font-family: "Quicksand Light", sans-serif;
-  font-weight: 500 !important;
-  font-size: 2.5vw;
-  text-align: center;
-  margin: 0;
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+@media (max-width: 400px) {
+  .bottom-options {
+    gap: 3px;
+  }
+  
+  .o-button {
+    padding: 8px 2px;
+    min-width: 50px;
+    
+    fa-icon {
+      font-size: 1.5rem;
+    }
+    
+    p {
+      font-size: clamp(9px, 2.5vw, 12px);
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .bottom-options {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .o-button p {
+    font-size: 14px; 
+  }
 }

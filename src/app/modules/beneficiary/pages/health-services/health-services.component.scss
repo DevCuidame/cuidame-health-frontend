@@ -1,0 +1,158 @@
+// health-services.component.scss
+.data-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  justify-content: center;
+  padding: 20px 10px 100px 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s ease-in-out;
+  
+  &:active {
+    transform: translateY(4px);
+  }
+  
+  &.active {
+    transform: scale(0.98);
+  }
+}
+
+.card {
+  width: 100%;
+  height: 220px;
+  position: relative;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 2;
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.25);
+  }
+}
+
+.background-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.3);
+  transition: transform 0.3s ease;
+}
+
+.card-container:hover .background-img {
+  transform: scale(1.4);
+}
+
+.background-gradient {
+  position: absolute;
+  height: 60%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(249, 105, 16, 0.9), transparent);
+  z-index: 1;
+  opacity: 0.85;
+  transition: opacity 0.3s ease;
+}
+
+.card-container:hover .background-gradient {
+  opacity: 0.9;
+}
+
+.title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 15px;
+  padding: 0 15px;
+  z-index: 3;
+  
+  label {
+    display: block;
+    text-align: left;
+    font-family: "Quicksand", sans-serif;
+    font-weight: bold;
+    color: #fff;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  
+  .small-text {
+    font-size: 1.1rem;
+  }
+}
+
+/* Media queries para responsividad */
+@media (max-width: 768px) {
+  .data-container {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  
+  .card {
+    height: 200px;
+  }
+  
+  .title label {
+    font-size: 1.1rem;
+  }
+  
+  .title .small-text {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .data-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .card {
+    height: 180px;
+  }
+}
+
+/* Eliminar ajustes de posicionamiento específicos que causaban inconsistencias */
+/* Los valores -55px, -45px, etc. se manejan ahora de manera uniforme con 'bottom: 15px' */
+
+// Agrega una ripple animation para mejorar la experiencia de usuario
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  pointer-events: none;
+  z-index: 3;
+}

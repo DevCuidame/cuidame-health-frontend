@@ -4,7 +4,13 @@ ion-content {
 
 .user-name {
   font-weight: bold;
+  color: var(--ion-color-tertiary);
 }
+
+.box {
+padding: 20px 0 0 0;
+}
+
 
 .plan-content {
   display: flex;

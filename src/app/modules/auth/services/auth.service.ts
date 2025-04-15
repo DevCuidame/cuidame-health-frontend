@@ -59,7 +59,30 @@ export class AuthService {
   }
 
   register(credentials: RegisterData): Observable<any> {
-    return this.http.post(`${apiUrl}api/auth/register`, credentials);
+    return this.http.post(`${apiUrl}api/auth/register`, credentials)
+      .pipe(
+        catchError(error => {
+          let errorMessage = 'Error en el registro';
+          
+          if (error.error) {
+            if (typeof error.error === 'string' && error.error.includes('Error:')) {
+              const errorMatch = error.error.match(/Error: ([^<]+)</);
+              if (errorMatch && errorMatch[1]) {
+                errorMessage = errorMatch[1].trim();
+              }
+            } else if (error.error.message) {
+              errorMessage = error.error.message;
+            }
+          }
+          
+          // Devolver un error con formato consistente
+          return throwError(() => ({
+            status: error.status,
+            message: errorMessage,
+            originalError: error
+          }));
+        })
+      );
   }
 
   /**

@@ -33,7 +33,7 @@ import { CustomButtonComponent } from 'src/app/shared/components/custom-button/c
 export class LoginComponent {
   public loginForm: FormGroup;
   public passwordVisible: boolean = false;
-  public buttonBackground: string = 'assets/background/primary_button_bg.svg';
+  public buttonBackground: string = 'assets/background/button_primary_bg.png';
 
   @Output() forgotPassword = new EventEmitter<void>();
 
@@ -56,6 +56,10 @@ export class LoginComponent {
 
   togglePasswordVisibility() {
     this.passwordVisible = !this.passwordVisible;
+  }
+
+  goToRegister() {
+    this.navCtrl.navigateForward('/auth/register');
   }
 
   async login() {

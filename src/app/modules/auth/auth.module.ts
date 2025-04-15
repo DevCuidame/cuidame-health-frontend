@@ -8,23 +8,40 @@ import { AuthGuard, AutoRedirectGuard } from '../../core/guards/auth.guard';
 import { AuthInterceptor } from '../../core/interceptors/auth.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RegisterComponent } from './pages/register/register.component';
+import { LoginComponent } from './pages/login/login.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { AuthService } from './services/auth.service';
+import { SharedModule } from 'src/app/shared/shared.module';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AuthLayoutComponent } from './components/auth-container/auth-layout.component';
 
+// Definición de rutas con layout compartido
 const routes: Routes = [
   {
-    path: 'login',
-    component: AuthContainerComponent,
+    path: '',
+    component: AuthLayoutComponent,
     canActivate: [AutoRedirectGuard],
-  },
-  
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: '**', redirectTo: 'login' }
+    children: [
+      {
+        path: 'login',
+        component: LoginComponent
+      },
+      {
+        path: 'register',
+        component: RegisterComponent
+      },
+      {
+        path: 'reset-password',
+        component: ResetPasswordComponent
+      },
+      {
+        path: '',
+        redirectTo: 'login',
+        pathMatch: 'full'
+      }
+    ]
+  }
 ];
-
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { LoginComponent } from './pages/login/login.component';
-import { SharedModule } from 'src/app/shared/shared.module';
-import { AuthContainerComponent } from './components/auth-container/auth-container.component';
 
 @NgModule({
   declarations: [],
@@ -33,11 +50,8 @@ import { AuthContainerComponent } from './components/auth-container/auth-contain
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
-    RouterModule.forChild(routes),
-    RegisterComponent,
-    LoginComponent,
     SharedModule,
-    AuthContainerComponent,
+    RouterModule.forChild(routes),
   ],
   providers: [
     AuthService,
