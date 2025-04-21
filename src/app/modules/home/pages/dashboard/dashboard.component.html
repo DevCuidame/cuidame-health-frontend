@@ -13,6 +13,16 @@
       </div>
     </div>
 
+    <div class="counter-wrapper">
+      <app-animated-counter
+        [targetValue]="beneficiaries.length"
+        [label]="'Familiares'"
+        [duration]="1500"
+        [showProgress]="false"
+        [showConfetti]="true"
+      ></app-animated-counter>
+    </div>
+
 
     <!-- Beneficiary Cards -->
 

@@ -13,6 +13,7 @@ import { faCrown } from '@fortawesome/free-solid-svg-icons';
 import { BeneficiaryService } from 'src/app/core/services/beneficiary.service';
 import { GreetingComponent } from 'src/app/shared/components/greeting/greeting.component';
 import { Subscription, interval } from 'rxjs';
+import { AnimatedCounterComponent } from 'src/app/shared/components/animated-counter/animated-counter.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,6 +25,7 @@ import { Subscription, interval } from 'rxjs';
     BeneficiaryCardComponent,
     FontAwesomeModule,
     GreetingComponent,
+    AnimatedCounterComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
@@ -38,7 +40,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public selectedIndicatorBorder: string = '20px';
   public showCards: boolean = true;
   public faCrown = faCrown;
-  
+  public count: number = 0;
+
   private subscriptions: Subscription[] = [];
   private refreshInterval: Subscription | null = null;
 
@@ -48,58 +51,61 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private beneficiaryService: BeneficiaryService,
     private cdRef: ChangeDetectorRef,
     private navController: NavController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    
   ) {}
 
   ngOnInit() {
     // Load initial data
     this.loadUserData();
     this.loadBeneficiaries();
-    
+
     // Initial refresh from localStorage
     this.authService.refreshUserData();
-    
+
     // Start automatic refresh cycle
     this.startAutoRefresh();
   }
-  
+
   ngOnDestroy() {
     // Clean up all subscriptions to prevent memory leaks
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
-    
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
+
     // Stop automatic refresh interval
     if (this.refreshInterval) {
       this.refreshInterval.unsubscribe();
     }
   }
-  
+
   startAutoRefresh() {
     this.refreshInterval = interval(30000).subscribe(() => {
       if (this.user?.id) {
         this.refreshFromLocalStorage();
       }
     });
-    
-    document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+
+    document.addEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange.bind(this)
+    );
     window.addEventListener('focus', this.handleWindowFocus.bind(this));
   }
-  
+
   handleVisibilityChange() {
     if (document.visibilityState === 'visible' && this.user?.id) {
       // When tab becomes visible again, refresh from server
       this.refreshUserDataFromServer();
     }
   }
-  
+
   handleWindowFocus() {
     if (this.user?.id) {
       this.refreshUserDataFromServer();
     }
   }
-  
+
   loadUserData() {
     const userSub = this.userService.user$.subscribe((userData) => {
-      
       if (Array.isArray(userData) && userData.length > 0) {
         this.user = userData[0];
       } else {
@@ -113,36 +119,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ) {
         this.user.location = this.user.location[0];
       }
-      
+
       this.updateProfileImage();
       this.cdRef.detectChanges();
     });
-    
+
     this.subscriptions.push(userSub);
   }
-  
+
   /**
    * Loads beneficiaries data from the BeneficiaryService
    */
   loadBeneficiaries() {
-    const beneficiarySub = this.beneficiaryService.beneficiaries$.subscribe((beneficiaries) => {
-      if (Array.isArray(beneficiaries)) {
-        this.beneficiaries = beneficiaries.map((beneficiary) => ({
-          ...beneficiary,
-          image:
-            Array.isArray(beneficiary.image) && beneficiary.image.length > 0
-              ? beneficiary.image[0]
-              : null,
-        }));
-        console.log("🚀 ~ DashboardComponent ~ this.beneficiaries=beneficiaries.map ~ this.beneficiaries:", this.beneficiaries)
+    const beneficiarySub = this.beneficiaryService.beneficiaries$.subscribe(
+      (beneficiaries) => {
+        if (Array.isArray(beneficiaries)) {
+          this.beneficiaries = beneficiaries.map((beneficiary) => ({
+            ...beneficiary,
+            image:
+              Array.isArray(beneficiary.image) && beneficiary.image.length > 0
+                ? beneficiary.image[0]
+                : null,
+          }));
+          this.count = this.beneficiaries.length;
+        }
+
+        this.cdRef.detectChanges();
       }
-      
-      this.cdRef.detectChanges();
-    });
-    
+    );
+
     this.subscriptions.push(beneficiarySub);
   }
-  
+
   /**
    * Updates the profile image URL
    */
@@ -152,7 +160,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         environment.url
       }${this.user.image.image_path.replace(/\\/g, '/')}`;
     } else {
-      this.profileImage = 'assets/images/default_user.png';
+      this.profileImage = 'assets/images/default_profile.png';
     }
   }
 
@@ -161,18 +169,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   refreshUserDataFromServer() {
     if (this.user?.id) {
-      const refreshSub = this.userService.refreshUserData(this.user.id).subscribe(
-        () => {
-        },
-        (error) => {
-          this.refreshFromLocalStorage();
-        }
-      );
-      
+      const refreshSub = this.userService
+        .refreshUserData(this.user.id)
+        .subscribe(
+          () => {},
+          (error) => {
+            this.refreshFromLocalStorage();
+          }
+        );
+
       this.subscriptions.push(refreshSub);
     }
   }
-  
+
   /**
    * Refreshes user data from localStorage
    */

@@ -1,0 +1,20 @@
+<!-- Linear counter style -->
+<div class="counter-component" *ngIf="style === 'linear'">
+    <div class="counter-container">
+      <span class="counter-label" *ngIf="label">{{ label }}:</span>
+      <span class="counter-value" [class.pulsate]="currentValue > 0">{{ displayValue }}</span>
+    </div>
+    <div class="counter-progress" *ngIf="showProgress">
+      <div class="progress-bar" [style.width.%]="progressPercentage"></div>
+    </div>
+  </div>
+  
+  <!-- Circular counter style -->
+  <div class="counter-component-circular" *ngIf="style === 'circular'">
+    <div class="circular-progress" [ngStyle]="circularProgressStyle">
+      <div class="circular-inner">
+        <div class="counter-value" [class.pulsate]="currentValue > 0">{{ displayValue }}</div>
+        <div class="counter-label" *ngIf="label">{{ label }}</div>
+      </div>
+    </div>
+  </div>

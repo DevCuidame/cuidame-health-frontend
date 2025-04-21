@@ -10,7 +10,7 @@ export interface Beneficiary {
   fecha_nacimiento?: string;
   genero: string;          
   ciudad: string;          
-  departamento: string;    
+  departamento: any;    
   direccion: string;       
   rh: string;              
   eps?: string;            

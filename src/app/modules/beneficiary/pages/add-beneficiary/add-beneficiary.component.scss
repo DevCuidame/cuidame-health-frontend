@@ -43,6 +43,28 @@ ion-item {
   --background: #fff;
 }
 
+/* Make items taller when errors are shown */
+ion-item.ion-invalid {
+  height: auto;
+  min-height: 60px;
+  --border-color: var(--ion-color-danger) !important;
+  border: 1px solid var(--ion-color-danger);
+}
+
+/* Error message styling */
+ion-note[slot="error"] {
+  font-size: 12px;
+  color: var(--ion-color-danger);
+  margin-top: 4px;
+  padding-bottom: 8px;
+}
+
+/* Change input text color when invalid after submission */
+.form-submitted ion-item.ion-invalid ion-input,
+.form-submitted ion-item.ion-invalid ion-select {
+  --color: var(--ion-color-danger);
+}
+
 .user-profile {
   position: absolute;
   display: flex;
@@ -139,4 +161,29 @@ form {
 .separator {
   font-weight: bold;
   padding: 10px 0;
+}
+
+/* Make the Required indicator more visible */
+ion-input[required]::part(label),
+ion-select[required]::part(label) {
+  color: var(--ion-color-dark);
+  font-weight: 500;
+}
+
+ion-input[required]::part(label)::after,
+ion-select[required]::part(label)::after {
+  content: " *";
+  color: var(--ion-color-danger);
+}
+
+/* Add a little animated highlight for form field interaction */
+@keyframes highlightField {
+  0% { box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.12); }
+  50% { box-shadow: 0px 0px 6px 1px var(--ion-color-primary-shade); }
+  100% { box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.12); }
+}
+
+ion-item:focus-within:not(.ion-invalid) {
+  animation: highlightField 1s ease-in-out;
+  border: 1px solid var(--ion-color-primary);
 }

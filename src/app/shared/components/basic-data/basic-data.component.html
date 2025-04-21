@@ -54,7 +54,7 @@
         <div>
           <div class="item-info">
             <p>
-              {{ selectedEntity?.location?.department_name || "No aplica" }}
+              {{ selectedEntity?.department_name || "No aplica" }}
             </p>
             <p>Departamento</p>
           </div>
@@ -71,7 +71,7 @@
           ></fa-icon>
         </div>
         <div class="item-info">
-          <p>{{ beneficiary.rh }}</p>
+          <p>{{ beneficiary.arl || 'No aplica' }}</p>
           <p>ARL</p>
         </div>
       </div>
@@ -85,7 +85,7 @@
           ></fa-icon>
         </div>
         <div class="item-info">
-          <p>{{ beneficiary.seguro_funerario }}</p>
+          <p>{{ beneficiary.seguro_funerario || 'No aplica' }}</p>
           <p>Seguro Funerario</p>
         </div>
       </div>
@@ -130,7 +130,7 @@
           ></fa-icon>
         </div>
         <div class="item-info">
-          <p>{{ selectedEntity?.location?.township_name || "No aplica" }}</p>
+          <p>{{ selectedEntity?.ciudad || "No aplica" }}</p>
           <p>Ciudad</p>
         </div>
       </div>
@@ -146,8 +146,8 @@
           ></fa-icon>
         </div>
         <div class="item-info">
-          <p>{{ beneficiary.prepagada }}</p>
-          <p>ARL</p>
+          <p>{{ beneficiary.prepagada || 'No aplica'}}</p>
+          <p>EPS</p>
         </div>
       </div>
 

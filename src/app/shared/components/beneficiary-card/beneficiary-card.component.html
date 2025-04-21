@@ -1,30 +1,35 @@
 <div class="card-container">
-  <!-- Only show beneficiaries if not individual plan -->
-    @for (beneficiary of sortedBeneficiaries; track beneficiary.id ) {
+  <!-- Tarjetas de beneficiarios -->
+  @for (beneficiary of sortedBeneficiaries; track beneficiary.id) {
     <div class="card" (click)="goToBeneficiary(beneficiary)">
-      @if(beneficiary.photourl) {
-      <img
-        [src]="environment + beneficiary.photourl.replace('\\', '/') || beneficiary.imagebs64"
-        [alt]="beneficiary.nombre"
-      />
-      }@else {
-      <img
-        src="/src/assets/images/default_user.png"
-        [alt]="beneficiary.nombre"
-      />
-      }
+      <div class="card-avatar">
+        @if(beneficiary.photourl) {
+          <img
+            [src]="environment + beneficiary.photourl.replace('\\', '/') || beneficiary.imagebs64"
+            [alt]="beneficiary.nombre"
+            loading="lazy"
+          />
+        } @else {
+          <img
+            src="/assets/images/default_user.png"
+            [alt]="beneficiary.nombre"
+            loading="lazy"
+          />
+        }
+        <img class="crown" src="/assets/icon/crown.svg" alt="status" />
+      </div>
 
-      <h3 appResizeText>{{ beneficiary.nombre }}</h3>
-      <img class="crown" src="/assets/icon/crown.svg" alt="basic" />
+      <h3>{{ beneficiary.nombre }}</h3>
     </div>
-    } @empty {
-    <!-- <li>There are no items.</li> -->
-    }
+  } @empty {
+    <!-- Si no hay beneficiarios, mostrar mensaje opcional aquí -->
+  }
 
-  <!-- Botón para agregar un nuevo beneficiario (always show but logic handles restrictions) -->
+  <!-- Botón para agregar un nuevo beneficiario -->
   <div class="add-card" (click)="createBeneficiary()">
     <div class="add-circle">
-      <ion-icon name="add-circle"></ion-icon>
+      <ion-icon name="add-outline"></ion-icon>
     </div>
+    <div class="add-text">Agregar</div>
   </div>
 </div>

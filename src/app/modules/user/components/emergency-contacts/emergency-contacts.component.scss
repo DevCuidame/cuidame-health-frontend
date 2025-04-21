@@ -1,0 +1,178 @@
+.contacts-container {
+    padding: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  h2 {
+    color: var(--ion-color-secondary);
+    margin-bottom: 8px;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  
+  .description {
+    color: var(--ion-color-dark);
+    margin-bottom: 24px;
+    font-size: 1rem;
+  }
+  
+  .loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px;
+    
+    p {
+      margin-top: 16px;
+      color: var(--ion-color-medium);
+    }
+  }
+  
+  .contacts-form {
+    margin-bottom: 32px;
+  }
+  
+  .contact-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+  
+  .contact-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    
+    h3 {
+      margin: 0;
+      color: var(--ion-color-dark);
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    
+    .delete-icon {
+      color: var(--ion-color-danger);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: rgba(var(--ion-color-danger-rgb), 0.1);
+      }
+    }
+  }
+  
+  .contact-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    
+    @media (min-width: 576px) {
+      flex-direction: row;
+    }
+  }
+  
+  .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    
+    label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--ion-color-medium-shade);
+    }
+    
+    input {
+      border: 1px solid var(--ion-color-light-shade);
+      border-radius: 8px;
+      color: var(--ion-color-dark);
+      background: #fff;
+      padding: 12px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: var(--ion-color-primary);
+        box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.1);
+      }
+      
+      &::placeholder {
+        color: var(--ion-color-medium-tint);
+      }
+    }
+    
+    .error-message {
+      color: var(--ion-color-danger);
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+  }
+  
+  .contact-validation-error {
+    display: flex;
+    align-items: center;
+    background-color: rgba(var(--ion-color-danger-rgb), 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    
+    ion-icon {
+      color: var(--ion-color-danger);
+      font-size: 1.5rem;
+      margin-right: 8px;
+    }
+    
+    span {
+      color: var(--ion-color-danger);
+      font-weight: 500;
+    }
+  }
+  
+  .buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+  
+  .save-button {
+    background-color: var(--ion-color-dark);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+    
+    &:hover:not(:disabled) {
+      background-color: var(--ion-color-primary-shade);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+  
+  .spinner-button {
+    --spinner-color: white;
+  }

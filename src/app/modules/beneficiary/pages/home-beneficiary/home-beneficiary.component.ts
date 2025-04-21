@@ -49,7 +49,7 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
   public categories: { label: string; route: string }[] = [
     { label: 'Condiciones', route: 'conditions' },
     { label: 'Antecedentes', route: 'medical-history' },
-    { label: 'Medicamentos & Alergias', route: 'medicaments-allergies' },
+    { label: 'Alergias', route: 'medicaments-allergies' },
     { label: 'Vacunas', route: 'vacinations' }
   ];
 

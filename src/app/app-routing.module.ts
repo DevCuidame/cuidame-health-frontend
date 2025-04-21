@@ -22,6 +22,12 @@ const routes: Routes = [
     loadChildren: () => import('./pages/components/initial-layout.module').then(m => m.InitialLayoutModule),
   },
 
+  {
+    path: 'user',
+    loadChildren: () => import('./modules/user/user.module').then(m => m.UserModule),
+  },
+
+
   { 
     path: 'home', 
     loadChildren: () => import('./modules/home/home.module').then(m => m.HomeModule), 

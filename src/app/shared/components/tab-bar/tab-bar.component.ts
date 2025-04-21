@@ -27,29 +27,29 @@ export class TabBarComponent {
     // Opciones del menú desplegable
     this.menuItems = [
       { 
-        icon: 'person-outline', 
+        icon: 'trash-outline', 
         label: 'Eliminar Cuenta', 
         action: () => true
       },
       { 
-        icon: 'whatsapp-outline', 
+        icon: 'logo-whatsapp', 
         label: 'Whatsapp', 
         action: () => true
       },
       { 
-        icon: 'whatsapp-outline', 
+        icon: 'mail-outline', 
         label: 'Correo Electrónico', 
         action: () => true
       },
       { 
-        icon: 'whatsapp-outline', 
+        icon: 'person-outline', 
         label: 'Modificar Datos del Propietario', 
         action: () => true
       },
       { 
-        icon: 'person-outline', 
+        icon: 'people-outline', 
         label: 'Contactos de Emergencia', 
-        action: () => true
+        action: () => this.navigate('/user/contacts')
       },
       { 
         icon: 'key-outline', 
