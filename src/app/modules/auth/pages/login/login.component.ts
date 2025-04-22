@@ -71,10 +71,9 @@ export class LoginComponent {
 
     this.authService.login(this.loginForm.value).subscribe(
       async (response) => {
-        console.log("🚀 ~ LoginComponent ~ response:", response)
         await loading.dismiss();
         await this.navCtrl.navigateRoot(['/home/dashboard']);
-        // window.location.reload();
+        window.location.reload();
       },
       async (error) => {
         await loading.dismiss();
