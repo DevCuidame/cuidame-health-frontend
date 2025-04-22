@@ -3,8 +3,8 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  url: 'http://localhost:3000/',
-  // url: 'http://35.232.173.26:3000/',
+  // url: 'http://localhost:3000/',
+  url: 'https://health-api.cuidame.tech/',
   production: false,
 };
 
