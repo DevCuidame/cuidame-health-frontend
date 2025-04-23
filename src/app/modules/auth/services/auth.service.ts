@@ -26,37 +26,66 @@ export class AuthService {
   }
 
 
-  login(credentials: { email: string; password: string }): Observable<any> {
-    return this.http.post(`${apiUrl}api/auth/login`, credentials).pipe(
-      map((response: any) => {
-        localStorage.setItem('token', response.data.access_token);
-        localStorage.setItem('refresh-token', response.data.refresh_token);
-        
-        // Set user data in UserService and localStorage
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        this.userService.setUser(response.data.user as User);
 
-        // Set beneficiaries if available
-        if (response.data.cared_persons) {
-          localStorage.setItem('beneficiaries', JSON.stringify(response.data.cared_persons));
-          this.beneficiaryService.setBeneficiaries(response.data.cared_persons as Beneficiary[]);
+login(credentials: { email: string; password: string }): Observable<any> {
+  return this.http.post(`${apiUrl}api/auth/login`, credentials).pipe(
+    map((response: any) => {
+      localStorage.setItem('token', response.data.access_token);
+      localStorage.setItem('refresh-token', response.data.refresh_token);
+      
+      const userData = response.data.user;
+      
+      try {
+        // Store user data without large fields
+        localStorage.setItem('user', JSON.stringify(userData));
+        this.userService.setUser(userData as User);
+      } catch (e) {
+        console.warn('Error storing user data in localStorage:', e);
+        // If localStorage fails, store minimal user data
+        const minimalUser = {
+          id: userData.id,
+          email: userData.email,
+          name: userData.name,
+          lastname: userData.lastname,
+          verificado: userData.verificado
+        };
+        localStorage.setItem('user', JSON.stringify(minimalUser));
+        // Still keep full user data in memory
+        this.userService.setUser(userData as User);
+      }
+
+      // Set beneficiaries if available, but without images
+      if (response.data.cared_persons) {
+        try {
+          // Store beneficiaries data (which should have imagebs64 removed)
+          localStorage.setItem('beneficiaries', 
+            JSON.stringify(response.data.cared_persons));
+          this.beneficiaryService.setBeneficiaries(
+            response.data.cared_persons as Beneficiary[]);
+        } catch (e) {
+          console.warn('Error storing beneficiaries data in localStorage:', e);
+          // If localStorage fails, don't store beneficiaries
+          // Just keep them in memory
+          this.beneficiaryService.setBeneficiaries(
+            response.data.cared_persons as Beneficiary[]);
         }
-        
-        // Update authentication state
-        this.authState.next(true);
+      }
+      
+      // Update authentication state
+      this.authState.next(true);
 
-        return response;
-      }),
-      catchError(error => {
-        console.error('Login error:', error);
-        return throwError(() => ({
-          status: error.status,
-          error: error.error,
-          message: error.error?.error || 'Authentication error'
-        }));
-      })
-    );
-  }
+      return response;
+    }),
+    catchError(error => {
+      console.error('Login error:', error);
+      return throwError(() => ({
+        status: error.status,
+        error: error.error,
+        message: error.error?.error || 'Authentication error'
+      }));
+    })
+  );
+}
 
   register(credentials: RegisterData): Observable<any> {
     return this.http.post(`${apiUrl}api/auth/register`, credentials)
