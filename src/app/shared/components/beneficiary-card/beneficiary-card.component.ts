@@ -51,7 +51,7 @@ export class BeneficiaryCardComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Inicialización adicional si es necesaria
+  
   }
 
   @HostListener('window:resize', ['$event'])
@@ -98,6 +98,25 @@ export class BeneficiaryCardComponent implements OnInit {
       color: 'medium',
     });
     await toast.present();
+  }
+
+  formatImageUrl(url: string): string {
+    console.log("🚀 ~ BeneficiaryCardComponent ~ formatImageUrl ~ url:", url)
+    if (!url) return '';
+    
+    let formattedUrl = url.replace(/\\/g, '/');
+    console.log("🚀 ~ BeneficiaryCardComponent ~ formatImageUrl ~ formattedUrl:", formattedUrl)
+    
+    const apiUrl = this.environment.endsWith('/') 
+      ? this.environment.slice(0, -1) 
+      : this.environment;
+      
+    if (formattedUrl.startsWith('/')) {
+      formattedUrl = formattedUrl.substring(1);
+    }
+    
+    console.log(`🚀 ~ BeneficiaryCardComponent ~ formatImageUrl ~ ${apiUrl}/${formattedUrl}: ${apiUrl}/${formattedUrl}`)
+    return `${apiUrl}/${formattedUrl}`;
   }
 
   // Método para manejar errores de carga de imagen

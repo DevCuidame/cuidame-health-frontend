@@ -5,9 +5,10 @@
       <div class="card-avatar">
         @if(beneficiary.photourl) {
           <img
-            [src]="environment + beneficiary.photourl.replace('\\', '/') || beneficiary.imagebs64"
+            [src]="formatImageUrl(beneficiary.photourl) || beneficiary.imagebs64"
             [alt]="beneficiary.nombre"
             loading="lazy"
+            (error)="handleImageError($event, beneficiary)"
           />
         } @else {
           <img
