@@ -1,29 +1,35 @@
 <div class="card-container">
   <!-- Tarjetas de beneficiarios -->
   @for (beneficiary of sortedBeneficiaries; track beneficiary.id) {
-    <div class="card" (click)="goToBeneficiary(beneficiary)">
-      <div class="card-avatar">
-        @if(beneficiary.photourl) {
-          <img
-            [src]="formatImageUrl(beneficiary.photourl) || beneficiary.imagebs64"
-            [alt]="beneficiary.nombre"
-            loading="lazy"
-            (error)="handleImageError($event, beneficiary)"
-          />
-        } @else {
-          <img
-            src="/assets/images/default_user.png"
-            [alt]="beneficiary.nombre"
-            loading="lazy"
-          />
-        }
-        <img class="crown" src="/assets/icon/crown.svg" alt="status" />
-      </div>
+  <div class="card" (click)="goToBeneficiary(beneficiary)">
+    <div class="card-avatar">
+      @if(beneficiary.photourl) {
+      <img
+        [src]="formatImageUrl(beneficiary.photourl)"
+        [alt]="beneficiary.nombre"
+        loading="lazy"
+      />
+      } @else if (beneficiary.imagebs64) {
+      <img
+        [src]="beneficiary.imagebs64"
+        [alt]="beneficiary.nombre"
+        loading="lazy"
+      />
+      }@else {
+      <img
+        src="/assets/images/default_user.png"
+        [alt]="beneficiary.nombre"
+        loading="lazy"
+      />
 
-      <h3>{{ beneficiary.nombre }}</h3>
+      }
+      <img class="crown" src="/assets/icon/crown.svg" alt="status" />
     </div>
+
+    <h3>{{ beneficiary.nombre }}</h3>
+  </div>
   } @empty {
-    <!-- Si no hay beneficiarios, mostrar mensaje opcional aquí -->
+  <!-- Si no hay beneficiarios, mostrar mensaje opcional aquí -->
   }
 
   <!-- Botón para agregar un nuevo beneficiario -->

@@ -25,7 +25,7 @@ import { AnimatedCounterComponent } from 'src/app/shared/components/animated-cou
     BeneficiaryCardComponent,
     FontAwesomeModule,
     GreetingComponent,
-    AnimatedCounterComponent
+    AnimatedCounterComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
@@ -51,8 +51,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private beneficiaryService: BeneficiaryService,
     private cdRef: ChangeDetectorRef,
     private navController: NavController,
-    private alertController: AlertController,
-    
+    private alertController: AlertController
   ) {}
 
   ngOnInit() {
@@ -155,10 +154,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Updates the profile image URL
    */
   updateProfileImage() {
-    if (this.user?.image?.image_path) {
-      this.profileImage = `${
-        environment.url
-      }${this.user.image.image_path.replace(/\\/g, '/')}`;
+    if (this.user?.path) {
+      this.profileImage = `${environment.url}${this.user.path.replace(
+        /\\/g,
+        '/'
+      )}`;
+    } else if (this.user?.imagebs64) {
+      this.profileImage = this.user.imagebs64;
     } else {
       this.profileImage = 'assets/images/default_profile.png';
     }
