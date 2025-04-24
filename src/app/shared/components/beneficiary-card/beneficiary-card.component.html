@@ -1,36 +1,35 @@
 <div class="card-container">
-  <!-- Tarjetas de beneficiarios -->
-  @for (beneficiary of sortedBeneficiaries; track beneficiary.id) {
-  <div class="card" (click)="goToBeneficiary(beneficiary)">
-    <div class="card-avatar">
-      @if(beneficiary.photourl) {
-      <img
-        [src]="formatImageUrl(beneficiary.photourl)"
-        [alt]="beneficiary.nombre"
-        loading="lazy"
-      />
-      } @else if (beneficiary.imagebs64) {
-      <img
-        [src]="beneficiary.imagebs64"
-        [alt]="beneficiary.nombre"
-        loading="lazy"
-      />
-      }@else {
-      <img
-        src="/assets/images/default_user.png"
-        [alt]="beneficiary.nombre"
-        loading="lazy"
-      />
-
-      }
-      <img class="crown" src="/assets/icon/crown.svg" alt="status" />
-    </div>
-
-    <h3>{{ beneficiary.nombre }}</h3>
+  <!-- Indicador de carga -->
+  <ion-spinner *ngIf="isLoading" name="crescent" class="loading-spinner"></ion-spinner>
+  
+  <!-- Mensaje sin beneficiarios -->
+  <div *ngIf="!isLoading && sortedBeneficiaries.length === 0" class="empty-state">
+    <ion-icon name="people-outline"></ion-icon>
+    <p>No tienes beneficiarios registrados</p>
   </div>
-  } @empty {
-  <!-- Si no hay beneficiarios, mostrar mensaje opcional aquí -->
-  }
+  
+  <!-- Tarjetas de beneficiarios -->
+  <ng-container *ngIf="!isLoading">
+    <div *ngFor="let beneficiary of sortedBeneficiaries" class="card" (click)="goToBeneficiary(beneficiary)">
+      <div class="card-header">
+        <div class="delete-button" (click)="confirmDelete(beneficiary, $event)">
+          <ion-icon name="close-circle"></ion-icon>
+        </div>
+      </div>
+      
+      <div class="card-avatar">
+        <img 
+          [src]="beneficiary.photourl ? formatImageUrl(beneficiary.photourl) : (beneficiary.imagebs64 || '/assets/images/default_user.png')" 
+          [alt]="beneficiary.nombre"
+          loading="lazy"
+          (error)="handleImageError($event)"
+        />
+        <img class="crown" src="/assets/icon/crown.svg" alt="status" />
+      </div>
+
+      <h3>{{ beneficiary.nombre }}</h3>
+    </div>
+  </ng-container>
 
   <!-- Botón para agregar un nuevo beneficiario -->
   <div class="add-card" (click)="createBeneficiary()">

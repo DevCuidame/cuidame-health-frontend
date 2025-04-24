@@ -153,7 +153,6 @@ export class MedicamentsAllergiesFormComponent implements OnInit {
                   ? updatedActiveBeneficiary
                   : b
               );
-            this.beneficiaryService.setBeneficiaries(updatedBeneficiaries);
           }
           
           await this.toastService.presentToast(

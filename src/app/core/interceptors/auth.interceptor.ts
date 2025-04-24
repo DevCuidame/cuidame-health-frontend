@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import {
   HttpInterceptor,
   HttpRequest,
@@ -7,7 +7,7 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
-import { catchError, switchMap, filter, take } from 'rxjs/operators';
+import { catchError, switchMap, filter, take, finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { AuthService } from '../../modules/auth/services/auth.service';
@@ -18,6 +18,7 @@ export class AuthInterceptor implements HttpInterceptor {
   private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(
     null
   );
+  private authService: AuthService | null = null;
 
   // Lista de rutas de autenticación que no deberían desencadenar un refresh token
   private authRoutes = [
@@ -30,8 +31,16 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(
     private router: Router,
     private toastController: ToastController,
-    private authService: AuthService
+    private injector: Injector
   ) {}
+
+  // Obtenemos la instancia de AuthService de forma perezosa para evitar la dependencia circular
+  private getAuthService(): AuthService {
+    if (!this.authService) {
+      this.authService = this.injector.get(AuthService);
+    }
+    return this.authService;
+  }
 
   async presentToast(message: string) {
     const toast = await this.toastController.create({
@@ -78,7 +87,10 @@ export class AuthInterceptor implements HttpInterceptor {
       this.isRefreshing = true;
       this.refreshTokenSubject.next(null);
 
-      return this.authService.refreshToken().pipe(
+      // Obtenemos authService de forma perezosa
+      const authService = this.getAuthService();
+
+      return authService.refreshToken().pipe(
         switchMap((newTokens: any) => {
           this.isRefreshing = false;
           this.refreshTokenSubject.next(newTokens.accessToken);
@@ -86,8 +98,11 @@ export class AuthInterceptor implements HttpInterceptor {
         }),
         catchError((err) => {
           this.isRefreshing = false;
-          this.authService.logout();
+          authService.logout();
           return throwError(() => err);
+        }),
+        finalize(() => {
+          this.isRefreshing = false;
         })
       );
     } else {

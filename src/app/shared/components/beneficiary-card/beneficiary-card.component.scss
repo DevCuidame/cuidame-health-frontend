@@ -4,11 +4,11 @@
   gap: 15px;
   justify-content: center;
   padding: 20px 10px 15vh 10px;
-  overflow-y: auto; 
-  max-height: 500px;
   margin: 0 auto;
   width: 100%;
   max-width: 600px;
+  position: relative;
+  min-height: 200px; /* Asegurar espacio mínimo para estados de carga/error */
 }
 
 /* Para ocultar scrollbar en diferentes navegadores */
@@ -39,6 +39,34 @@
   padding: 12px 8px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
+}
+
+.card-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 5px;
+}
+
+.delete-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.delete-button ion-icon {
+  color: var(--ion-color-danger);
+  font-size: 20px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.delete-button:hover ion-icon {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .card:active {
@@ -160,6 +188,78 @@
   object-fit: contain !important;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
   border: none !important;
+}
+
+/* Estados de carga y error */
+.loading-container, .error-container, .empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+  min-height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.loading-container {
+  color: var(--ion-color-primary);
+}
+
+.loading-container ion-spinner {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
+}
+
+.error-container {
+  color: var(--ion-color-danger);
+}
+
+.error-container ion-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.empty-state {
+  color: var(--ion-color-medium);
+}
+
+.empty-state ion-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.retry-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--ion-color-light);
+  color: var(--ion-color-primary);
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  margin-top: 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.retry-button:hover {
+  background-color: var(--ion-color-light-shade);
+  transform: translateY(-2px);
+}
+
+.retry-button:active {
+  transform: translateY(1px);
+}
+
+.retry-button ion-icon {
+  font-size: 16px;
 }
 
 /* Estilos para diferentes tamaños de pantalla */

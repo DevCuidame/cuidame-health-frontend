@@ -287,7 +287,6 @@ export class HealthConditionFormComponent implements OnInit {
                       : b
                   );
 
-                this.beneficiaryService.setBeneficiaries(updatedBeneficiaries);
 
                 await this.toastService.presentToast(
                   'Datos guardados correctamente',

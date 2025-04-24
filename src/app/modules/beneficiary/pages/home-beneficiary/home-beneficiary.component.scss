@@ -110,6 +110,71 @@ ion-content {
   z-index: 6;
 }
 
+// ----------------------------- Loading Container -----------------------------------
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  width: 100%;
+  
+  ion-spinner {
+    width: 60px;
+    height: 60px;
+    color: var(--ion-color-primary);
+    margin-bottom: 20px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    font-size: 16px;
+    text-align: center;
+  }
+}
+
+// ----------------------------- Action Buttons -----------------------------------
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding: 0 5px;
+}
+
+.refresh-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--ion-color-success);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  
+  ion-icon {
+    font-size: 20px;
+  }
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// ----------------------------- Animations -----------------------------------
+
 @keyframes fadeInTop {
   0% {
     opacity: 0;
@@ -132,6 +197,8 @@ ion-content {
   }
 }
 
+// ----------------------------- Media Queries -----------------------------------
+
 @media (max-width: 480px) {
   .options {
     gap: 10px;
@@ -139,5 +206,18 @@ ion-content {
 
   .scrollable-content {
     max-height: calc(100vh - 200px);
+  }
+  
+  .refresh-button {
+    padding: 8px 15px;
+    font-size: 14px;
+    
+    span {
+      display: none; // Ocultar texto en pantallas pequeñas
+    }
+    
+    ion-icon {
+      font-size: 18px;
+    }
   }
 }

@@ -230,7 +230,6 @@ export class MedicalHistoryFormComponent implements OnInit {
                     ? updatedActiveBeneficiary
                     : b
                 );
-              this.beneficiaryService.setBeneficiaries(updatedBeneficiaries);
               
               await this.toastService.presentToast(
                 'Antecedentes guardados correctamente',

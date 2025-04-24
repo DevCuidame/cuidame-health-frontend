@@ -26,6 +26,7 @@ import { AnimatedCounterComponent } from 'src/app/shared/components/animated-cou
     FontAwesomeModule,
     GreetingComponent,
     AnimatedCounterComponent,
+    BeneficiaryCardComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],

@@ -1,7 +1,13 @@
 <ion-content scrollY="false">
   <app-beneficiary-header></app-beneficiary-header>
 
-  <div class="container">
+  <!-- Indicador de carga general -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando información del beneficiario...</p>
+  </div>
+
+  <div class="container" *ngIf="!isLoading">
     <!-- Menú de categorías con animaciones -->
     <div 
       class="options-container" 
@@ -13,14 +19,12 @@
       }"
     >
       <div class="options">
-        @for (option of categories; track option) {
-        <div
+        <div *ngFor="let option of categories"
           [ngClass]="{ selected: isSelected(option.label) }"
           (click)="selectOption(option.route)"
         >
           {{ option.label }}
         </div>
-        }
       </div>
     </div>
 
@@ -28,29 +32,40 @@
     <div class="scrollable-content">
       <router-outlet></router-outlet>
 
-      @if(showBasicData){
-      <app-basic-data
-        fontColor="var(--ion-color-dark)"
-        iconColor="var(--ion-color-tertiary)"
-        opacity="46%"
-        maxHeight="340px"
-        [beneficiary]="activeBeneficiary"
-      >
-      </app-basic-data>
-      <app-edit-button route="/beneficiary/add"></app-edit-button>
-      }
+      <!-- Información básica en la pantalla principal -->
+      <ng-container *ngIf="showBasicData">
+        <app-basic-data
+          fontColor="var(--ion-color-dark)"
+          iconColor="var(--ion-color-tertiary)"
+          opacity="46%"
+          maxHeight="340px"
+          [beneficiary]="activeBeneficiary"
+        >
+        </app-basic-data>
+        
+        <!-- Botones de acción -->
+        <div class="action-buttons">
+          <app-edit-button route="/beneficiary/add"></app-edit-button>
+          <button class="refresh-button" (click)="refreshBeneficiary()">
+            <ion-icon name="refresh-outline"></ion-icon>
+            <span>Actualizar datos</span>
+          </button>
+        </div>
+      </ng-container>
     </div>
   </div>
 
+  <!-- Componente de opciones inferiores -->
   <div class="bottom">
     <app-home-options></app-home-options>
   </div>
 </ion-content>
 
+<!-- Barra de navegación inferior -->
 <app-tab-bar
   [isVisible]="true"
   [buttons]="[
-    { icon: 'arrow-back-outline', route: '/beneficiary/home', visible: true },
+    { icon: 'arrow-back-outline', route: '/home/dashboard', visible: true },
     { icon: 'menu-outline', route: '/', visible: true },
     { icon: 'exit-outline', route: '/', visible: true }
   ]"
