@@ -1,6 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, map, of, tap, throwError } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  catchError,
+  finalize,
+  map,
+  of,
+  tap,
+  throwError,
+} from 'rxjs';
 import { Beneficiary } from 'src/app/core/interfaces/beneficiary.interface';
 import { environment } from 'src/environments/environment';
 import { UserService } from '../../modules/auth/services/user.service';
@@ -21,7 +30,9 @@ export class BeneficiaryService {
   public maxBeneficiaries$ = this.maxBeneficiariesSubject.asObservable();
 
   // Active beneficiary subject
-  private activeBeneficiarySubject = new BehaviorSubject<Beneficiary | null>(this.loadActiveBeneficiary());
+  private activeBeneficiarySubject = new BehaviorSubject<Beneficiary | null>(
+    this.loadActiveBeneficiary()
+  );
   public activeBeneficiary$ = this.activeBeneficiarySubject.asObservable();
 
   // Loading status
@@ -60,66 +71,16 @@ export class BeneficiaryService {
       a_cargo_id: user.id,
     };
 
-    return this.http
-      .post(`${apiUrl}api/patients`, beneficiary)
-      .pipe(
-        map((response: any) => {
-          if (response.statusCode === 200 && response.data) {
-            // Actualizar la lista de beneficiarios
-            this.fetchBeneficiaries().subscribe();
-          }
-          return response;
-        }),
-        catchError((error) => {
-          this.toastService.presentToast('Error al crear beneficiario', 'danger');
-          return throwError(() => error);
-        }),
-        tap(() => {
-          // Ocultar loading
-          this.isLoadingSubject.next(false);
-          this.loadingService.hideLoading();
-        })
-      );
-  }
-
-  // Método para obtener el usuario actual de forma segura
-  private getUserInfo() {
-    if (!this.userService) {
-      this.userService = this.injector.get(UserService);
-    }
-    return this.userService.getUser();
-  }
-
-  // Método principal para obtener beneficiarios del servidor
-  fetchBeneficiaries(): Observable<Beneficiary[]> {
-    const user = this.getUserInfo();
-    
-    if (!user || !user.id) {
-      return throwError(() => new Error('Usuario no autenticado.'));
-    }
-    
-    // Mostrar loading si no es una recarga silenciosa
-    if (this.beneficiariesSubject.value.length === 0) {
-      this.isLoadingSubject.next(true);
-      this.loadingService.showLoading('Cargando beneficiarios...');
-    }
-    
-    return this.http.get<any>(`${apiUrl}api/patients/my-patients`).pipe(
+    return this.http.post(`${apiUrl}api/patients`, beneficiary).pipe(
       map((response: any) => {
-        if (response.success && response.data) {
-          const beneficiaries = response.data;
-          this.beneficiariesSubject.next(beneficiaries);
-          this.updateBeneficiaryCount(beneficiaries.length);
-          return beneficiaries;
-        } else {
-          this.beneficiariesSubject.next([]);
-          this.updateBeneficiaryCount(0);
-          return [];
+        if (response.statusCode === 200 && response.data) {
+          // Actualizar la lista de beneficiarios
+          this.fetchBeneficiaries().subscribe();
         }
+        return response;
       }),
       catchError((error) => {
-        console.error('Error al obtener beneficiarios:', error);
-        this.toastService.presentToast('Error al cargar beneficiarios', 'danger');
+        this.toastService.presentToast('Error al crear beneficiario', 'danger');
         return throwError(() => error);
       }),
       tap(() => {
@@ -130,34 +91,111 @@ export class BeneficiaryService {
     );
   }
 
+  // Método para obtener el usuario actual de forma segura
+  private getUserInfo() {
+    if (!this.userService) {
+      this.userService = this.injector.get(UserService);
+    }
+    return this.userService.getUser();
+  }
+
+  fetchBeneficiaries(): Observable<Beneficiary[]> {
+    console.log('[BeneficiaryService] fetchBeneficiaries - Inicio');
+    const user = this.getUserInfo();
+
+    if (!user || !user.id) {
+      console.error('[BeneficiaryService] Usuario no autenticado');
+      this.loadingService.hideLoading(); // Forzar cierre y reinicio
+      this.isLoadingSubject.next(false);
+      return throwError(() => new Error('Usuario no autenticado.'));
+    }
+
+    // Mostrar loading si no es una recarga silenciosa
+    if (this.beneficiariesSubject.value.length === 0) {
+      console.log('[BeneficiaryService] Primera carga, mostrando indicador');
+      this.isLoadingSubject.next(true);
+      this.loadingService.showLoading('Cargando beneficiarios...');
+    } else {
+      console.log(
+        '[BeneficiaryService] Recarga silenciosa, no se muestra indicador'
+      );
+    }
+
+    console.log('[BeneficiaryService] Realizando petición HTTP');
+    return this.http.get<any>(`${apiUrl}api/patients/my-patients`).pipe(
+      map((response: any) => {
+        console.log('[BeneficiaryService] Respuesta recibida:', response);
+        if (response.success && response.data) {
+          const beneficiaries = response.data;
+          console.log(
+            `[BeneficiaryService] Beneficiarios obtenidos: ${beneficiaries.length}`
+          );
+          this.beneficiariesSubject.next(beneficiaries);
+          this.updateBeneficiaryCount(beneficiaries.length);
+          return beneficiaries;
+        } else {
+          console.warn('[BeneficiaryService] No hay datos en la respuesta');
+          this.beneficiariesSubject.next([]);
+          this.updateBeneficiaryCount(0);
+          return [];
+        }
+      }),
+      catchError((error) => {
+        console.error(
+          '[BeneficiaryService] Error al obtener beneficiarios:',
+          error
+        );
+        this.toastService.presentToast(
+          'Error al cargar beneficiarios',
+          'danger'
+        );
+        return throwError(() => error);
+      }),
+      finalize(() => {
+        console.log('[BeneficiaryService] Finalizando petición (finalize)');
+        // Ocultar loading
+        this.isLoadingSubject.next(false);
+        console.log('[BeneficiaryService] Estado de carga actualizado a false');
+
+        // Notificar que la solicitud está completa
+        this.loadingService.hideLoading();
+
+        console.log('[BeneficiaryService] Loading oculto');
+      })
+    );
+  }
+
   setActiveBeneficiary(beneficiary: Beneficiary | null): void {
     if (!beneficiary) {
       this.activeBeneficiarySubject.next(null);
       localStorage.removeItem('activeBeneficiary');
       return;
     }
-    
+
     this.activeBeneficiarySubject.next({ ...beneficiary });
     localStorage.setItem('activeBeneficiary', JSON.stringify(beneficiary));
   }
-  
+
   private loadActiveBeneficiary(): Beneficiary | null {
     const storedBeneficiary = localStorage.getItem('activeBeneficiary');
     return storedBeneficiary ? JSON.parse(storedBeneficiary) : null;
   }
 
-  updateBeneficiary(id: number | string, data: Partial<Beneficiary>): Observable<any> {
+  updateBeneficiary(
+    id: number | string,
+    data: Partial<Beneficiary>
+  ): Observable<any> {
     this.isLoadingSubject.next(true);
     this.loadingService.showLoading('Actualizando beneficiario...');
-    
+
     return this.http.put(`${apiUrl}api/patients/${id}`, data).pipe(
       map((response: any) => {
         if (response.success === true && response.data) {
           const updatedBeneficiary = response.data;
-          
+
           // Actualizar la lista completa de beneficiarios
           this.fetchBeneficiaries().subscribe();
-          
+
           // Si el beneficiario activo fue actualizado, actualizar también esa referencia
           const activeBeneficiary = this.getActiveBeneficiary();
           if (activeBeneficiary && activeBeneficiary.id === id) {
@@ -167,8 +205,11 @@ export class BeneficiaryService {
         return response;
       }),
       catchError((error) => {
-        console.error("❌ Error al actualizar beneficiario:", error);
-        this.toastService.presentToast('Error al actualizar beneficiario', 'danger');
+        console.error('❌ Error al actualizar beneficiario:', error);
+        this.toastService.presentToast(
+          'Error al actualizar beneficiario',
+          'danger'
+        );
         return throwError(() => error);
       }),
       tap(() => {
@@ -177,27 +218,33 @@ export class BeneficiaryService {
       })
     );
   }
-  
+
   removeBeneficiary(id: number | string): Observable<any> {
     this.isLoadingSubject.next(true);
     this.loadingService.showLoading('Eliminando beneficiario...');
-    
+
     return this.http.delete(`${apiUrl}api/patients/${id}`).pipe(
       tap(() => {
         // Actualizar la lista de beneficiarios tras eliminación
         this.fetchBeneficiaries().subscribe();
-        
+
         // Si eliminamos el beneficiario activo, limpiarlo
         const activeBeneficiary = this.getActiveBeneficiary();
         if (activeBeneficiary && activeBeneficiary.id === id) {
           this.setActiveBeneficiary(null);
         }
-        
-        this.toastService.presentToast('Beneficiario eliminado correctamente', 'success');
+
+        this.toastService.presentToast(
+          'Beneficiario eliminado correctamente',
+          'success'
+        );
       }),
       catchError((error) => {
         console.error('Error al eliminar beneficiario:', error);
-        this.toastService.presentToast('Error al eliminar beneficiario', 'danger');
+        this.toastService.presentToast(
+          'Error al eliminar beneficiario',
+          'danger'
+        );
         return throwError(() => error);
       }),
       tap(() => {
@@ -206,7 +253,7 @@ export class BeneficiaryService {
       })
     );
   }
-  
+
   getActiveBeneficiary(): Beneficiary | null {
     return this.activeBeneficiarySubject.value;
   }
@@ -217,18 +264,18 @@ export class BeneficiaryService {
 
   clearBeneficiaries(): void {
     this.beneficiariesSubject.next([]);
-    this.updateBeneficiaryCount(0); 
+    this.updateBeneficiaryCount(0);
   }
 
   getBeneficiaryById(id: number | string): Observable<Beneficiary | undefined> {
     // Intentar primero buscar en el estado actual
     const beneficiaries = this.getBeneficiaries();
-    const found = beneficiaries.find(b => b.id === id);
-    
+    const found = beneficiaries.find((b) => b.id === id);
+
     if (found) {
       return of(found);
     }
-    
+
     // Si no se encuentra, buscar en el servidor
     return this.http.get<any>(`${apiUrl}api/patients/${id}`).pipe(
       map((response: any) => {
@@ -243,7 +290,7 @@ export class BeneficiaryService {
       })
     );
   }
-  
+
   private updateBeneficiaryCount(count: number): void {
     this.beneficiaryCountSubject.next(count);
   }

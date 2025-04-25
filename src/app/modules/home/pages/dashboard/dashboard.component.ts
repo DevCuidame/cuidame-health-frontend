@@ -143,8 +143,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           }));
           this.count = this.beneficiaries.length;
         }
-
-        this.cdRef.detectChanges();
       }
     );
 

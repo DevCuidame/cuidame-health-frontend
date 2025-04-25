@@ -1,3 +1,4 @@
+// Modificación para el loading.service.ts
 import { Injectable } from '@angular/core';
 import { LoadingController } from '@ionic/angular';
 
@@ -37,7 +38,7 @@ export class LoadingService {
       
       await this.loading.present();
       
-      // Configurar timeout de seguridad de 10 segundos máximo
+      // Configurar timeout de seguridad
       this.setSafetyTimeout();
     } catch (error) {
       console.error('Error al mostrar loading:', error);

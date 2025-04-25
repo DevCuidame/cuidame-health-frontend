@@ -1,4 +1,10 @@
-import { Component, Input, OnInit, OnDestroy, HostListener } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  HostListener,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonicModule,
@@ -13,6 +19,7 @@ import { Plan } from 'src/app/core/interfaces/plan.interface';
 import { BeneficiaryService } from 'src/app/core/services/beneficiary.service';
 import { environment } from 'src/environments/environment';
 import { Subscription, catchError, finalize, of } from 'rxjs';
+import { LoadingService } from 'src/app/core/services/loading.service';
 
 @Component({
   selector: 'app-beneficiary-card',
@@ -39,27 +46,40 @@ import { Subscription, catchError, finalize, of } from 'rxjs';
           </button>
         </div>
       </ng-container>
-      
+
       <!-- Mensaje sin beneficiarios -->
-      <ng-container *ngIf="!isLoading && !hasError && sortedBeneficiaries.length === 0">
+      <ng-container
+        *ngIf="!isLoading && !hasError && sortedBeneficiaries.length === 0"
+      >
         <div class="empty-state">
           <ion-icon name="people-outline"></ion-icon>
           <p>No tienes beneficiarios registrados</p>
         </div>
       </ng-container>
-      
+
       <!-- Tarjetas de beneficiarios -->
       <ng-container *ngIf="!isLoading && !hasError">
-        <div *ngFor="let beneficiary of sortedBeneficiaries" class="card" (click)="goToBeneficiary(beneficiary)">
+        <div
+          *ngFor="let beneficiary of sortedBeneficiaries"
+          class="card"
+          (click)="goToBeneficiary(beneficiary)"
+        >
           <div class="card-header">
-            <div class="delete-button" (click)="confirmDelete(beneficiary, $event)">
+            <div
+              class="delete-button"
+              (click)="confirmDelete(beneficiary, $event)"
+            >
               <ion-icon name="close-circle"></ion-icon>
             </div>
           </div>
-          
+
           <div class="card-avatar">
-            <img 
-              [src]="beneficiary.photourl ? formatImageUrl(beneficiary.photourl) : (beneficiary.imagebs64 || '/assets/images/default_user.png')" 
+            <img
+              [src]="
+                beneficiary.photourl
+                  ? formatImageUrl(beneficiary.photourl)
+                  : beneficiary.imagebs64 || '/assets/images/default_user.png'
+              "
               [alt]="beneficiary.nombre"
               loading="lazy"
               (error)="handleImageError($event)"
@@ -92,7 +112,7 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   public isLoading: boolean = false;
   public hasError: boolean = false;
   public loadingTimeout: any = null;
-  
+
   private subscription = new Subscription();
 
   constructor(
@@ -101,7 +121,8 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
     private beneficiaryService: BeneficiaryService,
     private navCtrl: NavController,
     private toastCtrl: ToastController,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private loadingService: LoadingService
   ) {
     this.screenWidth = window.innerWidth;
   }
@@ -109,16 +130,16 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Suscribirse a los cambios en la lista de beneficiarios
     this.subscription.add(
-      this.beneficiaryService.beneficiaries$.subscribe(beneficiaries => {
+      this.beneficiaryService.beneficiaries$.subscribe((beneficiaries) => {
         this.beneficiaries = beneficiaries;
       })
     );
-    
+
     // Suscribirse al estado de carga
     this.subscription.add(
-      this.beneficiaryService.isLoading$.subscribe(isLoading => {
+      this.beneficiaryService.isLoading$.subscribe((isLoading) => {
         this.isLoading = isLoading;
-        
+
         // Si el estado de carga pasa a falso y no hay beneficiarios, verificar
         // si hubo un error en lugar de estar realmente vacío
         if (!isLoading && this.beneficiaries.length === 0) {
@@ -126,37 +147,39 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
         }
       })
     );
-    
+
     // Obtener beneficiarios al iniciar
     this.refreshBeneficiaries();
-    
+
     // Configurar un timeout de seguridad para la carga
     this.loadingTimeout = setTimeout(() => {
       if (this.isLoading) {
         this.isLoading = false;
-        this.hasError = true;
+        this.loadingService.hideAllLoadings(); // Forzar cierre
         console.warn('Timeout de carga superado para beneficiarios');
       }
-    }, 15000); // 15 segundos
+    }, 8000);
   }
-  
+
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    
+
     if (this.loadingTimeout) {
       clearTimeout(this.loadingTimeout);
     }
+    this.subscription.add(() => clearTimeout(this.loadingTimeout));
   }
-  
+
   // Verificar si hubo un error en lugar de estar realmente vacío
   private checkErrorState() {
     this.hasError = false;
-    
+
     // Si no tenemos datos, intentar una recarga silenciosa
     if (this.beneficiaries.length === 0) {
-      this.beneficiaryService.fetchBeneficiaries()
+      this.beneficiaryService
+        .fetchBeneficiaries()
         .pipe(
-          catchError(error => {
+          catchError((error) => {
             this.hasError = true;
             return of([]);
           }),
@@ -171,16 +194,34 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
         .subscribe();
     }
   }
-  
+
   refreshBeneficiaries() {
+    console.log('[BeneficiaryCardComponent] refreshBeneficiaries - Inicio');
     this.hasError = false;
     this.beneficiaryService.fetchBeneficiaries().subscribe({
+      next: (beneficiaries) => {
+        console.log(
+          `[BeneficiaryCardComponent] Beneficiarios obtenidos: ${beneficiaries.length}`
+        );
+      },
       error: (error) => {
-        console.error('Error al cargar beneficiarios:', error);
+        console.error(
+          '[BeneficiaryCardComponent] Error al cargar beneficiarios:',
+          error
+        );
         this.hasError = true;
-        // No mostramos toast aquí para evitar duplicados con el servicio
-      }
+      },
+      complete: () => {
+        console.log('[BeneficiaryCardComponent] Petición completada');
+        // Asegurarse de que no quede ningún loading activo
+        setTimeout(() => {
+          this.loadingService.hideAllLoadings();
+        }, 500);
+      },
     });
+    console.log(
+      '[BeneficiaryCardComponent] refreshBeneficiaries - Solicitud enviada'
+    );
   }
 
   @HostListener('window:resize', ['$event'])
@@ -191,11 +232,11 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   async goToBeneficiary(beneficiary: Beneficiary) {
     const loading = await this.loadingCtrl.create({
       message: 'Cargando perfil...',
-      duration: 5000 // Máximo 5 segundos
+      duration: 5000, // Máximo 5 segundos
     });
-    
+
     await loading.present();
-    
+
     try {
       await this.beneficiaryService.setActiveBeneficiary({ ...beneficiary });
       this.navCtrl.navigateForward(['/beneficiary/home']);
@@ -222,41 +263,41 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
       );
       return;
     }
-    
+
     this.router.navigate(['/code/code-lookup']);
   }
-  
+
   async confirmDelete(beneficiary: Beneficiary, event: Event) {
     // Detener la propagación para evitar navegar al beneficiario
     event.stopPropagation();
-    
+
     const alert = await this.alertCtrl.create({
       header: 'Confirmar eliminación',
       message: `¿Estás seguro de eliminar a ${beneficiary.nombre}? Esta acción no se puede deshacer.`,
       buttons: [
         {
           text: 'Cancelar',
-          role: 'cancel'
+          role: 'cancel',
         },
         {
           text: 'Eliminar',
           role: 'destructive',
           handler: () => {
             this.deleteBeneficiary(beneficiary.id);
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
-    
+
     await alert.present();
   }
-  
+
   deleteBeneficiary(id: number | string) {
     this.beneficiaryService.removeBeneficiary(id).subscribe({
       error: (error) => {
         console.error('Error al eliminar beneficiario:', error);
         this.showToast('No se pudo eliminar el beneficiario');
-      }
+      },
     });
   }
 
@@ -281,17 +322,17 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
 
   formatImageUrl(url: string): string {
     if (!url) return '/assets/images/default_user.png';
-    
+
     let formattedUrl = url.replace(/\\/g, '/');
-    
-    const apiUrl = this.environment.endsWith('/') 
-      ? this.environment.slice(0, -1) 
+
+    const apiUrl = this.environment.endsWith('/')
+      ? this.environment.slice(0, -1)
       : this.environment;
-      
+
     if (formattedUrl.startsWith('/')) {
       formattedUrl = formattedUrl.substring(1);
     }
-    
+
     return `${apiUrl}/${formattedUrl}`;
   }
 
