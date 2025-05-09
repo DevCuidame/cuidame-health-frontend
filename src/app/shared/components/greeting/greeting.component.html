@@ -1,4 +1,12 @@
 <div class="dash-header">
-  <p>Hola, {{ userName }}</p>
-  <p>{{ greeting }}</p>
+  <div class="basic-data">
+    <p>Hola, {{ userName }}</p>
+    <p>{{ greeting }}</p>
+  </div>
+  <div class="box">
+    <button class="nav-button" (click)="navigateToPage()">
+      <ion-icon name="calendar-outline"></ion-icon>
+      Citas
+    </button>
+  </div>
 </div>

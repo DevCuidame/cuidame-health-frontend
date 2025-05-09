@@ -4,6 +4,7 @@
 
 export const environment = {
   url: 'http://localhost:4000/',
+  wsUrl: 'ws://localhost:4000/ws/chat',
   // url: 'https://health-api.cuidame.tech/',
   production: false,
 };

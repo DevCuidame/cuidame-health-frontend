@@ -20,33 +20,15 @@ import { BeneficiaryService } from 'src/app/core/services/beneficiary.service';
 import { environment } from 'src/environments/environment';
 import { Subscription, catchError, finalize, of } from 'rxjs';
 import { LoadingService } from 'src/app/core/services/loading.service';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faWebAwesome } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-beneficiary-card',
-  imports: [IonicModule, CommonModule],
+  imports: [IonicModule, CommonModule, FontAwesomeModule],
   standalone: true,
   template: `
     <div class="card-container">
-      <!-- Indicador de carga -->
-      <ng-container *ngIf="isLoading">
-        <div class="loading-container">
-          <ion-spinner name="crescent" color="primary"></ion-spinner>
-          <p>Cargando beneficiarios...</p>
-        </div>
-      </ng-container>
-
-      <!-- Error -->
-      <ng-container *ngIf="hasError && !isLoading">
-        <div class="error-container">
-          <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
-          <p>No se pudieron cargar los beneficiarios</p>
-          <button class="retry-button" (click)="refreshBeneficiaries()">
-            <ion-icon name="refresh-outline"></ion-icon>
-            Reintentar
-          </button>
-        </div>
-      </ng-container>
-
       <!-- Mensaje sin beneficiarios -->
       <ng-container
         *ngIf="!isLoading && !hasError && sortedBeneficiaries.length === 0"
@@ -64,15 +46,6 @@ import { LoadingService } from 'src/app/core/services/loading.service';
           class="card"
           (click)="goToBeneficiary(beneficiary)"
         >
-          <div class="card-header">
-            <div
-              class="delete-button"
-              (click)="confirmDelete(beneficiary, $event)"
-            >
-              <ion-icon name="close-circle"></ion-icon>
-            </div>
-          </div>
-
           <div class="card-avatar">
             <img
               [src]="
@@ -84,7 +57,7 @@ import { LoadingService } from 'src/app/core/services/loading.service';
               loading="lazy"
               (error)="handleImageError($event)"
             />
-            <img class="crown" src="/assets/icon/crown.svg" alt="status" />
+            <fa-icon [icon]="faWebAwesome"></fa-icon>
           </div>
 
           <h3>{{ beneficiary.nombre }}</h3>
@@ -106,6 +79,7 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   @Input() plan?: Plan;
 
   @Input() beneficiaries: Beneficiary[] = [];
+  public faWebAwesome = faWebAwesome;
   public environment = environment.url;
   public maxBeneficiaries: number = 5;
   public screenWidth: number;
@@ -132,19 +106,6 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.beneficiaryService.beneficiaries$.subscribe((beneficiaries) => {
         this.beneficiaries = beneficiaries;
-      })
-    );
-
-    // Suscribirse al estado de carga
-    this.subscription.add(
-      this.beneficiaryService.isLoading$.subscribe((isLoading) => {
-        this.isLoading = isLoading;
-
-        // Si el estado de carga pasa a falso y no hay beneficiarios, verificar
-        // si hubo un error en lugar de estar realmente vacío
-        if (!isLoading && this.beneficiaries.length === 0) {
-          this.checkErrorState();
-        }
       })
     );
 
@@ -196,32 +157,19 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   }
 
   refreshBeneficiaries() {
-    console.log('[BeneficiaryCardComponent] refreshBeneficiaries - Inicio');
     this.hasError = false;
     this.beneficiaryService.fetchBeneficiaries().subscribe({
       next: (beneficiaries) => {
-        console.log(
-          `[BeneficiaryCardComponent] Beneficiarios obtenidos: ${beneficiaries.length}`
-        );
       },
       error: (error) => {
-        console.error(
-          '[BeneficiaryCardComponent] Error al cargar beneficiarios:',
-          error
-        );
         this.hasError = true;
       },
       complete: () => {
-        console.log('[BeneficiaryCardComponent] Petición completada');
-        // Asegurarse de que no quede ningún loading activo
         setTimeout(() => {
           this.loadingService.hideAllLoadings();
         }, 500);
       },
     });
-    console.log(
-      '[BeneficiaryCardComponent] refreshBeneficiaries - Solicitud enviada'
-    );
   }
 
   @HostListener('window:resize', ['$event'])
@@ -230,12 +178,6 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   }
 
   async goToBeneficiary(beneficiary: Beneficiary) {
-    const loading = await this.loadingCtrl.create({
-      message: 'Cargando perfil...',
-      duration: 5000, // Máximo 5 segundos
-    });
-
-    await loading.present();
 
     try {
       await this.beneficiaryService.setActiveBeneficiary({ ...beneficiary });
@@ -243,8 +185,6 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error al navegar a beneficiario:', error);
       this.showToast('No se pudo acceder al perfil del beneficiario');
-    } finally {
-      loading.dismiss();
     }
   }
 
@@ -255,15 +195,6 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   }
 
   async createBeneficiary() {
-    // Verificar primero si puede crear más beneficiarios
-    if (this.beneficiaries.length >= this.maxBeneficiaries) {
-      this.showAlert(
-        'Límite alcanzado',
-        `Has alcanzado el límite de ${this.maxBeneficiaries} beneficiarios. Actualiza tu plan para agregar más.`
-      );
-      return;
-    }
-
     this.router.navigate(['/code/code-lookup']);
   }
 

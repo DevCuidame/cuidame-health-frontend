@@ -1,0 +1,101 @@
+<ion-header class="custom-header">
+    <ion-toolbar>
+      <div class="header-container">
+        <!-- <ion-img class="logo" src="assets/logo/logo.png"></ion-img> -->
+        <ion-title class="app-title">Cuídame Bot</ion-title>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+
+<ion-content>
+  <div class="chat-container" #chatContainer>
+    <div class="welcome-message" *ngIf="(messages$ | async)?.length === 0">
+      <ion-spinner name="dots" *ngIf="isTyping$ | async"></ion-spinner>
+      <p>Welcome to the Medical Appointment System. Please wait while we initialize your session...</p>
+    </div>
+    
+    <div class="message-list">
+      <div class="message-item" *ngFor="let message of messages$ | async; trackBy: trackByFn" [ngClass]="getMessageClasses(message)">
+        <!-- Regular text message -->
+        <div class="message-content" *ngIf="!message.type || message.type === 'text'">
+          <p [innerHTML]="message.content"></p>
+        </div>
+        
+        <!-- Options message -->
+        <div class="message-content" *ngIf="message.type === 'options'">
+          <p [innerHTML]="message.content"></p>
+          <div class="options-container">
+            <ion-button 
+              *ngFor="let option of message.options" 
+              (click)="selectOption(option)"
+              fill="outline"
+              expand="block"
+              size="small"
+              class="option-button">
+              {{ option.text }}
+            </ion-button>
+          </div>
+        </div>
+        
+        <!-- Validation message -->
+        <div class="message-content" *ngIf="message.type === 'validation'">
+          <p [innerHTML]="message.content"></p>
+          <div class="validation-status" *ngIf="message.options">
+            <ion-icon name="checkmark-circle" *ngIf="message.options[0]?.value === 'valid'"></ion-icon>
+            <ion-icon name="close-circle" *ngIf="message.options[0]?.value === 'invalid'"></ion-icon>
+            <span>{{ message.options[0].text }}</span>
+          </div>
+        </div>
+        
+        <!-- Confirmation message -->
+        <div class="message-content" *ngIf="message.type === 'confirmation'">
+          <div class="confirmation-card">
+            <h4>Appointment Confirmation</h4>
+            <div class="confirmation-details" [innerHTML]="message.content"></div>
+            <div class="confirmation-actions" *ngIf="message.options">
+              <ion-button 
+                *ngFor="let option of message.options" 
+                (click)="selectOption(option)"
+                [color]="option.value === 'confirm' ? 'success' : 'danger'"
+                fill="solid"
+                size="small">
+                {{ option.text }}
+              </ion-button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="message-time">
+          {{ message.timestamp | date:'shortTime' }}
+        </div>
+      </div>
+      
+      <!-- Typing indicator -->
+      <div class="typing-indicator" *ngIf="isTyping$ | async">
+        <div class="typing-bubble"></div>
+        <div class="typing-bubble"></div>
+        <div class="typing-bubble"></div>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <form [formGroup]="chatForm" (ngSubmit)="sendMessage()">
+      <ion-item lines="none">
+        <ion-input 
+          formControlName="message" 
+          placeholder="Type a message..." 
+          [disabled]="(isTyping$ | async) ?? false">
+        </ion-input>
+        <ion-button 
+          slot="end" 
+          type="submit" 
+          [disabled]="!chatForm.valid || (isTyping$ | async)">
+          <ion-icon name="send"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </form>
+  </ion-toolbar>
+</ion-footer>

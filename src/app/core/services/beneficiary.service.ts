@@ -7,6 +7,7 @@ import {
   finalize,
   map,
   of,
+  shareReplay,
   tap,
   throwError,
 } from 'rxjs';
@@ -38,6 +39,10 @@ export class BeneficiaryService {
   // Loading status
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.isLoadingSubject.asObservable();
+
+  // Flag para evitar múltiples peticiones
+  private fetchInProgress = false;
+  private currentFetchRequest: Observable<Beneficiary[]> | null = null;
 
   // Servicio de usuario privado
   private userService: UserService | null = null;
@@ -100,69 +105,63 @@ export class BeneficiaryService {
   }
 
   fetchBeneficiaries(): Observable<Beneficiary[]> {
-    console.log('[BeneficiaryService] fetchBeneficiaries - Inicio');
+
+    // Si ya hay una petición en progreso, reutilizarla en lugar de hacer otra
+    if (this.fetchInProgress && this.currentFetchRequest) {
+   
+      return this.currentFetchRequest;
+    }
+
     const user = this.getUserInfo();
 
     if (!user || !user.id) {
-      console.error('[BeneficiaryService] Usuario no autenticado');
       this.loadingService.hideLoading(); // Forzar cierre y reinicio
       this.isLoadingSubject.next(false);
       return throwError(() => new Error('Usuario no autenticado.'));
     }
 
-    // Mostrar loading si no es una recarga silenciosa
-    if (this.beneficiariesSubject.value.length === 0) {
-      console.log('[BeneficiaryService] Primera carga, mostrando indicador');
-      this.isLoadingSubject.next(true);
-      this.loadingService.showLoading('Cargando beneficiarios...');
-    } else {
-      console.log(
-        '[BeneficiaryService] Recarga silenciosa, no se muestra indicador'
-      );
-    }
+    // Marcar que hay una petición en progreso
+    this.fetchInProgress = true;
 
-    console.log('[BeneficiaryService] Realizando petición HTTP');
-    return this.http.get<any>(`${apiUrl}api/patients/my-patients`).pipe(
-      map((response: any) => {
-        console.log('[BeneficiaryService] Respuesta recibida:', response);
-        if (response.success && response.data) {
-          const beneficiaries = response.data;
-          console.log(
-            `[BeneficiaryService] Beneficiarios obtenidos: ${beneficiaries.length}`
+    this.currentFetchRequest = this.http
+      .get<any>(`${apiUrl}api/patients/my-patients`)
+      .pipe(
+        map((response: any) => {
+          if (response.success && response.data) {
+            const beneficiaries = response.data;
+      
+            this.beneficiariesSubject.next(beneficiaries);
+            this.updateBeneficiaryCount(beneficiaries.length);
+            return beneficiaries;
+          } else {
+            this.beneficiariesSubject.next([]);
+            this.updateBeneficiaryCount(0);
+            return [];
+          }
+        }),
+        catchError((error) => {
+          this.toastService.presentToast(
+            'Error al cargar beneficiarios',
+            'danger'
           );
-          this.beneficiariesSubject.next(beneficiaries);
-          this.updateBeneficiaryCount(beneficiaries.length);
-          return beneficiaries;
-        } else {
-          console.warn('[BeneficiaryService] No hay datos en la respuesta');
-          this.beneficiariesSubject.next([]);
-          this.updateBeneficiaryCount(0);
-          return [];
-        }
-      }),
-      catchError((error) => {
-        console.error(
-          '[BeneficiaryService] Error al obtener beneficiarios:',
-          error
-        );
-        this.toastService.presentToast(
-          'Error al cargar beneficiarios',
-          'danger'
-        );
-        return throwError(() => error);
-      }),
-      finalize(() => {
-        console.log('[BeneficiaryService] Finalizando petición (finalize)');
-        // Ocultar loading
-        this.isLoadingSubject.next(false);
-        console.log('[BeneficiaryService] Estado de carga actualizado a false');
+          return throwError(() => error);
+        }),
+        finalize(() => {
+          // Ocultar loading
+          this.isLoadingSubject.next(false);
 
-        // Notificar que la solicitud está completa
-        this.loadingService.hideLoading();
+          // Notificar que la solicitud está completa
+          this.loadingService.hideLoading();
 
-        console.log('[BeneficiaryService] Loading oculto');
-      })
-    );
+          // Resetear las flags de petición en progreso
+          this.fetchInProgress = false;
+          this.currentFetchRequest = null;
+        }),
+        // Compartir la misma respuesta entre múltiples suscriptores
+        shareReplay(1)
+      );
+
+    return this.currentFetchRequest;
   }
 
   setActiveBeneficiary(beneficiary: Beneficiary | null): void {

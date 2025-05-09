@@ -3,12 +3,17 @@
   grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
   gap: 15px;
   justify-content: center;
-  padding: 20px 10px 15vh 10px;
+  padding: 20px 10px 33vh 10px;
   margin: 0 auto;
   width: 100%;
   max-width: 600px;
   position: relative;
   min-height: 200px; /* Asegurar espacio mínimo para estados de carga/error */
+
+  max-height: 80vh; /* Altura máxima relativa a la ventana */
+  overflow-y: auto; /* Habilitar scroll vertical */
+  overflow-x: hidden;
+
 }
 
 /* Para ocultar scrollbar en diferentes navegadores */
@@ -178,16 +183,18 @@
   font-weight: 500;
 }
 
-.crown {
+fa-icon {
   position: absolute;
   bottom: -5px;
   right: -5px;
+  color: var(--ion-color-warning);
   height: 30px !important;
   width: 30px !important;
   border-radius: 0 !important;
   object-fit: contain !important;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
   border: none !important;
+  font-size: 2rem;
 }
 
 /* Estados de carga y error */

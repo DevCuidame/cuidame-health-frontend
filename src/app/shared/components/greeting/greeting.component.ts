@@ -1,16 +1,19 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule, NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-greeting',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IonicModule],
   templateUrl: './greeting.component.html',
   styleUrls: ['./greeting.component.scss']
 })
 export class GreetingComponent implements OnInit {
   @Input() userName: string = '';
   greeting: string = '';
+
+  constructor(private navCtrl: NavController) { }
 
   ngOnInit() {
     this.setGreetingBasedOnTime();
@@ -27,4 +30,9 @@ export class GreetingComponent implements OnInit {
       this.greeting = 'Buenas noches';
     }
   }
+
+  navigateToPage() {
+    this.navCtrl.navigateForward('appointment/viewer');
+  }
+
 }
