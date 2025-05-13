@@ -26,6 +26,7 @@ export interface ChatSession {
     | 'document'
     | 'city'
     | 'specialty'
+    | 'appointmentType'
     | 'professional'
     | 'date'
     | 'time'
@@ -56,7 +57,6 @@ export class ChatService {
 
   private loadSessionFromStorage(): void {
     const sessionId = localStorage.getItem('chatSessionId');
-    console.log("🚀 ~ ChatService ~ loadSessionFromStorage ~ sessionId:", sessionId)
     if (sessionId) {
       this.getSession(sessionId).subscribe(
         (response: any) => {
@@ -118,9 +118,7 @@ export class ChatService {
   }
 
   sendMessage(content: string): void {
-    console.log("🚀 ~ ChatService ~ sendMessage ~ content:", content)
     const sessionId = this.sessionSubject.value?.id;
-    console.log('🚀 ~ ChatService ~ sendMessage ~ sessionId:', sessionId);
     if (!sessionId) {
       console.error('No active session');
       return;
@@ -219,10 +217,8 @@ export class ChatService {
   }
 
   private handleSocketMessage(message: any): void {
-    console.log('🚀 ~ ChatService ~ handleSocketMessage ~ message:', message);
     switch (message.type) {
       case 'connection':
-        console.log('Connection confirmed:', message.message);
         break;
 
       case 'init':

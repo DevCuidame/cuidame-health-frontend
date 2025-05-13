@@ -1,0 +1,33 @@
+<div class="top-bar">
+  <div class="requests-info" [ngStyle]="{ 'font-weight': fontWeight }">
+    @if(highlighted){
+      Tienes <span>{{ highlighted }}</span> de citas pendientes por asignar.
+    }@else {
+      {{text}}
+    }
+  </div>  
+  <div class="filter-section">
+    <div class="input-wrapper">
+      <input type="text" placeholder="Buscar..." />
+      <fa-icon class="search-icon" [icon]="faSearch"></fa-icon>
+    </div>
+    <div class="dropdown">
+      <button class="dropdown-btn" (click)="toggleDropdown()">
+        @if(showDropdown){
+        <fa-icon [icon]="faCaretDown"></fa-icon>
+        }@else {
+        <fa-icon [icon]="faCaretUp"></fa-icon>
+        }
+        <span>Filtrar</span>
+        <fa-icon [icon]="faFilter"></fa-icon>
+      </button>
+      @if (showDropdown){
+      <div class="dropdown-content">
+        <a href="#">Opción 1</a>
+        <a href="#">Opción 2</a>
+        <a href="#">Opción 3</a>
+      </div>
+      }
+    </div>
+  </div>
+</div>

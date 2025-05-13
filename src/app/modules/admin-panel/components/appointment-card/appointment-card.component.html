@@ -1,0 +1,36 @@
+<app-primary-card maxHeight="fit-content" minHeight="auto" padding="20px">
+  <div class="appointment-card">
+    <div class="doctor-info">
+      <img src="assets/images/default_doctor.svg" alt="Foto del Doctor" class="doctor-image" />
+      <div class="appointment-details">
+        <h3 class="appointment-title">{{specialty}}</h3>
+        @if(first_name){
+          <p class="doctor-name">Dr. {{first_name}} {{last_name}}</p>
+        }@else {
+          <p class="doctor-name">Sin profesional asignado</p>
+        }
+      </div>
+    </div>
+
+    <div class="appointment-footer">
+      <div class="appointment-date">
+        <div class="time-outline-bg">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+        <div class="date-text">
+          <p>{{dayOfWeek || 'Sin día asignado'}}</p>
+          <p>{{date || 'Sin fecha asignada'}}</p>
+          <p>{{time || 'Sin hora asignada'}}</p>
+        </div>
+      </div>
+      @if(!edit_button){
+      <button class="edit-button" [ngClass]="{'hidden': edit_button}"  (click)="edit()">Editar</button>
+      }
+    </div>
+    
+    <div class="additional-footer" [ngClass]="{'active': edit_button}">
+      <button class="cancel-button" (click)="confirmCancel()">Cancelar</button>
+      <!-- <button class="edit-button">Reprogramar</button> -->
+    </div>
+  </div>
+</app-primary-card>

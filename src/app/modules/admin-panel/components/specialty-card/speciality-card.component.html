@@ -1,0 +1,21 @@
+<div class="card-container">
+  <div class="background-gradient"></div>
+  <div class="card-image">
+    <img 
+      [src]="lowResImage" 
+      class="low-res"
+      alt=""
+    >
+    <img 
+      [src]="api + image" 
+      loading="lazy" 
+      [alt]="speciality"
+      class="high-res"
+      [class.loaded]="imageLoaded"
+    >
+  </div>
+  
+  <div class="card-content">
+    <h2>{{speciality}}</h2>
+  </div>
+</div>

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthGuard, AutoRedirectGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/admin.guard';
 import { VerifyEmailComponent } from './modules/auth/pages/verify-email/verify-email.component';
 
 const routes: Routes = [
@@ -45,9 +46,18 @@ const routes: Routes = [
     path: 'appointment',
     loadChildren: () =>
       import('./modules/appointment/appointment.module').then(
-        (m) => m.Appointmentodule
+        (m) => m.AppointmentModule
       ),
   },
+
+  {
+    path: 'admin-panel',
+    loadChildren: () =>
+      import('./modules/admin-panel/admin-panel.module').then(
+        (m) => m.AdminPanelModule
+      ),
+  },
+
 
   {
     path: 'home',

@@ -1,0 +1,40 @@
+<header class="header">
+  <div class="logo">
+    <img src="assets/logo/beneficiate_logo.svg" alt="Beneficiate">
+  </div>
+  <div class="profile-container">
+    <div class="profile-info">
+      <h2>{{ user?.first_name.split(' ')[0] }} {{ user?.last_name.split(' ')[0] }}</h2>
+      <p>Agente de Call Center</p>
+    </div>
+    <div class="profile-photo" (click)="toggleProfileMenu()">
+      <img [src]="profileImage" [alt]="user?.first_name + ' ' + user?.last_name">
+      <div class="status-indicator" [class.online]="true"></div>
+    </div>
+    
+    <div class="profile-menu" *ngIf="showProfileMenu">
+      <div class="menu-arrow"></div>
+      <ul>
+        <!-- <li>
+          <a href="javascript:void(0)" class="menu-item">
+            <ion-icon name="person-outline"></ion-icon>
+            <span>Mi perfil</span>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:void(0)" class="menu-item">
+            <ion-icon name="settings-outline"></ion-icon>
+            <span>Configuración</span>
+          </a>
+        </li> -->
+        <li class="divider"></li>
+        <li>
+          <a href="javascript:void(0)" class="menu-item logout" (click)="confirmLogout()">
+            <ion-icon name="log-out-outline"></ion-icon>
+            <span>Cerrar sesión</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>

@@ -174,6 +174,11 @@ export class AuthService {
     return user && user.isAgent === true;
   }
 
+  isAdmin(): boolean {
+    const user = this.getUserData();
+    return user && user.role === 'Admin';
+  }
+
   refreshToken(): Observable<any> {
     const refreshToken = localStorage.getItem('refresh-token');
     if (!refreshToken) {

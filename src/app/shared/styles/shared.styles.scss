@@ -59,8 +59,8 @@ h2 {
 }
 
 .remove {
-  background-color: var(--ion-color-danger);
-  color: var(--ion-color-light);
+  background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+  color: var(--ion-color-danger);
   font-size: 0.9rem;
   position: absolute;
   top: 10px;

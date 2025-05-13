@@ -1,0 +1,41 @@
+:host {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+  }
+  
+  /* Contenedor principal */
+  .chat-floating-container {
+    background: url('../../../../../assets/background/background_chat_floating.svg') no-repeat center center / cover;
+    border-radius: 30px;
+    padding: 1rem 1.5rem;
+    width: 250px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  /* Texto informativo */
+  .info-text {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    color: #203264; 
+    font-weight: 600;
+  }
+  
+  /* Botón de chat */
+  .chat-button {
+    background-color: var(--ion-color-dark); 
+    color: var(--ion-color-secondary);           
+    border: none;
+    border-radius: 20px;
+    padding: 1rem 1.2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%; 
+  
+    &:hover {
+      filter: brightness(0.9);
+    }
+  }
+  

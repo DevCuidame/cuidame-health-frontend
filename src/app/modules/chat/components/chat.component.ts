@@ -9,6 +9,7 @@ import { ChatMessage, ChatService, ChatSession } from 'src/app/core/services/cha
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
+  standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule],
   styleUrls: ['./chat.component.scss']
 })

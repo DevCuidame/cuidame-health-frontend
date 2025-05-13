@@ -1,0 +1,36 @@
+<div class="patient-search-container">
+  <div class="patient-info">
+    <img
+      [src]="image_path"
+      [alt]="first_name"
+      class="patient-img"
+    />
+    <div class="patient-text">
+      <p class="patient-name">
+        {{ first_name.split(" ")[0] }} {{ last_name.split(" ")[0] }}
+      </p>
+      <p class="appointment-type">
+        {{ firstTime ? "Primera vez" : "Control" }}
+      </p>
+    </div>
+    <div class="patient-text">
+      <p class="patient-name">Ciudad</p>
+      <p class="appointment-type">{{ cityName || "Sin ciudad asignada" }}</p>
+    </div>
+    <div class="patient-text">
+      <p class="patient-name">Ticket</p>
+      <p class="appointment-type">
+        {{ ticketNumber || "Sin ticket asignado" }}
+      </p>
+    </div>
+  </div>
+
+  <div class="search-wrapper">
+    <input
+      type="text"
+      placeholder="Buscar..."
+      (input)="onSearchTermChange($event)"
+    />
+    <fa-icon class="search-icon" [icon]="faSearch"></fa-icon>
+  </div>
+</div>

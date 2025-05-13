@@ -3,7 +3,7 @@ import { Observable, Subject, throwError, of } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
 import { UserService } from 'src/app/modules/auth/services/user.service';
 import { BeneficiaryImage, UserImage } from 'src/app/core/interfaces/user.interface';
-import { AppointmentStateService } from './appointment-state.service';
+import { AppointmentStateService } from './appointment/appointment-state.service';
 
 @Injectable({
   providedIn: 'root'
@@ -84,7 +84,7 @@ export class PatientSearchService {
 
     // Auto-reset success message after 3 seconds
     setTimeout(() => {
-      this.stateService.searchState.update(state => ({
+      this.stateService.searchState.update((state: any)  => ({
         ...state,
         success: false
       }));
@@ -109,7 +109,7 @@ export class PatientSearchService {
     this.stateService.beneficiaryId.set('');
 
     // Reset user data fields to allow manual entry
-    this.stateService.appointment.update(app => ({
+    this.stateService.appointment.update((app: any)  => ({
       ...app,
       user_id: '',
       beneficiary_id: '',
@@ -147,7 +147,7 @@ export class PatientSearchService {
     this.stateService.beneficiaryId.set(userData.id.toString());
     this.stateService.userId.set(userData.user_id.toString());
     
-    this.stateService.appointment.update(app => ({
+    this.stateService.appointment.update((app: any)  => ({
       ...app,
       beneficiary_id: userData.id.toString(),
       user_id: userData.user_id.toString(),
@@ -179,7 +179,7 @@ export class PatientSearchService {
     this.stateService.beneficiaryId.set('');
     this.stateService.userId.set(userData.id.toString());
     
-    this.stateService.appointment.update(app => ({
+    this.stateService.appointment.update((app: any) => ({
       ...app,
       beneficiary_id: '',
       user_id: userData.id.toString(),

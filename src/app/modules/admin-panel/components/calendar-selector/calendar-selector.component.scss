@@ -1,0 +1,208 @@
+.time-selector-container {
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 5px;
+    margin-top: 10px;
+  }
+  
+  .time-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    padding: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    
+    /* Ocultar scrollbar pero mantener funcionalidad */
+    scrollbar-width: thin;
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 10px;
+    }
+  }
+  
+  .time-slot {
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    padding: 8px 5px;
+    text-align: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: var(--ion-color-light);
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    }
+    
+    &.selected {
+      background-color: var(--ion-color-primary);
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(var(--ion-color-primary-rgb), 0.3);
+    }
+  }
+  
+  .manual-schedule-container {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    padding: 15px;
+    margin-bottom: 15px;
+    
+    .form-group {
+      margin-bottom: 15px;
+      
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--ion-color-dark);
+        font-size: 1rem;
+      }
+    }
+    
+    .date-selector-container {
+      margin-bottom: 15px;
+    }
+    
+    .manual-note {
+      background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      
+      p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--ion-color-dark);
+        display: flex;
+        align-items: center;
+        
+        ion-icon {
+          color: var(--ion-color-primary);
+          margin-right: 8px;
+          font-size: 16px;
+        }
+      }
+    }
+  }
+
+  .calendar-container {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    width: 100%;
+    max-width: 350px; 
+    margin: 0 auto;
+  }
+  
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 8px;
+    background-color: var(--ion-color-dark);
+    color: white;
+  }
+  
+  .current-month {
+    font-weight: bold;
+    font-size: 1rem;
+    text-align: center;
+    flex: 1;
+  }
+  
+  .month-nav {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+    margin: 0 5px;
+    z-index: 2;
+  }
+  
+  .month-nav:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 5px 0;
+    background-color: var(--ion-color-light);
+  }
+  
+  .weekday {
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.7rem;
+    color: var(--ion-color-medium);
+  }
+  
+  .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-gap: 1px;
+    padding: 5px;
+  }
+  
+  .day {
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    margin: 1px;
+    height: 28px; 
+  }
+  
+  .day:hover:not(.disabled):not(.other-month) {
+    background-color: var(--ion-color-dark);
+    color: var(--ion-color-light);
+  }
+  
+  .day.other-month {
+    color: var(--ion-color-medium-shade);
+    opacity: 0.5;
+  }
+  
+  .day.today {
+    background-color: var(--ion-color-primary);
+    color: var(--ion-color-light);
+    font-weight: bold;
+  }
+  
+  .day.selected {
+    background-color: var(--ion-color-dark);
+    color: white;
+    font-weight: bold;
+  }
+  
+  .day.disabled {
+    color: var(--ion-color-medium-tint);
+    cursor: not-allowed;
+    opacity: 0.5;
+  }

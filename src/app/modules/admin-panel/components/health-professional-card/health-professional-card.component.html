@@ -1,0 +1,50 @@
+<div class="card-container" [class.unavailable-card]="scheduleInfo!.type === 'UNAVAILABLE'">
+  <div class="background-gradient"></div>
+  <div class="card-image">
+    <img 
+      [src]="lowResProfileImage" 
+      class="low-res"
+      alt=""
+    >
+    <img 
+      [src]="api + profileImage" 
+      loading="lazy"
+      [alt]="first_name"
+      width="150" 
+      height="175"
+      class="high-res"
+    >
+  </div>
+  
+  <div class="card-content">
+    <h2> @if(gender === 'M'){Dr.}@else {Dra.} {{ first_name.split(" ")[0] }} {{ last_name.split(" ")[0] }}</h2>
+    <p class="specialty">{{ specialty_name }}</p>
+
+    @if (scheduleInfo.type === 'MANUAL') {
+      <div class="availability" [ngStyle]="{'color': 'var(--ion-color-primary)'}">
+        Agenda manual
+      </div>
+    }@else if(scheduleInfo.type === 'ONLINE'){
+      <div class="availability" [ngStyle]="{'color': 'var(--ion-color-secondary)'}">
+        Agenda en linea disponible
+      </div>
+    }@else{
+      <div class="availability" [ngStyle]="{'color': 'var(--ion-color-danger)'}">
+        Agenda no disponible
+      </div>
+    }
+    
+    @if (buttonVisible) {
+      <button class="cta-button" (click)="onSolicitarCita()">Solicitar cita</button>
+    }
+  </div>
+  @if (availability && scheduleInfo.type === 'UNAVAILABLE') {
+    <div class="unavailable-tooltip">
+      <div class="tooltip-content">
+        <ion-icon name="logo-whatsapp" ></ion-icon>
+        El profesional no está disponible. Puede cambiar de profesional o comunicarse al whatsapp del médico.
+      </div>
+    </div>
+  }
+</div>
+

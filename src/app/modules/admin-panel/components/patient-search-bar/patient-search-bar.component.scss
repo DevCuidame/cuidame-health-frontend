@@ -1,0 +1,76 @@
+.patient-search-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+
+  .patient-info {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    .patient-img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .patient-text {
+      display: flex;
+      flex-direction: column;
+
+      .patient-name {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--ion-color-primary);
+        font-weight: 600;
+      }
+
+      .appointment-type {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: var(--ion-color-dark);
+      }
+    }
+  }
+
+  /* Barra de búsqueda */
+  .search-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 40%;
+
+    input {
+      border: 0 solid #ccc;
+      width: 100%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      background: #fff;
+      border-radius: 20px;
+      font-size: 1.2rem;
+      padding: 7px;
+      color: var(--ion-color-text-filter);
+
+      &::placeholder {
+        font-size: 1.2rem;
+        color: var(--ion-color-text-filter);
+      }
+      &::focus {
+        outline: none;
+        border: none;
+      }
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      right: 1rem;
+      transform: translateY(-50%);
+      color: var(--ion-color-text-filter);
+
+      font-size: 1rem;
+      pointer-events: none;
+    }
+  }
+}

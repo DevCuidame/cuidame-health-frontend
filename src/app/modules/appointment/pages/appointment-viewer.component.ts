@@ -6,6 +6,7 @@ import { IonicModule, ModalController, NavController } from '@ionic/angular';
 import { PatientAppointmentDetailModalComponent } from '../components/patient-appointment-detail-modal';
 import { Appointment, AppointmentType } from 'src/app/core/interfaces/appointment.interface';
 import { Professional } from 'src/app/core/interfaces/professional.interface';
+import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
 
 
 
@@ -53,7 +54,8 @@ export class AppointmentViewerComponent implements OnInit {
     private formBuilder: FormBuilder,
     private datePipe: DatePipe,
     private modalController: ModalController,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private appointmentService: AppointmentService
   ) {
     this.filterForm = this.formBuilder.group({
       professionalId: [''],
@@ -63,104 +65,53 @@ export class AppointmentViewerComponent implements OnInit {
   
   ngOnInit(): void {
     this.loadPatientAppointments();
-    this.filterAppointments();
   }
-  
+
   loadPatientAppointments(): void {
-    // Mock professionals data (only those who have appointments with this patient)
-    this.professionals = [
-      { id: 1, user: { name: 'Juan', lastname: 'Pérez' }, specialty: 'Medicina General' },
-      { id: 2, user: { name: 'María', lastname: 'Rodríguez' }, specialty: 'Pediatría' },
-      { id: 3, user: { name: 'Carlos', lastname: 'Gómez' }, specialty: 'Cardiología' }
-    ];
+    this.loading = true;
     
-    // Mock appointment types
-    const appointmentTypes = [
-      { id: 1, name: 'Consulta General', description: 'Consulta médica general', default_duration: 30, color_code: '#4CAF50' },
-      { id: 2, name: 'Control', description: 'Control de tratamiento', default_duration: 20, color_code: '#2196F3' },
-      { id: 3, name: 'Urgencia', description: 'Atención urgente', default_duration: 45, color_code: '#F44336' }
-    ];
-    
-    // Generate mock appointments for the current patient
-    this.appointments = this.generatePatientAppointments(this.currentPatientId, appointmentTypes);
-  }
-  
-  private generatePatientAppointments(patientId: number, appointmentTypes: AppointmentType[]): Appointment[] {
-    const appointments: Appointment[] = [];
-    const today = new Date();
-    
-    // Add some past appointments
-    for (let i = 30; i > 0; i--) {
-      if (Math.random() > 0.7) { // 30% chance of having an appointment on any given past day
-        const professionalIndex = Math.floor(Math.random() * this.professionals.length);
-        const typeIndex = Math.floor(Math.random() * appointmentTypes.length);
-        
-        const appointmentDate = new Date(today);
-        appointmentDate.setDate(today.getDate() - i);
-        
-        const hour = 8 + Math.floor(Math.random() * 10);
-        appointmentDate.setHours(hour, 0, 0, 0);
-        
-        const endTime = new Date(appointmentDate);
-        endTime.setMinutes(endTime.getMinutes() + appointmentTypes[typeIndex].default_duration);
-        
-        appointments.push({
-          id: appointments.length + 1,
-          patient_id: patientId,
-          professional_id: this.professionals[professionalIndex].id,
-          appointment_type_id: appointmentTypes[typeIndex].id,
-          start_time: appointmentDate.toISOString(),
-          end_time: endTime.toISOString(),
-          status: 'completed',
-          notes: 'Cita completada satisfactoriamente',
-          professional: this.professionals[professionalIndex],
-          appointmentType: appointmentTypes[typeIndex]
-        });
+    // Obtener todas las citas para tener el historial completo
+    this.appointmentService.getAllAppointments().subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.appointments = response.data;
+          
+          // Extraer profesionales únicos de las citas
+          const uniqueProfessionals = new Map<number, Professional>();
+          this.appointments.forEach(appointment => {
+            if (appointment.professional && !uniqueProfessionals.has(appointment.professional.id)) {
+              uniqueProfessionals.set(appointment.professional.id, appointment.professional);
+            }
+          });
+          this.professionals = Array.from(uniqueProfessionals.values());
+          
+          // Aplicar filtros después de cargar los datos
+          this.filterAppointments();
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar las citas:', error);
+        // Implementar manejo de errores aquí (mostrar mensaje, etc.)
+      },
+      complete: () => {
+        this.loading = false;
       }
-    }
-    
-    // Add some future appointments
-    for (let i = 1; i <= 60; i++) {
-      if (Math.random() > 0.8) { // 20% chance of having an appointment on any given future day
-        const professionalIndex = Math.floor(Math.random() * this.professionals.length);
-        const typeIndex = Math.floor(Math.random() * appointmentTypes.length);
-        
-        const appointmentDate = new Date(today);
-        appointmentDate.setDate(today.getDate() + i);
-        
-        const hour = 8 + Math.floor(Math.random() * 10);
-        appointmentDate.setHours(hour, 0, 0, 0);
-        
-        const endTime = new Date(appointmentDate);
-        endTime.setMinutes(endTime.getMinutes() + appointmentTypes[typeIndex].default_duration);
-        
-        const futureStatuses = ['confirmed', 'requested'];
-        const statusIndex = Math.floor(Math.random() * futureStatuses.length);
-        
-        appointments.push({
-          id: appointments.length + 1,
-          patient_id: patientId,
-          professional_id: this.professionals[professionalIndex].id,
-          appointment_type_id: appointmentTypes[typeIndex].id,
-          start_time: appointmentDate.toISOString(),
-          end_time: endTime.toISOString(),
-          status: futureStatuses[statusIndex],
-          notes: `Cita ${futureStatuses[statusIndex] === 'confirmed' ? 'confirmada' : 'solicitada'}`,
-          professional: this.professionals[professionalIndex],
-          appointmentType: appointmentTypes[typeIndex]
-        });
-      }
-    }
-    
-    return appointments.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+    });
   }
+
   
   filterAppointments(): void {
     const filters = this.filterForm.value;
     let filtered = [...this.appointments];
     
     if (filters.professionalId) {
-      filtered = filtered.filter(a => a.professional_id === parseInt(filters.professionalId));
+      filtered = filtered.filter(a => {
+        // Si es una cita sin asignar, no aplicamos el filtro de profesional
+        if (this.isUnassignedAppointment(a) && a.status === 'requested') {
+          return true;
+        }
+        return a.professional_id === parseInt(filters.professionalId);
+      });
     }
     
     if (filters.status) {
@@ -199,6 +150,11 @@ export class AppointmentViewerComponent implements OnInit {
   getAppointmentsForDate(date: Date): Appointment[] {
     const dateStr = this.formatDateToCompare(date);
     return this.filteredAppointments.filter(appointment => {
+      // Si es una cita sin asignar, no la incluimos en ninguna fecha específica del calendario
+      if (this.isUnassignedAppointment(appointment)) {
+        return false;
+      }
+      
       const appointmentDateStr = this.formatDateToCompare(new Date(appointment.start_time));
       return appointmentDateStr === dateStr;
     });
@@ -281,4 +237,76 @@ export class AppointmentViewerComponent implements OnInit {
   getStatusColor(status: string): string {
     return this.statusColors[status as keyof typeof this.statusColors] || '#9E9E9E';
   }
+
+  // Añadiendo método para manejar citas sin asignación en appointment-viewer.component.ts
+
+/**
+ * Verifica si una cita está sin asignar (sin profesional o con fecha errónea)
+ */
+isUnassignedAppointment(appointment: Appointment): boolean {
+  if (!appointment.professional) {
+    return true;
+  }
+  
+  // Verificar si la fecha está más de 50 años en el futuro (lo que indicaría un error)
+  const appointmentDate = new Date(appointment.start_time);
+  const today = new Date();
+  const fiftyYearsFromNow = new Date();
+  fiftyYearsFromNow.setFullYear(today.getFullYear() + 50);
+  
+  return appointmentDate > fiftyYearsFromNow;
+}
+
+/**
+ * Obtiene una representación adecuada de la fecha para citas sin asignar
+ */
+getDisplayTimeForUnassignedAppointment(appointment: Appointment): string {
+  return 'Pendiente de asignación';
+}
+
+/**
+ * Obtiene todas las citas solicitadas sin asignar
+ */
+getUnassignedAppointments(): Appointment[] {
+  return this.filteredAppointments.filter(appointment => 
+    appointment.status === 'requested' && this.isUnassignedAppointment(appointment)
+  );
+}
+
+/**
+ * Obtiene el nombre completo del paciente de la cita
+ */
+getPatientName(appointment: any): string {
+  if (appointment.patient) {
+    return `${appointment.patient.nombre} ${appointment.patient.apellido}`;
+  }
+  return 'Paciente no especificado';
+}
+
+/**
+ * Obtiene información adicional del paciente (documento)
+ */
+getPatientInfo(appointment: any): string {
+  if (appointment.patient) {
+    const tipo = this.getDocumentTypeName(appointment.patient.tipoid);
+    return `${tipo}: ${appointment.patient.numeroid}`;
+  }
+  return '';
+}
+
+/**
+ * Convierte el código de tipo de documento a nombre legible
+ */
+getDocumentTypeName(tipoId: string): string {
+  const documentTypes: {[key: string]: string} = {
+    'cedula_ciudadania': 'CC',
+    'tarjeta_identidad': 'TI',
+    'registro_civil': 'RC',
+    'pasaporte': 'PA',
+    'cedula_extranjeria': 'CE'
+  };
+  
+  return documentTypes[tipoId] || tipoId;
+}
+
 }

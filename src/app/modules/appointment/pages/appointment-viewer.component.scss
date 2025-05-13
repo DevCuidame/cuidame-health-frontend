@@ -358,3 +358,160 @@ ion-modal {
     transform: translateY(0);
   }
 }
+
+/* Estilos para la sección de citas sin asignar */
+.unassigned-appointments-section {
+  margin-top: 24px;
+  padding: 0 16px;
+  max-height: 300px; /* Altura máxima para permitir scroll */
+  overflow-y: auto; /* Habilita el scroll vertical */
+  
+  /* Estilo personalizado para la barra de scroll */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+  
+  
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+  }
+}
+
+/* Asegurarnos de que las appointment-cards mantengan el mismo estilo */
+.appointment-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+  
+  .appointment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    
+    .time, .date-time {
+      .date {
+        font-size: 14px;
+        font-weight: 500;
+        color: #555;
+      }
+      
+      .time {
+        font-size: 14px;
+        color: #777;
+      }
+    }
+    
+    .status-badge {
+      font-size: 12px;
+      font-weight: 500;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+    }
+  }
+  
+  .appointment-info {
+    .professional-name {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      color: #333;
+    }
+    
+    .appointment-details {
+      font-size: 13px;
+      color: #666;
+    }
+  }
+}
+
+/* Estilos para los elementos de fechas pendientes */
+.pending-date {
+  color: #888;
+}
+
+/* Asegurarnos de que la sección de appointments-list mantenga el estilo */
+.appointments-list {
+  margin-top: 8px;
+  margin-bottom: 16px;
+  
+  .appointment-card:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Estilos para mensajes de estado para citas pendientes */
+.pending-status {
+  font-style: italic;
+  display: inline-block;
+  background-color: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
+}
+
+/* Adaptaciones para vista de lista */
+.list-container {
+  padding: 16px;
+  
+  .date-time {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Mejora para visualización en dispositivos móviles */
+@media (max-width: 576px) {
+  .unassigned-appointments-section {
+    padding: 0 12px;
+  }
+  
+  .appointment-card {
+    padding: 10px 14px;
+  }
+}
+
+/* Estilos para la información del paciente */
+.patient-info {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #f0f0f0;
+  
+  .patient-name {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 2px;
+  }
+  
+  .patient-id {
+    font-size: 12px;
+    color: #777;
+  }
+}

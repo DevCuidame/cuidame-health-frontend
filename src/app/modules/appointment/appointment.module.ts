@@ -36,4 +36,4 @@ const routes: Routes = [
     TabBarComponent,
   ],
 })
-export class Appointmentodule {}
+export class AppointmentModule {}

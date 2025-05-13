@@ -1,0 +1,57 @@
+<div class="sidebar-container">
+  <div class="sidebar">
+    <ul class="sidebar-options">
+      <li>
+        <app-custom-button
+          routerLink="/call-center/dash/assigment"
+          (click)="setActive('assigment')"
+          label="Citas por Agendar"
+          type="submit"
+          [disabled]="false"
+          [textColor]="'var(--color-highlighted-text)'"
+          [boxShadow]="'0px 2px 4px 2px rgba(78, 170, 3, 0.5)'"
+          [background]="
+            activeButton === 'assigment'
+              ? 'var(--color-button-background-active)'
+              : 'var(--color-button-background)'
+          "
+        >
+        </app-custom-button>
+      </li>
+      <li>
+        <app-custom-button
+          routerLink="/call-center/dash/daily"
+          (click)="setActive('daily')"
+          label="Citas por Confirmar"
+          type="submit"
+          [disabled]="false"
+          [boxShadow]="'0px 2px 4px 2px rgba(78, 170, 3, 0.5)'"
+          [textColor]="'var(--color-highlighted-text)'"
+          [background]="
+            activeButton === 'daily'
+              ? 'var(--color-button-background-active)'
+              : 'var(--color-button-background)'
+          "
+        >
+        </app-custom-button>
+      </li>
+      <li>
+        <app-custom-button
+          routerLink="/call-center/dash/pending"
+          (click)="setActive('pending')"
+          label="Asignación de Citas"
+          type="submit"
+          [disabled]="false"
+          [textColor]="'var(--color-highlighted-text)'"
+          [boxShadow]="'0px 2px 4px 2px rgba(78, 170, 3, 0.5)'"
+          [background]="
+            activeButton === 'pending'
+              ? 'var(--color-button-background-active)'
+              : 'var(--color-button-background)'
+          "
+        >
+        </app-custom-button>
+      </li>
+    </ul>
+  </div>
+</div>

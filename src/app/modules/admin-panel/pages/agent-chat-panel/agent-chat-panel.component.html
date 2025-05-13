@@ -1,0 +1,150 @@
+<!-- agent-chat-panel.component.html -->
+<div class="agent-chat-container">
+  <!-- Panel lateral de usuarios y chats -->
+  <div class="sidebar">
+    <!-- Pestañas -->
+    <div class="tabs">
+      <button 
+        [class.active]="!showOnlineUsers"
+        (click)="showOnlineUsers = false"
+      >
+        Chats Activos
+      </button>
+      <button 
+        [class.active]="showOnlineUsers"
+        (click)="showOnlineUsers = true"
+      >
+        Usuarios en Línea
+      </button>
+    </div>
+    
+    <!-- Lista de chats activos o usuarios -->
+    <div class="list-container">
+      <ng-container *ngIf="showOnlineUsers; else chatsList">
+        <!-- Lista de usuarios en línea -->
+        <div class="user-list">
+          <div *ngFor="let user of onlineUsers" 
+               class="user-item"
+               (click)="initiateChat(user.id)">
+            <div class="avatar">{{user.first_name[0]}}{{user.last_name[0]}}</div>
+            <div class="user-info">
+              <p class="name">{{user.first_name}} {{user.last_name}}</p>
+              <p class="email">{{user.email}}</p>
+            </div>
+            <span class="status-dot online"></span>
+          </div>
+          
+          <p *ngIf="onlineUsers.length === 0" class="empty-message">
+            No hay usuarios en línea
+          </p>
+        </div>
+      </ng-container>
+      
+      <ng-template #chatsList>
+        <!-- Lista de chats activos -->
+        <div class="chat-list">
+          <div *ngFor="let chat of activeChats" 
+               class="chat-item"
+               [class.selected]="selectedChat?.id === chat.id"
+               (click)="selectChat(chat)">
+            <div class="avatar">{{chat.user?.first_name?.[0] || 'U'}}{{chat.user?.last_name?.[0] || ''}}</div>
+            <div class="chat-info">
+              <p class="name">{{chat.user?.first_name || 'Usuario'}} {{chat.user?.last_name || ''}}</p>
+              <p class="message">{{chat.last_message?.message || 'No hay mensajes'}}</p>
+            </div>
+            <span class="status-dot" [class.online]="chat.status === 'ACTIVE'"></span>
+          </div>
+          
+          <p *ngIf="activeChats.length === 0" class="empty-message">
+            No hay chats activos
+          </p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+  
+  <!-- Área de chat -->
+  <div class="chat-area">
+    <ng-container *ngIf="selectedChat; else noChatSelected">
+      <!-- Cabecera del chat -->
+      <div class="chat-header">
+        <div class="user-info">
+          <div class="avatar">{{selectedChat.user.first_name[0]}}{{selectedChat.user.last_name[0]}}</div>
+          <div>
+            <p class="name">{{selectedChat.user.first_name}} {{selectedChat.user.last_name}}</p>
+            <p class="email">{{selectedChat.user.email}}</p>
+          </div>
+        </div>
+        
+        <div>
+          <button 
+            *ngIf="selectedChat.status === 'ACTIVE'"
+            class="close-button"
+            (click)="closeChat(selectedChat.id)"
+          >
+            Cerrar Chat
+          </button>
+          <span *ngIf="selectedChat.status !== 'ACTIVE'" class="closed-badge">
+            Chat Cerrado
+          </span>
+        </div>
+      </div>
+      
+      <!-- Mensajes -->
+      <div class="messages-container">
+        <div *ngFor="let msg of messages" 
+             class="message-item"
+             [class.agent-message]="msg.sender_type === 'AGENT'"
+             [class.user-message]="msg.sender_type === 'USER'"
+             [class.system-message]="msg.sender_type === 'SYSTEM'">
+          <div class="message-bubble">
+            {{msg.message}}
+          </div>
+          <div class="message-time">
+            {{msg.sent_at | date:'shortTime'}}
+          </div>
+        </div>
+        
+        <p *ngIf="messages.length === 0" class="empty-message">
+          No hay mensajes aún
+        </p>
+      </div>
+      
+      <!-- Área de entrada de mensaje -->
+      <div class="message-input" *ngIf="selectedChat.status === 'ACTIVE'">
+        <input
+          type="text"
+          placeholder="Escribe un mensaje..."
+          [(ngModel)]="newMessage"
+          (keyup.enter)="sendMessage()"
+        >
+        <button (click)="sendMessage()">Enviar</button>
+      </div>
+      
+      <div *ngIf="selectedChat.status !== 'ACTIVE'" class="chat-closed-banner">
+        Este chat está cerrado
+      </div>
+    </ng-container>
+    
+    <ng-template #noChatSelected>
+      <div class="no-chat-placeholder">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <p>Selecciona un chat o inicia uno nuevo</p>
+      </div>
+    </ng-template>
+  </div>
+  
+  <!-- Notificación de error -->
+  <div *ngIf="error" class="error-notification">
+    {{error}}
+  </div>
+  
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="loading-box">
+      <p>Cargando...</p>
+    </div>
+  </div>
+</div>
