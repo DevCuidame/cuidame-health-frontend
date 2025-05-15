@@ -7,6 +7,7 @@ import { PatientAppointmentDetailModalComponent } from '../components/patient-ap
 import { Appointment, AppointmentType } from 'src/app/core/interfaces/appointment.interface';
 import { Professional } from 'src/app/core/interfaces/professional.interface';
 import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
+import { TabBarComponent } from 'src/app/shared/components/tab-bar/tab-bar.component';
 
 
 
@@ -14,7 +15,7 @@ import { AppointmentService } from 'src/app/core/services/appointment/appointmen
   selector: 'app-appointments-viewer',
   templateUrl: './appointment-viewer.component.html',
   styleUrls: ['./appointment-viewer.component.scss'],
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [IonicModule, CommonModule, ReactiveFormsModule, TabBarComponent],
   providers: [DatePipe],
   standalone: true
 })

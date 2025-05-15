@@ -12,8 +12,10 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faCrown } from '@fortawesome/free-solid-svg-icons';
 import { BeneficiaryService } from 'src/app/core/services/beneficiary.service';
 import { GreetingComponent } from 'src/app/shared/components/greeting/greeting.component';
-import { Subscription, interval } from 'rxjs';
+import { Subscription, interval, switchMap, of, catchError } from 'rxjs';
 import { AnimatedCounterComponent } from 'src/app/shared/components/animated-counter/animated-counter.component';
+import { StorageService } from 'src/app/core/services/storage.service';
+import { CacheService } from 'src/app/core/services/cache-service';
 
 @Component({
   selector: 'app-dashboard',
@@ -52,7 +54,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private beneficiaryService: BeneficiaryService,
     private cdRef: ChangeDetectorRef,
     private navController: NavController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private storageService: StorageService,
+    private cacheService: CacheService
   ) {}
 
   ngOnInit() {
@@ -60,11 +64,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadUserData();
     this.loadBeneficiaries();
 
-    // Initial refresh from localStorage
-    this.authService.refreshUserData();
+    // Inicialmente intentar cargar datos del almacenamiento
+    this.refreshFromStorage();
+    
+    // Luego, actualizar desde la API
+    // this.authService.getDataFromApi().subscribe(
+    //   (apiData) => {
+    //     if (apiData) {
+    //       // Actualizar datos del usuario con la respuesta de la API
+    //       this.authService.setUser(apiData.user).subscribe();
+    //     }
+    //   },
+    //   (error) => {
+    //     console.warn('Error al obtener datos de API:', error);
+    //   }
+    // );
 
     // Start automatic refresh cycle
-    this.startAutoRefresh();
+    // this.startAutoRefresh();
   }
 
   ngOnDestroy() {
@@ -75,20 +92,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.refreshInterval) {
       this.refreshInterval.unsubscribe();
     }
+
+    // Eliminar listeners de eventos
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    window.removeEventListener('focus', this.handleWindowFocus);
   }
 
   startAutoRefresh() {
     this.refreshInterval = interval(30000).subscribe(() => {
       if (this.user?.id) {
-        this.refreshFromLocalStorage();
+        this.refreshFromStorage();
       }
     });
 
-    document.addEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange.bind(this)
-    );
-    window.addEventListener('focus', this.handleWindowFocus.bind(this));
+    // Guardar referencias a las funciones vinculadas
+    this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
+    this.handleWindowFocus = this.handleWindowFocus.bind(this);
+    
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    window.addEventListener('focus', this.handleWindowFocus);
   }
 
   handleVisibilityChange() {
@@ -142,6 +164,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 : null,
           }));
           this.count = this.beneficiaries.length;
+          this.cdRef.detectChanges();
         }
       }
     );
@@ -170,24 +193,48 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   refreshUserDataFromServer() {
     if (this.user?.id) {
+      // Utilizar cacheService para un acceso más eficiente a los datos
+      this.cacheService.set('last_refresh_attempt', new Date().toISOString(), false);
+      
       const refreshSub = this.userService
         .refreshUserData(this.user.id)
-        .subscribe(
-          () => {},
-          (error) => {
-            this.refreshFromLocalStorage();
-          }
-        );
+        .pipe(
+          catchError(error => {
+            console.warn('Error al actualizar datos del usuario:', error);
+            return of(null);
+          })
+        )
+        .subscribe(() => {
+          // Intentar obtener beneficiarios actualizados también
+          this.beneficiaryService.fetchBeneficiaries().subscribe(
+            () => {},
+            () => this.refreshFromStorage()
+          );
+        });
 
       this.subscriptions.push(refreshSub);
     }
   }
 
   /**
-   * Refreshes user data from localStorage
+   * Refreshes user data from storage service
    */
-  refreshFromLocalStorage() {
-    this.authService.refreshUserData();
+  refreshFromStorage() {
+    // Obtener datos del usuario desde StorageService
+    this.storageService.getItem('user').subscribe(userData => {
+      if (userData) {
+        // Actualizar userService con los datos almacenados
+        this.userService.setUser(userData);
+      }
+    });
+
+    // También intentar obtener beneficiarios desde el almacenamiento
+    this.storageService.getItem('beneficiaries').subscribe(beneficiaries => {
+      if (beneficiaries && Array.isArray(beneficiaries)) {
+        this.beneficiaryService['beneficiariesSubject'].next(beneficiaries);
+        this.beneficiaryService['updateBeneficiaryCount'](beneficiaries.length);
+      }
+    });
   }
 
   setActiveTab(tab: string) {

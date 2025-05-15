@@ -37,4 +37,6 @@ export interface User {
   imagebs64?: string;      // Imagen en base64
   path?: string;           // Ruta de la imagen
   roles?: string[];        // Roles asignados
+  isAgent?: boolean;       // Indica si el usuario es un agente
+  isAdmin?: boolean;       // Indica si el usuario es un administrador
 }

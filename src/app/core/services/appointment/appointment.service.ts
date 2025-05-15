@@ -14,7 +14,6 @@ export class AppointmentService {
   private cacheKey = 'appointmentCache';
   public appointments = signal<Appointment[]>([]);
   public api = environment.url;
-  public version = 'api/';
 
   constructor(private http: HttpClient) {
     this.loadFromCache();
@@ -34,7 +33,7 @@ export class AppointmentService {
 
   cancelAppointment(id: number): Observable<any> {
     return this.http
-      .delete(`${this.api}${this.version}medical-appointment/cancel/${id}`)
+      .delete(`${this.api}api/medical-appointment/cancel/${id}`)
       .pipe(
         tap(() => {
           const updatedAppointments = this.appointments().filter(
@@ -53,8 +52,8 @@ export class AppointmentService {
     const isManualPending = appointment.status === 'TO_BE_CONFIRMED';
 
     const endpoint = isManualPending
-      ? `${this.api}${this.version}medical-appointment/create-pending`
-      : `${this.api}${this.version}medical-appointment/create-new`;
+      ? `${this.api}api/medical-appointment/create-pending`
+      : `${this.api}api/medical-appointment/create-new`;
 
     return this.http.post<AppointmentResponse>(endpoint, appointment).pipe(
       tap((response) => {
@@ -83,7 +82,7 @@ export class AppointmentService {
 
     return this.http
       .put<AppointmentResponse>(
-        `${this.api}${this.version}medical-appointment/update/${id}`,
+        `${this.api}api/medical-appointment/update/${id}`,
         appointment
       )
       .pipe(
@@ -112,7 +111,7 @@ export class AppointmentService {
   getPendingAppointments(): Observable<Appointment[]> {
     return this.http
       .get<{ data: Appointment[] }>(
-        `${this.api}${this.version}medical-appointment/pending`
+        `${this.api}api/medical-appointment/pending`
       )
       .pipe(
         map((response) => response.data),
@@ -126,7 +125,7 @@ export class AppointmentService {
   updateAppointmentStatus(id: number, status: any): Observable<any> {
     return this.http
       .put<AppointmentResponse>(
-        `${this.api}${this.version}medical-appointment/status/${id}`,
+        `${this.api}api/medical-appointment/status/${id}`,
         { status }
       )
       .pipe(
@@ -153,7 +152,7 @@ export class AppointmentService {
   getAppointmentsList(): void {
     this.http
       .get<{ data: any[] }>(
-        `${this.api}${this.version}patient/appointments/all`
+        `${this.api}api/patient/appointments/all`
       )
       .pipe(
         map((response) => response.data),
@@ -178,7 +177,7 @@ export class AppointmentService {
   }
 
   getAllAppointments(): Observable<ApiResponse<Appointment[]>> {
-    return this.http.get<ApiResponse<Appointment[]>>(`${this.api}${this.version}patient/appointments/all`);
+    return this.http.get<ApiResponse<Appointment[]>>(`${this.api}api/patient/appointments/all`);
   }
 
   clearCache(): void {

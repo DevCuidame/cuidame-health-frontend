@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -5,12 +6,13 @@ import { IonicModule } from '@ionic/angular';
 
 @Component({
   selector: 'app-edit-button',
-  imports:[ IonicModule],
+  imports:[ IonicModule, CommonModule],
   templateUrl: './edit-button.component.html',
   styleUrls: ['./edit-button.component.scss'],
 })
 export class EditButtonComponent {
   @Input() route!: string; 
+  @Input() top!: string;
 
   constructor(private router: Router) {}
 

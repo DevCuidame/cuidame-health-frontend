@@ -9,7 +9,6 @@ import { AuthInterceptor } from '../../core/interceptors/auth.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { CodeLookupComponent } from 'src/app/pages/code-lookup/code-lookup.component';
 import { AuthLayoutComponent } from 'src/app/modules/auth/components/auth-container/auth-layout.component';
 
 const routes: Routes = [
@@ -18,10 +17,6 @@ const routes: Routes = [
     component: AuthLayoutComponent,
     canActivate: [AuthGuard],
     children: [
-      {
-        path: 'code-lookup',
-        component: CodeLookupComponent
-      },
       {
         path: '',
         redirectTo: 'home',

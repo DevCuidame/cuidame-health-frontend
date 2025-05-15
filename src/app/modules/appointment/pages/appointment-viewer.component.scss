@@ -62,10 +62,32 @@
 }
 
 /* Calendar View */
-.calendar-container {
+.calendar-container[_ngcontent-ng-c886546223] {
   flex: 1;
   overflow-y: auto;
   background-color: white;
+  
+  /* Por defecto (móviles primero): ancho completo */
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Para tablets - ajusta los breakpoints según tus necesidades */
+@media (min-width: 768px) {
+  .calendar-container[_ngcontent-ng-c886546223] {
+    width: 40%;
+    max-width: 80%;
+    margin: 0 auto; /* Centrar el contenedor */
+  }
+}
+
+/* Para computadoras de escritorio */
+@media (min-width: 1024px) {
+  .calendar-container[_ngcontent-ng-c886546223] {
+    width: 30%;
+    max-width: 900px; /* Limitar el ancho máximo */
+    margin: 0 auto; /* Centrar el contenedor */
+  }
 }
 
 .calendar-header {
@@ -244,7 +266,7 @@
 /* Floating Action Button */
 .fab {
   position: fixed;
-  bottom: 24px;
+  bottom: 60px;
   right: 24px;
   width: 56px;
   height: 56px;

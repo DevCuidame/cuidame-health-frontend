@@ -159,8 +159,7 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   refreshBeneficiaries() {
     this.hasError = false;
     this.beneficiaryService.fetchBeneficiaries().subscribe({
-      next: (beneficiaries) => {
-      },
+      next: (beneficiaries) => {},
       error: (error) => {
         this.hasError = true;
       },
@@ -178,7 +177,6 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   }
 
   async goToBeneficiary(beneficiary: Beneficiary) {
-
     try {
       await this.beneficiaryService.setActiveBeneficiary({ ...beneficiary });
       this.navCtrl.navigateForward(['/beneficiary/home']);
@@ -195,7 +193,9 @@ export class BeneficiaryCardComponent implements OnInit, OnDestroy {
   }
 
   async createBeneficiary() {
-    this.router.navigate(['/code/code-lookup']);
+    this.router.navigate(['/beneficiary/add'], {
+      queryParams: { new: true },
+    });
   }
 
   async confirmDelete(beneficiary: Beneficiary, event: Event) {

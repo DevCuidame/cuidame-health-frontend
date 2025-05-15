@@ -8,34 +8,109 @@ import {
   of,
   tap,
   throwError,
+  switchMap,
 } from 'rxjs';
 import { User } from 'src/app/core/interfaces/auth.interface';
-import { UserHealthService } from 'src/app/core/services/user-health.service';
 import { environment } from 'src/environments/environment';
-
-export let appInjector: Injector;
+import { StorageService } from 'src/app/core/services/storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private userSubject = new BehaviorSubject<User | null>(
-    this.getUserFromStorage()
-  );
-
+  private userSubject = new BehaviorSubject<User | null>(null);
   public user$: Observable<User | null> = this.userSubject.asObservable();
   private baseUrl = environment.url;
 
-  constructor(private http: HttpClient) {}
-
-  setUser(userData: User) {
-    this.userSubject.next(userData);
-    // Ensure localStorage is updated when user is set
-    localStorage.setItem('user', JSON.stringify(userData));
+  constructor(
+    private http: HttpClient,
+    private storageService: StorageService
+  ) {
+    // Intentar cargar usuario desde el almacenamiento al inicio
+    this.loadUserFromStorage();
   }
 
-  private getUserFromStorage(): User | null {
-    return JSON.parse(localStorage.getItem('user') || 'null');
+  /**
+   * Carga el usuario desde el almacenamiento
+   */
+  private loadUserFromStorage(): void {
+    // Primero intentar localStorage para tener datos instantáneamente
+    try {
+      const userJson = localStorage.getItem('user');
+      if (userJson) {
+        const userData = JSON.parse(userJson);
+        if (userData && userData.id) {
+          this.userSubject.next(userData);
+        }
+      }
+    } catch (e) {
+      console.warn('Error al cargar usuario desde localStorage:', e);
+    }
+
+    // Luego intentar con StorageService (más confiable, pero asíncrono)
+    this.storageService.getItem('user').subscribe(
+      userData => {
+        if (userData && userData.id) {
+          this.userSubject.next(userData);
+        }
+      },
+      error => {
+        console.warn('Error al cargar usuario desde StorageService:', error);
+      }
+    );
   }
 
+  /**
+   * Establece los datos del usuario y los guarda en almacenamiento
+   * @param userData Datos del usuario
+   */
+  setUser(userData: User): void {
+    if (!userData) return;
+
+    // Normalizar usuario si es un array
+    let normalizedUser = userData;
+    if (Array.isArray(userData)) {
+      normalizedUser = userData[0];
+    }
+
+    // Normalizar campos anidados
+    // if (normalizedUser.location && Array.isArray(normalizedUser.location) && normalizedUser.location.length > 0) {
+    //   normalizedUser.location = normalizedUser.location[0];
+    // }
+
+    // Actualizar el estado en memoria primero (para respuesta inmediata)
+    this.userSubject.next(normalizedUser);
+
+    // Intentar guardar en StorageService (más robusto)
+    this.storageService.setItem('user', normalizedUser).subscribe(
+      () => {},
+      error => {
+        console.warn('Error al guardar usuario en StorageService:', error);
+        
+        // Fallback a localStorage
+        try {
+          // Eliminar campos grandes para evitar QuotaExceededError
+          const { imagebs64, ...userWithoutImage } = normalizedUser;
+          localStorage.setItem('user', JSON.stringify(userWithoutImage));
+        } catch (e) {
+          console.error('No se pudo guardar usuario en ningún almacenamiento:', e);
+        }
+      }
+    );
+  }
+
+  /**
+   * Obtiene el usuario actual
+   * @returns Datos del usuario o null
+   */
+  getUser(): User | null {
+    return this.userSubject.value;
+  }
+
+  /**
+   * Busca un usuario por identificación
+   * @param identificationType Tipo de identificación
+   * @param identificationNumber Número de identificación
+   * @returns Observable con el usuario encontrado o null
+   */
   findByIdentification(
     identificationType: string,
     identificationNumber: string
@@ -59,46 +134,60 @@ export class UserService {
   }
 
   /**
-   * Refreshes user data by fetching the latest from the server
-   * @param userId The ID of the user to refresh
-   * @returns Observable of the user data
+   * Actualiza los datos del usuario desde el servidor
+   * @param userId ID del usuario
+   * @returns Observable con los datos actualizados
    */
   refreshUserData(userId: number): Observable<any> {
     const apiUrl = `${this.baseUrl}api/users/profile`;
 
     return this.http.get(apiUrl).pipe(
-      tap((response: any) => {
+      switchMap((response: any) => {
         if (response && response.data) {
           const userData = response.data;
 
-          // Ensure location data is properly structured
-          if (
-            userData.location &&
-            Array.isArray(userData.location) &&
-            userData.location.length > 0
-          ) {
-            // If location is an array, use the first element for consistency
-            userData.location = userData.location[0] || userData.location;
+          // Normalizar datos
+          if (userData.location && Array.isArray(userData.location) && userData.location.length > 0) {
+            userData.location = userData.location[0];
           }
 
-          // Update the BehaviorSubject with the fresh data
-          this.userSubject.next(userData);
+          // Eliminar campos grandes para evitar problemas de almacenamiento
+          const { imagebs64, ...userDataWithoutLargeFields } = userData;
 
-          // Update localStorage
-          localStorage.setItem('user', JSON.stringify(userData));
+          // Actualizar estado en memoria
+          this.userSubject.next(userDataWithoutLargeFields);
 
+          // Guardar en almacenamiento
+          return this.storageService.setItem('user', userDataWithoutLargeFields).pipe(
+            map(() => userData), // Devolver datos completos al llamador
+            catchError(error => {
+              console.warn('Error al guardar usuario en StorageService:', error);
+              
+              // Intentar localStorage como fallback
+              try {
+                localStorage.setItem('user', JSON.stringify(userDataWithoutLargeFields));
+              } catch (e) {
+                console.error('No se pudo guardar usuario en ningún almacenamiento');
+              }
+              
+              return of(userData); // Aún así, devolver datos al llamador
+            })
+          );
         }
+        
+        return throwError(() => new Error('No se pudo obtener datos del usuario'));
       }),
-      map((response) => response.data),
       catchError((error) => {
         console.error('Error refreshing user data:', error);
-        return throwError(
-          () => new Error(error.message || 'Error refreshing user data')
-        );
+        return throwError(() => new Error(error.message || 'Error refreshing user data'));
       })
     );
   }
 
+  /**
+   * Actualiza el usuario con datos de salud
+   * @param healthData Datos de salud
+   */
   updateUserWithHealthData(healthData: any): void {
     const currentUser = this.userSubject.getValue();
 
@@ -106,6 +195,7 @@ export class UserService {
       return;
     }
 
+    // Crear versión actualizada del usuario
     let updatedUser: User;
     if (Array.isArray(currentUser)) {
       updatedUser = {
@@ -115,26 +205,43 @@ export class UserService {
     } else {
       updatedUser = {
         ...currentUser,
+        // health: healthData,
       };
     }
 
+    // Actualizar en memoria
     this.userSubject.next(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    
+    // Guardar en almacenamiento
+    this.storageService.setItem('user', updatedUser).subscribe(
+      () => {},
+      error => {
+        console.warn('Error al guardar usuario con datos de salud:', error);
+        
+        // Intentar con localStorage
+        try {
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        } catch (e) {}
+      }
+    );
   }
 
+  /**
+   * Actualiza el perfil del usuario
+   * @param userData Datos a actualizar
+   * @returns Observable con la respuesta
+   */
   updateProfile(userData: any): Observable<any> {
     const apiUrl = `${this.baseUrl}api/user/update/${userData.id}`;
 
     return this.http.put(apiUrl, userData).pipe(
-      tap((response: any) => {
+      switchMap((response: any) => {
         if (response && response.data) {
+          // Obtener usuario actual
+          const currentUser = this.getUser();
 
-          // Get the current user from storage
-          const currentUser = this.getUserFromStorage();
-
-          // Create the updated user object by merging current user with response data
+          // Crear objeto actualizado
           let updatedUser: User;
-
           if (Array.isArray(currentUser)) {
             updatedUser = {
               ...currentUser[0],
@@ -142,24 +249,36 @@ export class UserService {
             };
           } else {
             updatedUser = {
-              ...currentUser,
+              ...(currentUser || {}),
               ...response.data,
             };
           }
 
-          // // Ensure location data is properly structured
-          // if (response.data.location && Array.isArray(response.data.location)) {
-          //   updatedUser.location =
-          //     response.data.location[0] || response.data.location;
+          // Normalizar datos
+          // if (updatedUser.location && Array.isArray(updatedUser.location)) {
+          //   updatedUser.location = updatedUser.location[0] || updatedUser.location;
           // }
 
-          // Update the BehaviorSubject with the complete merged data
+          // Actualizar en memoria
           this.userSubject.next(updatedUser);
 
-          // Update localStorage with the merged user data
-          localStorage.setItem('user', JSON.stringify(updatedUser));
-
+          // Guardar en almacenamiento
+          return this.storageService.setItem('user', updatedUser).pipe(
+            map(() => response),
+            catchError(error => {
+              console.warn('Error al guardar usuario actualizado:', error);
+              
+              // Intentar con localStorage
+              try {
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+              } catch (e) {}
+              
+              return of(response);
+            })
+          );
         }
+        
+        return of(response);
       }),
       catchError((error) => {
         console.error('Error updating user profile:', error);
@@ -169,17 +288,18 @@ export class UserService {
       })
     );
   }
-  getUser(): User | null {
-    return this.userSubject.value;
-  }
 
+  /**
+   * Limpia los datos del usuario actual
+   */
   clearUser() {
     this.userSubject.next(null);
-    localStorage.removeItem('user');
-  }
-
-  getUserHealthData() {
-    const userHealthService = appInjector.get(UserHealthService);
-    userHealthService.getUserHealthData();
+    this.storageService.removeItem('user').subscribe(
+      () => {},
+      error => {
+        console.warn('Error al eliminar usuario del almacenamiento:', error);
+        localStorage.removeItem('user');
+      }
+    );
   }
 }

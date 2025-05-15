@@ -5,12 +5,13 @@ import { IonicModule } from '@ionic/angular';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ChatMessage, ChatService, ChatSession } from 'src/app/core/services/chat-session.service';
+import { TabBarComponent } from 'src/app/shared/components/tab-bar/tab-bar.component';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule, TabBarComponent],
   styleUrls: ['./chat.component.scss']
 })
 export class ChatComponent implements OnInit, AfterViewChecked {

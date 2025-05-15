@@ -14,7 +14,6 @@ import { AuthService } from './services/auth.service';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AuthLayoutComponent } from './components/auth-container/auth-layout.component';
-import { CodeLookupComponent } from 'src/app/pages/code-lookup/code-lookup.component';
 
 // Definición de rutas con layout compartido
 const routes: Routes = [
@@ -34,10 +33,6 @@ const routes: Routes = [
       {
         path: 'reset-password',
         component: ResetPasswordComponent
-      },
-      {
-        path: 'code-lookup',
-        component: CodeLookupComponent
       },
       {
         path: '',

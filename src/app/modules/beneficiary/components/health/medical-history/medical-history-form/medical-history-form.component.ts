@@ -30,7 +30,7 @@ import { InputComponent } from 'src/app/shared/components/input/input.component'
 })
 export class MedicalHistoryFormComponent implements OnInit {
   public activeBeneficiary: Beneficiary | null = null;
-  public buttonBackground: string = 'assets/background/secondary_button_bg.svg';
+  public buttonBackground: string = 'assets/background/button_secondary_bg.png';
 
   public relativeOptions = relativeOptions;
   public historyTypeOptions = historyTypeOptions;

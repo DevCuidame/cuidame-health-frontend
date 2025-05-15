@@ -43,7 +43,7 @@ import { Appointment } from 'src/app/core/interfaces/appointment.interface';
           <p>{{ appointment.appointmentType?.name }}</p>
           <p class="detail-info">
             Duración aproximada:
-            {{ appointment.appointmentType?.default_duration }} minutos
+            {{ appointment.appointmentType?.default_duration || '30' }} minutos
           </p>
         </div>
 
@@ -65,7 +65,7 @@ import { Appointment } from 'src/app/core/interfaces/appointment.interface';
         </div>
 
         <div class="detail-section">
-          <h3>Paciente</h3>
+          <h3>Familiar</h3>
           <p>{{ getPatientName() }}</p>
           <p class="detail-info">{{ getPatientInfo() }}</p>
         </div>
@@ -254,7 +254,7 @@ export class PatientAppointmentDetailModalComponent {
     if (this.appointment?.patient) {
       return `${this.appointment.patient.nombre} ${this.appointment.patient.apellido}`;
     }
-    return 'Paciente no especificado';
+    return 'Familiar no especificado';
   }
 
   getPatientInfo(): string {

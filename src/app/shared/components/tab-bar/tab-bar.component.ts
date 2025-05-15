@@ -1,8 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { IonicModule, AlertController, LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/modules/auth/services/auth.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tab-bar',
@@ -22,7 +23,9 @@ export class TabBarComponent {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private loadingCtrl: LoadingController,
+
   ) {
     // Opciones del menú desplegable
     this.menuItems = [
@@ -34,12 +37,12 @@ export class TabBarComponent {
       { 
         icon: 'logo-whatsapp', 
         label: 'Whatsapp', 
-        action: () => true
+        action: () => this.openWhatsapp() 
       },
       { 
         icon: 'mail-outline', 
         label: 'Correo Electrónico', 
-        action: () => true
+        action: () => this.openEmail()
       },
       { 
         icon: 'person-outline', 
@@ -81,15 +84,36 @@ export class TabBarComponent {
     }, 100);
   }
 
-  // navigateToProfile() {
-  //   this.router.navigate(['/profile']);
-  //   this.showMenu = false;
-  // }
+  openWhatsapp = async () => {
+    const loading = await this.showLoading();
+    try {
+      const whatsappUrl =
+        'whatsapp://send?phone=573007306645&text=Hola, me gustaría hablar con un asesor de Cuídame.';
+      window.location.href = whatsappUrl;
 
-  // navigateToSettings() {
-  //   this.router.navigate(['/settings']);
-  //   this.showMenu = false;
-  // }
+      setTimeout(() => {
+        window.open(
+          'https://web.whatsapp.com/send?phone=573007306645&text=Hola, me gustaría hablar con un asesor de Cuídame.',
+          '_blank'
+        );
+      }, 500);
+    } catch (error) {
+      console.error('Error al abrir WhatsApp:', error);
+    } finally {
+      if (loading) {
+        loading.dismiss();
+      }
+    }
+  };
+
+  openEmail = () => {
+    const email = 'cuidame@esmart-tek.com';
+    const subject = 'Consulta desde la App';
+    const emailUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+    
+    // Uso directo de window.location
+    window.location.href = emailUrl;
+  };
 
   async confirmLogout() {
     this.showMenu = false;
@@ -117,8 +141,62 @@ export class TabBarComponent {
     await alert.present();
   }
 
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  async logout() {
+    // Mostrar un indicador de carga 
+    const loading = await this.loadingCtrl.create({
+      message: 'Cerrando sesión...'
+    });
+    await loading.present();
+
+    // Suscribirse al Observable que devuelve el método logout
+    this.authService.logout()
+      .pipe(
+        finalize(() => {
+          // Asegurarse de que el loading se cierre independientemente del resultado
+          loading.dismiss();
+        })
+      )
+      .subscribe(
+        () => {
+          console.log('Sesión cerrada correctamente');
+          // Usar setTimeout para dar tiempo a que se complete la limpieza
+          setTimeout(() => {
+            // Navegar a la página de login usando el router directamente 
+            // en lugar de navCtrl para asegurar una redirección completa
+            this.router.navigate(['/auth/login'], { replaceUrl: true });
+          }, 100);
+        },
+        (error) => {
+          console.error('Error al cerrar sesión:', error);
+          
+          // Incluso si hay un error, intentar limpiar el estado local y redirigir
+          try {
+            // Limpiar localStorage como fallback por si el storage service falló
+            localStorage.removeItem('token');
+            localStorage.removeItem('refresh-token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('beneficiaries');
+            localStorage.removeItem('activeBeneficiary');
+            
+            // Todavía redirigir al login
+            this.router.navigate(['/auth/login'], { replaceUrl: true });
+          } catch (e) {
+            console.error('Error limpiando almacenamiento:', e);
+            // En caso de error total, recargar la página
+            window.location.href = '/auth/login';
+          }
+        }
+      );
   }
+
+  async showLoading() {
+    const loading = await this.loadingCtrl.create({
+      message: 'Espera un momento, por favor...',
+      cssClass: 'custom-loading',
+    });
+
+    loading.present();
+    return loading;
+  }
+
 }

@@ -300,7 +300,6 @@ export class AddBeneficiaryComponent implements OnInit {
           this.navCtrl.navigateRoot('/home/dashboard');
         },
         async (error: any) => {
-          console.log("🚀 ~ AddBeneficiaryComponent ~ error:", error);
           await loading.dismiss();
           const alert = await this.alertCtrl.create({
             header: 'Error',

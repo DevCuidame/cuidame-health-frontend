@@ -2,7 +2,7 @@
 <div class="patient-appointments-viewer">
   <!-- Header -->
   <div class="header">
-    <h1>Mis Citas</h1>
+    <h1>Citas Médicas</h1>
     <button class="filter-toggle" (click)="toggleView()">
       <ion-icon [name]="showCalendarView ? 'list' : 'calendar'"></ion-icon>
     </button>
@@ -119,7 +119,7 @@
           </p>
           <div class="patient-info">
             <p class="patient-name">
-              Paciente: {{ getPatientName(appointment) }}
+              Familiar: {{ getPatientName(appointment) }}
             </p>
             <p class="patient-id">{{ getPatientInfo(appointment) }}</p>
           </div>
@@ -176,7 +176,7 @@
           </p>
           <div class="patient-info">
             <p class="patient-name">
-              Paciente: {{ getPatientName(appointment) }}
+              Familiar: {{ getPatientName(appointment) }}
             </p>
             <p class="patient-id">{{ getPatientInfo(appointment) }}</p>
           </div>
@@ -190,3 +190,13 @@
     <ion-icon name="add"></ion-icon>
   </button>
 </div>
+
+<app-tab-bar
+  [isVisible]="true"
+  [buttons]="[
+    { icon: 'arrow-back-outline', route: '/home/dashboard', visible: true },
+    { icon: 'menu-outline', route: '/', visible: true },
+    { icon: 'exit-outline', route: '/', visible: true }
+  ]"
+  [background]="'var(--ion-color-light)'"
+></app-tab-bar>
