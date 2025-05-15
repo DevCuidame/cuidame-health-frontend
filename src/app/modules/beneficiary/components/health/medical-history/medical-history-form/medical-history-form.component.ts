@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -9,6 +9,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { NavController } from '@ionic/angular';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { historyTypeOptions, relativeOptions } from 'src/app/core/constants/options';
 import { Beneficiary } from 'src/app/core/interfaces/beneficiary.interface';
 import { BeneficiaryService } from 'src/app/core/services/beneficiary.service';
@@ -19,6 +21,7 @@ import { InputComponent } from 'src/app/shared/components/input/input.component'
 
 @Component({
   selector: 'app-medical-history-form',
+  standalone: true,
   imports: [
     ReactiveFormsModule,
     CommonModule,
@@ -28,12 +31,16 @@ import { InputComponent } from 'src/app/shared/components/input/input.component'
   templateUrl: './medical-history-form.component.html',
   styleUrls: ['./medical-history-form.component.scss'],
 })
-export class MedicalHistoryFormComponent implements OnInit {
+export class MedicalHistoryFormComponent implements OnInit, OnDestroy {
   public activeBeneficiary: Beneficiary | null = null;
   public buttonBackground: string = 'assets/background/button_secondary_bg.png';
+  public isLoading: boolean = false;
 
   public relativeOptions = relativeOptions;
   public historyTypeOptions = historyTypeOptions;
+
+  // Para limpiar suscripciones
+  private destroy$ = new Subject<void>();
 
   form: FormGroup;
 
@@ -49,13 +56,70 @@ export class MedicalHistoryFormComponent implements OnInit {
       familyHistory: this.fb.array([]),
     });
 
-    this.beneficiaryService.activeBeneficiary$.subscribe((beneficiary) => {
-      this.activeBeneficiary = beneficiary;
-      this.initializeForm();
-    });
+    // Mejorar la suscripción con limpieza adecuada
+    this.beneficiaryService.activeBeneficiary$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((beneficiary) => {
+        if (!beneficiary) return;
+        
+        this.activeBeneficiary = beneficiary;
+        
+        // Verificar si necesita cargar datos de salud
+        if (!beneficiary.health_data || !beneficiary.health_data.medical_info) {
+          
+          // Si es necesario, cargar datos de salud primero
+          if (beneficiary.id) {
+            this.loadHealthData(beneficiary.id);
+          }
+        } else {
+          // Si ya tiene datos, inicializar el formulario directamente
+          this.initializeForm();
+        }
+      });
   }
 
   ngOnInit() {}
+
+  ngOnDestroy() {
+    // Limpiar suscripciones
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Carga los datos de salud del beneficiario si son necesarios
+   */
+  loadHealthData(beneficiaryId: number) {
+    this.isLoading = true;
+    
+    this.healthDataService.getHealthData(beneficiaryId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (healthData: any) => {
+          
+          if (this.activeBeneficiary) {
+            // Actualizar solo localmente para evitar ciclos
+            this.activeBeneficiary = {
+              ...this.activeBeneficiary,
+              health_data: healthData
+            };
+            
+            // Una vez cargados los datos, inicializar el formulario
+            this.initializeForm();
+          }
+          
+          this.isLoading = false;
+        },
+        (error) => {
+          console.error("Error al cargar datos de salud:", error);
+          this.toastService.presentToast('Error al cargar datos de salud', 'danger');
+          this.isLoading = false;
+          
+          // Intentar inicializar el formulario de todos modos
+          this.initializeForm();
+        }
+      );
+  }
 
   initializeForm() {
     if (!this.activeBeneficiary) return;
@@ -167,92 +231,101 @@ export class MedicalHistoryFormComponent implements OnInit {
   }
 
   async submitForm() {
-    if (this.form.valid && this.activeBeneficiary) {
-      // Procesamos primero los antecedentes médicos personales
-      const medicalHistoryPayload = {
-        id_paciente: this.activeBeneficiary.id,
-        antecedentes: this.medicalHistory.value.map((m: any) => ({
-          tipo_antecedente: m.tipo_antecedente,
-          descripcion_antecedente: m.descripcion_antecedente,
-          fecha_antecedente: m.fecha_antecedente
-        }))
-      };
+    if (!this.form.valid || !this.activeBeneficiary) {
+      this.toastService.presentToast('Por favor complete todos los campos requeridos', 'warning');
+      return;
+    }
+    
+    this.isLoading = true;
 
-      console.log('Enviando antecedentes médicos:', medicalHistoryPayload);
+    // Procesamos primero los antecedentes médicos personales
+    const medicalHistoryPayload = {
+      id_paciente: this.activeBeneficiary.id,
+      antecedentes: this.medicalHistory.value.map((m: any) => ({
+        tipo_antecedente: m.tipo_antecedente,
+        descripcion_antecedente: m.descripcion_antecedente,
+        fecha_antecedente: m.fecha_antecedente
+      }))
+    };
 
-      // Procesamos luego los antecedentes familiares
-      const familyHistoryPayload = {
-        id_paciente: this.activeBeneficiary.id,
-        antecedentes_familiares: this.familyHistory.value.map((f: any) => ({
-          tipo_antecedente: f.tipo_antecedente,
-          parentesco: f.parentesco,
-          descripcion_antecedente: f.descripcion_antecedente
-        }))
-      };
 
-      console.log('Enviando antecedentes familiares:', familyHistoryPayload);
+    // Procesamos luego los antecedentes familiares
+    const familyHistoryPayload = {
+      id_paciente: this.activeBeneficiary.id,
+      antecedentes_familiares: this.familyHistory.value.map((f: any) => ({
+        tipo_antecedente: f.tipo_antecedente,
+        parentesco: f.parentesco,
+        descripcion_antecedente: f.descripcion_antecedente
+      }))
+    };
 
+
+    try {
       // Primero enviamos los antecedentes médicos personales
-      this.healthDataService.syncBackgrounds(medicalHistoryPayload).subscribe(
-        async (medicalResponse) => {
-          console.log('Respuesta antecedentes médicos:', medicalResponse);
-          
-          // Después enviamos los antecedentes familiares
-          this.healthDataService.syncFamilyBackgrounds(familyHistoryPayload).subscribe(
-            async (familyResponse) => {
-              console.log('Respuesta antecedentes familiares:', familyResponse);
-              
-              // Actualizamos el beneficiario con los datos recibidos
-              if (!this.activeBeneficiary?.id) {
-                return;
-              }
-              
-              const updatedActiveBeneficiary = {
-                ...this.activeBeneficiary,
-                health_data: {
-                  ...this.activeBeneficiary.health_data,
-                  medical_info: {
-                    ...this.activeBeneficiary.health_data.medical_info,
-                    backgrounds: medicalResponse.data?.maintained || 
-                                 this.activeBeneficiary.health_data.medical_info.backgrounds,
-                    familyBackgrounds: familyResponse.data?.maintained || 
-                                       this.activeBeneficiary.health_data.medical_info.familyBackgrounds
+      this.healthDataService.syncBackgrounds(medicalHistoryPayload)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(
+          async (medicalResponse) => {
+            
+            // Después enviamos los antecedentes familiares
+            this.healthDataService.syncFamilyBackgrounds(familyHistoryPayload)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe(
+                async (familyResponse) => {
+                  
+                  // Actualizamos el beneficiario localmente primero
+                  if (this.activeBeneficiary?.id) {
+                    const updatedHealthData = {
+                      ...(this.activeBeneficiary.health_data || {}),
+                      medical_info: {
+                        ...(this.activeBeneficiary.health_data?.medical_info || {}),
+                        backgrounds: medicalResponse.data?.maintained || [],
+                        familyBackgrounds: familyResponse.data?.maintained || []
+                      }
+                    };
+                    
+                    // Actualizar de manera segura sin causar un ciclo
+                    const updatedBeneficiary = {
+                      ...this.activeBeneficiary,
+                      health_data: updatedHealthData
+                    };
+                    
+                    // Actualizar el beneficiario activo solo una vez al final
+                    this.beneficiaryService.setActiveBeneficiary(updatedBeneficiary);
                   }
+                  
+                  this.isLoading = false;
+                  await this.toastService.presentToast(
+                    'Antecedentes guardados correctamente',
+                    'success'
+                  );
+                  this.navCtrl.navigateRoot('/beneficiary/home/medical-history');
+                },
+                async (familyError) => {
+                  console.error('Error al guardar antecedentes familiares:', familyError);
+                  this.isLoading = false;
+                  await this.toastService.presentToast(
+                    'Error al guardar antecedentes familiares',
+                    'danger'
+                  );
                 }
-              };
-
-              this.beneficiaryService.setActiveBeneficiary(updatedActiveBeneficiary);
-
-              const updatedBeneficiaries = this.beneficiaryService
-                .getBeneficiaries()
-                .map((b) =>
-                  b.id === updatedActiveBeneficiary.id
-                    ? updatedActiveBeneficiary
-                    : b
-                );
-              
-              await this.toastService.presentToast(
-                'Antecedentes guardados correctamente',
-                'success'
               );
-              this.navCtrl.navigateRoot('/beneficiary/home/medical-history');
-            },
-            async (familyError) => {
-              console.error('Error al guardar antecedentes familiares:', familyError);
-              await this.toastService.presentToast(
-                'Error al guardar antecedentes familiares',
-                'danger'
-              );
-            }
-          );
-        },
-        async (medicalError) => {
-          console.error('Error al guardar antecedentes médicos:', medicalError);
-          await this.toastService.presentToast(
-            'Error al guardar antecedentes médicos',
-            'danger'
-          );
-        }
+          },
+          async (medicalError) => {
+            console.error('Error al guardar antecedentes médicos:', medicalError);
+            this.isLoading = false;
+            await this.toastService.presentToast(
+              'Error al guardar antecedentes médicos',
+              'danger'
+            );
+          }
+        );
+    } catch (error) {
+      console.error('Error al procesar el formulario:', error);
+      this.isLoading = false;
+      await this.toastService.presentToast(
+        'Error al guardar los antecedentes',
+        'danger'
       );
     }
   }

@@ -1,40 +1,46 @@
 <div class="medical_history-box">
+  <!-- Antecedentes personales -->
   <div class="h-container">
-    <h2>Antecedentes Personales</h2>
+    <div style="display: flex; justify-content: space-between; width: 100%">
+      <h2>Antecedentes Personales</h2>
+      <app-edit-button
+        route="/beneficiary/home/medical-history/form"
+        top="0px"
+        background="transparent"
+      ></app-edit-button>
+    </div>
+
     @if (activeBeneficiary?.health_data?.medical_info?.backgrounds?.length ?? 0
     > 0) { @for (item of
-    activeBeneficiary?.health_data?.medical_info?.backgrounds; track item){
+    activeBeneficiary?.health_data?.medical_info?.backgrounds; track item) {
     <app-secondary-card style="width: 100%">
       <div class="h-card">
         <p>{{ item.tipo_antecedente }}</p>
-        <p>{{ item.fecha_antecedente }}</p>
+        <p>{{ formatDate(item.fecha_antecedente) }}</p>
       </div>
     </app-secondary-card>
-    } }@else {
+    } } @else {
     <p style="text-align: start; width: 100%">
       No hay antecedentes personales registrados.
     </p>
     }
   </div>
+
+  <!-- Antecedentes familiares -->
   <div class="h-container">
     <h2>Antecedentes Familiares</h2>
     @if(activeBeneficiary?.health_data?.medical_info?.familyBackgrounds?.length
-    ?? 0 > 0){ @for (item of
-    activeBeneficiary?.health_data?.medical_info?.familyBackgrounds; track
-    item){
+    ?? 0 > 0) { @for (item of
+    activeBeneficiary?.health_data?.medical_info?.familyBackgrounds; track item)
+    {
     <app-secondary-card style="width: 100%">
       <div class="h-card">
         <p>{{ getLabel(historyTypeOptions, item.tipo_antecedente ?? "") }}</p>
         <p>{{ getLabel(relativeOptions, item.parentesco ?? "") }}</p>
       </div>
     </app-secondary-card>
-
-    } }@else {
+    } } @else {
     <p>No hay antecedentes familiares registrados.</p>
     }
   </div>
 </div>
-
-<app-edit-button
-  route="/beneficiary/home/medical-history/form"
-></app-edit-button>

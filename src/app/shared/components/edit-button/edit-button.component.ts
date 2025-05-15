@@ -13,6 +13,7 @@ import { IonicModule } from '@ionic/angular';
 export class EditButtonComponent {
   @Input() route!: string; 
   @Input() top!: string;
+  @Input() background!: string;
 
   constructor(private router: Router) {}
 

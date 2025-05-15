@@ -158,18 +158,13 @@ export class TabBarComponent {
       )
       .subscribe(
         () => {
-          console.log('Sesión cerrada correctamente');
-          // Usar setTimeout para dar tiempo a que se complete la limpieza
           setTimeout(() => {
-            // Navegar a la página de login usando el router directamente 
-            // en lugar de navCtrl para asegurar una redirección completa
             this.router.navigate(['/auth/login'], { replaceUrl: true });
           }, 100);
         },
         (error) => {
           console.error('Error al cerrar sesión:', error);
           
-          // Incluso si hay un error, intentar limpiar el estado local y redirigir
           try {
             // Limpiar localStorage como fallback por si el storage service falló
             localStorage.removeItem('token');

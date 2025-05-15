@@ -1,7 +1,7 @@
 // src/app/core/services/auth.service.ts
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
+import { Observable, BehaviorSubject, throwError, of, from } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { RegisterData, User } from 'src/app/core/interfaces/auth.interface';
 import { environment } from 'src/environments/environment';
@@ -136,6 +136,7 @@ isAuthenticated$(): Observable<boolean> {
  * Método de inicio de sesión mejorado con manejo de errores
  * y almacenamiento asíncrono
  */
+
 login(credentials: { email: string; password: string }): Observable<any> {
   // Convertir email a minúsculas antes de enviarlo
   const normalizedCredentials = {
@@ -154,84 +155,106 @@ login(credentials: { email: string; password: string }): Observable<any> {
           message: error.error?.error || 'Authentication error',
         }));
       }),
+      tap(),
       switchMap((response: any) => {
-        // 1. Primero guardamos el token (más importante para autenticación)
-        return this.storage.setItem('token', response.data.access_token).pipe(
-          // 2. Capturar cualquier error pero continuar con el flujo
-          catchError(error => {
-            console.warn('Error al guardar token:', error);
-            // Intentar usar localStorage como fallback directo
-            try {
-              localStorage.setItem('token', response.data.access_token);
-            } catch (e) {
-              console.error('No se pudo guardar token en ningún almacenamiento');
-            }
-            return of(null);
-          }),
-          // 3. Guardar refresh token
-          switchMap(() => {
-            return this.storage.setItem('refresh-token', response.data.refresh_token).pipe(
-              catchError(error => {
-                console.warn('Error al guardar refresh token:', error);
-                try {
-                  localStorage.setItem('refresh-token', response.data.refresh_token);
-                } catch (e) {}
-                return of(null);
-              })
-            );
-          }),
-          // 4. Guardar datos del usuario
-          switchMap(() => {
-            const userData = response.data.user;
-            
-            // Importante: Actualizar estado de usuario ANTES de guardar
-            // para que los servicios que dependen del usuario funcionen inmediatamente
-            this.userService.setUser(userData as User);
-            this.currentUserSubject.next(userData as User);
-            this.authState.next(true); // Marcar como autenticado inmediatamente
-            
-            // Luego intentar guardar en storage
-            return this.storage.setItem('user', userData).pipe(
-              catchError(error => {
-                console.warn('Error al guardar datos de usuario:', error);
-                // Ya actualizamos el estado en memoria, así que podemos continuar
-                return of(userData);
-              })
-            );
-          }),
-          // 5. Guardar beneficiarios si hay disponibles
-          switchMap(() => {
-            if (response.data.cared_persons && response.data.cared_persons.length > 0) {
-              return this.storage.setItem('beneficiaries', response.data.cared_persons).pipe(
-                tap((savedBeneficiaries) => {
-                  // Notificar al servicio de beneficiarios sobre los nuevos datos
-                  this.beneficiaryService.setBeneficiariesDirectly(savedBeneficiaries);
-                }),
-                catchError(error => {
-                  console.warn('Error al guardar beneficiarios:', error);
-                  // En caso de error, intentar guardar versión reducida
-                  const minimalBeneficiaries = response.data.cared_persons.map((b: any) => ({
-                    id: b.id,
-                    name: b.name,
-                    lastname: b.lastname
-                  }));
-                  
-                  try {
-                    localStorage.setItem('beneficiaries', JSON.stringify(minimalBeneficiaries));
-                    this.beneficiaryService.setBeneficiariesDirectly(minimalBeneficiaries);
-                  } catch (e) {}
-                  
-                  return of(null);
-                })
-              );
-            }
-            return of(null);
-          }),
-          // 6. Finalmente, devolver la respuesta original
+        // 1. Guardar tokens (lo más importante)
+        return this.saveTokens(response).pipe(
+          // 2. Guardar datos del usuario
+          switchMap(() => this.saveUserData(response)),
+          // 3. Guardar beneficiarios preservando toda la estructura
+          switchMap(() => this.saveBeneficiaries(response)),
+          // 4. Devolver la respuesta original
           map(() => response)
         );
       })
     );
+}
+
+// Métodos auxiliares para separar la lógica
+
+private saveTokens(response: any): Observable<any> {
+  // Guardar access_token
+  return this.storage.setItem('token', response.data.access_token).pipe(
+    catchError(error => {
+      console.warn('Error al guardar token:', error);
+      try {
+        localStorage.setItem('token', response.data.access_token);
+      } catch (e) {
+        console.error('No se pudo guardar token en ningún almacenamiento');
+      }
+      return of(null);
+    }),
+    // Guardar refresh_token
+    switchMap(() => {
+      return this.storage.setItem('refresh-token', response.data.refresh_token).pipe(
+        catchError(error => {
+          console.warn('Error al guardar refresh token:', error);
+          try {
+            localStorage.setItem('refresh-token', response.data.refresh_token);
+          } catch (e) {}
+          return of(null);
+        })
+      );
+    })
+  );
+}
+
+private saveUserData(response: any): Observable<any> {
+  const userData = response.data.user;
+  
+  // Actualizar estado en memoria inmediatamente
+  this.userService.setUser(userData as User);
+  this.currentUserSubject.next(userData as User);
+  this.authState.next(true);
+  
+  // Guardar en almacenamiento
+  return this.storage.setItem('user', userData).pipe(
+    catchError(error => {
+      console.warn('Error al guardar datos de usuario:', error);
+      return of(userData);
+    })
+  );
+}
+
+private saveBeneficiaries(response: any): Observable<any> {
+  if (!response.data.cared_persons || !response.data.cared_persons.length) {
+    return of(null);
+  }
+
+  // DEFINIR LA FUNCIÓN PRIMERO
+  const prepareBeneficiaries = (data: any[]) => {
+    return data.map(b => {
+      const cleanBeneficiary: any = {
+        ...b,
+        health_data: b.health_data || null,
+        ciudad: b.ciudad || null,
+        department_name: b.department_name || null
+      };
+      return cleanBeneficiary;
+    });
+  };
+
+
+  const beneficiaries = JSON.parse(JSON.stringify(response.data.cared_persons));
+
+  const preparedData = prepareBeneficiaries(beneficiaries); // LLAMAR DESPUÉS DE DEFINIR
+
+  return from(this.storage.setItem('beneficiaries', preparedData)).pipe(
+    tap(savedData => {
+    }),
+    catchError(error => {
+      // ... (tu lógica de fallback)
+      const minimalData = beneficiaries.map((b: any) => ({ /* ... */ })); // Asegúrate que 'beneficiaries' aquí es la versión correcta.
+      try {
+        localStorage.setItem('beneficiaries', JSON.stringify(minimalData));
+        this.beneficiaryService.setBeneficiariesDirectly(minimalData);
+        return of(minimalData);
+      } catch (lsError) {
+        this.beneficiaryService.setBeneficiariesDirectly(beneficiaries); // O 'preparedData' si quieres ser consistente
+        return throwError(() => new Error('All storage methods failed'));
+      }
+    })
+  );
 }
 
   register(credentials: RegisterData): Observable<any> {

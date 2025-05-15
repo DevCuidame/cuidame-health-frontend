@@ -23,6 +23,7 @@ import { StorageService } from './storage.service';
 import { User } from 'src/app/core/interfaces/auth.interface';
 import { CacheService } from './cache-service';
 import { ErrorHandlerService } from './error-handler.service';
+import { SecureHealthDataService } from './secure-health-data.service';
 
 const apiUrl = environment.url;
 const BENEFICIARIES_STORAGE_KEY = 'beneficiaries';
@@ -63,7 +64,8 @@ export class BeneficiaryService {
     private toastService: ToastService,
     private storageService: StorageService,
     private cacheService: CacheService,
-    private errorHandlerService: ErrorHandlerService
+    private errorHandlerService: ErrorHandlerService,
+    private secureHealthDataService: SecureHealthDataService
   ) {
     // Inicializar datos desde el almacenamiento
     this.loadActiveBeneficiaryFromStorage();
@@ -210,22 +212,35 @@ export class BeneficiaryService {
   
 
   /**
-   * Establece los familiars directamente desde otro servicio
-   * (usado por ejemplo en el proceso de login)
-   * @param beneficiaries Lista de familiars a establecer
-   */
+ * Establece los familiars directamente desde otro servicio
+ * (usado por ejemplo en el proceso de login)
+ * @param beneficiaries Lista de familiars a establecer
+ */
+
   setBeneficiariesDirectly(beneficiaries: Beneficiary[]): void {
     if (!beneficiaries || !Array.isArray(beneficiaries)) {
+      console.warn('Se intentó establecer beneficiarios con datos inválidos');
       return;
     }
 
-    // Actualizar el estado local
+    // Store original health data in our secure service
+    beneficiaries.forEach(beneficiary => {
+      if (beneficiary.id && beneficiary.health_data) {
+        this.secureHealthDataService.updateHealthData(
+          beneficiary.id, 
+          beneficiary.health_data
+        );
+      }
+    });
+
+    // Save a reference for debugging
+    (window as any)._originalBeneficiaries = this.deepClone(beneficiaries);
+    
+    // Update the state
     this.beneficiariesSubject.next(beneficiaries);
     this.updateBeneficiaryCount(beneficiaries.length);
-
-    // No necesitamos guardar en storage porque el que llama
-    // a este método ya debería haberlo hecho
   }
+
 
   fetchBeneficiaries(): Observable<Beneficiary[]> {
     // Si ya hay una petición en progreso, reutilizarla en lugar de hacer otra
@@ -305,49 +320,171 @@ export class BeneficiaryService {
     );
   }
 
-  setActiveBeneficiary(beneficiary: Beneficiary | null): void {
-    if (!beneficiary) {
-      this.activeBeneficiarySubject.next(null);
-      this.storageService.removeItem(ACTIVE_BENEFICIARY_KEY).subscribe();
-      return;
+/**
+ * Normaliza un beneficiario para asegurar que tenga una estructura health_data válida
+ * @param beneficiary El beneficiario a normalizar
+ * @returns El beneficiario con una estructura health_data válida
+ */
+private normalizeBeneficiary(beneficiary: Beneficiary): Beneficiary {
+  if (!beneficiary) return beneficiary;
+  
+  // Clonar para no modificar el original
+  const normalized = { ...beneficiary };
+  
+  // Asegurar que exista health_data
+  if (!normalized.health_data) {
+    normalized.health_data = {
+      vitals: {
+        heartRate: null,
+        bloodPressure: null,
+        bloodGlucose: null,
+        bloodOxygen: null,
+        respiratoryRate: null
+      },
+      medical_info: {
+        allergies: [],
+        diseases: [],
+        condition: null,
+        backgrounds: [],
+        familyBackgrounds: [],
+        vaccines: []
+      }
+    };
+  } 
+  // Asegurar que health_data tenga una estructura válida
+  else {
+    // Asegurar que exista vitals
+    if (!normalized.health_data.vitals) {
+      normalized.health_data.vitals = {
+        heartRate: null,
+        bloodPressure: null,
+        bloodGlucose: null,
+        bloodOxygen: null,
+        respiratoryRate: null
+      };
     }
-
-    // Actualizar estado local primero para respuesta inmediata
-    this.activeBeneficiarySubject.next({ ...beneficiary });
-
-    // Guardar en almacenamiento
-    this.storageService
-      .setItem(ACTIVE_BENEFICIARY_KEY, beneficiary)
-      .subscribe(null, (error) => {
-        console.error('Error al guardar familiar activo:', error);
-        // Si falla, intentar guardar versión reducida
-        const minimalBeneficiary = {
-          id: beneficiary.id,
-          name: beneficiary.nombre,
-          lastname: beneficiary.apellido,
-          tipoid: beneficiary.tipoid,
-          numeroid: beneficiary.numeroid,
-          telefono: beneficiary.telefono,
-          fecha_nacimiento: beneficiary.fecha_nacimiento,
-          genero: beneficiary.genero,
-          ciudad: beneficiary.ciudad,
-          departamento: beneficiary.departamento,
-          direccion: beneficiary.direccion,
-          rh: beneficiary.rh,
-          eps: beneficiary.eps,
-          prepagada: beneficiary.prepagada,
-          arl: beneficiary.arl,
-          seguro_funerario: beneficiary.seguro_funerario,
-          a_cargo_id: beneficiary.a_cargo_id,
-          image: beneficiary.image,
-          enterprise: beneficiary.enterprise,
-          nit: beneficiary.nit,
-        };
-        this.storageService
-          .setItem(ACTIVE_BENEFICIARY_KEY, minimalBeneficiary)
-          .subscribe();
-      });
+    
+    // Asegurar que exista medical_info
+    if (!normalized.health_data.medical_info) {
+      normalized.health_data.medical_info = {
+        allergies: [],
+        diseases: [],
+        condition: null,
+        backgrounds: [],
+        familyBackgrounds: [],
+        vaccines: []
+      };
+    } else {
+      // Asegurar que cada array en medical_info exista
+      const medical_info = normalized.health_data.medical_info;
+      if (!medical_info.allergies) medical_info.allergies = [];
+      if (!medical_info.diseases) medical_info.diseases = [];
+      if (!medical_info.backgrounds) medical_info.backgrounds = [];
+      if (!medical_info.familyBackgrounds) medical_info.familyBackgrounds = [];
+      if (!medical_info.vaccines) medical_info.vaccines = [];
+    }
   }
+  
+  return normalized;
+}
+
+/**
+ * Actualiza el beneficiario activo, asegurando una estructura de datos válida
+ * @param beneficiary El beneficiario a establecer como activo
+ */
+setActiveBeneficiary(beneficiary: Beneficiary | null): void {
+  if (!beneficiary) {
+    this.activeBeneficiarySubject.next(null);
+    this.storageService.removeItem(ACTIVE_BENEFICIARY_KEY).subscribe();
+    return;
+  }
+
+
+  // First, ensure we have complete health data
+  const enrichedBeneficiary = this.secureHealthDataService.enrichBeneficiary(beneficiary);
+  
+  // If the beneficiary has health data, cache it
+  if (enrichedBeneficiary.id && enrichedBeneficiary.health_data) {
+    this.secureHealthDataService.updateHealthData(
+      enrichedBeneficiary.id,
+      enrichedBeneficiary.health_data
+    );
+  }
+
+
+  // Update local state
+  this.activeBeneficiarySubject.next(enrichedBeneficiary);
+
+  // Store in persistent storage
+  this.storageService
+    .setItem(ACTIVE_BENEFICIARY_KEY, enrichedBeneficiary)
+    .subscribe(null, (error) => {
+      console.error('Error al guardar familiar activo:', error);
+      
+      // Try with a reduced version that still has health_data
+      try {
+        const minimalData = this.createMinimalBeneficiary(enrichedBeneficiary);
+        
+        this.storageService
+          .setItem(ACTIVE_BENEFICIARY_KEY, minimalData)
+          .subscribe(
+            (secondError) => {
+              
+              // Last resort: use localStorage with minimal data
+              try {
+                const ultraMinimal = {
+                  id: enrichedBeneficiary.id,
+                  nombre: enrichedBeneficiary.nombre,
+                  apellido: enrichedBeneficiary.apellido
+                };
+                localStorage.setItem(ACTIVE_BENEFICIARY_KEY, JSON.stringify(ultraMinimal));
+              } catch (e) {
+                console.error('Todos los intentos de guardado fallaron');
+              }
+            }
+          );
+      } catch (e) {
+        console.error('Error al crear versión minima:', e);
+      }
+    });
+}
+
+// Helper method to create a minimal version of a beneficiary
+private createMinimalBeneficiary(beneficiary: Beneficiary): any {
+  return {
+    id: beneficiary.id,
+    nombre: beneficiary.nombre,
+    apellido: beneficiary.apellido,
+    genero: beneficiary.genero,
+    tipoid: beneficiary.tipoid,
+    numeroid: beneficiary.numeroid,
+    a_cargo_id: beneficiary.a_cargo_id,
+    health_data: beneficiary.health_data // Keep health data
+  };
+}
+
+// Helper method for deep cloning
+private deepClone<T>(obj: T): T {
+  if (!obj) return obj;
+  return JSON.parse(JSON.stringify(obj));
+}
+
+// Other methods as in your original service
+// ...
+
+// Modified to ensure health data
+getBeneficiaries(): Beneficiary[] {
+  const beneficiaries = this.beneficiariesSubject.value;
+  return this.secureHealthDataService.enrichBeneficiaries(beneficiaries);
+}
+
+// Modified to ensure health data
+getActiveBeneficiary(): Beneficiary | null {
+  const activeBeneficiary = this.activeBeneficiarySubject.value;
+  if (!activeBeneficiary) return null;
+  
+  return this.secureHealthDataService.enrichBeneficiary(activeBeneficiary);
+}
 
   private loadActiveBeneficiaryFromStorage(): void {
     this.storageService.getItem(ACTIVE_BENEFICIARY_KEY).subscribe(
@@ -394,12 +531,7 @@ export class BeneficiaryService {
             return response;
           }),
           catchError((error) => {
-            console.error('❌ Error al actualizar al familiar:', error);
-            this.toastService.presentToast(
-              'Error al actualizar familiar',
-              'danger'
-            );
-            return throwError(() => error);
+            return this.errorHandlerService.handleError(error, 'Error al actualizar familiar');
           }),
           finalize(() => {
             this.isLoadingSubject.next(false);
@@ -455,14 +587,6 @@ export class BeneficiaryService {
     );
   }
 
-  getActiveBeneficiary(): Beneficiary | null {
-    return this.activeBeneficiarySubject.value;
-  }
-
-  getBeneficiaries(): Beneficiary[] {
-    return this.beneficiariesSubject.value;
-  }
-
   clearBeneficiaries(): void {
     this.beneficiariesSubject.next([]);
     this.updateBeneficiaryCount(0);
@@ -516,4 +640,82 @@ export class BeneficiaryService {
   private updateBeneficiaryCount(count: number): void {
     this.beneficiaryCountSubject.next(count);
   }
+
+  /**
+ * Recupera la estructura completa de datos de los beneficiarios cuando
+ * se ha perdido durante el almacenamiento
+ */
+fixHealthDataStructure(): void {
+  // 1. Verificar si tenemos datos originales en memoria
+  if (!(window as any)._originalLoginResponse?.cared_persons) {
+    console.warn('No hay datos originales para recuperar');
+    return;
+  }
+  
+  const originalData = (window as any)._originalLoginResponse.cared_persons;
+  const originalMap = new Map();
+  
+  // Crear mapa para búsqueda rápida
+  originalData.forEach((item: any) => {
+    originalMap.set(item.id, item);
+  });
+  
+  // 2. Obtener beneficiarios actuales
+  const currentBeneficiaries = this.getBeneficiaries();
+  if (!currentBeneficiaries || currentBeneficiaries.length === 0) {
+    console.warn('No hay beneficiarios actuales para corregir');
+    return;
+  }
+  
+  // 3. Corregir cada beneficiario fusionando con datos originales
+  const correctedBeneficiaries = currentBeneficiaries.map(b => {
+    const original = originalMap.get(b.id);
+    if (original) {
+      // Mantener propiedades actuales pero usar health_data original
+      return {
+        ...b,
+        health_data: original.health_data
+      };
+    }
+    return b;
+  });
+  
+  // 4. Actualizar estado y storage
+  this.beneficiariesSubject.next(correctedBeneficiaries);
+  this.updateBeneficiaryCount(correctedBeneficiaries.length);
+  
+  // 5. Guardar en almacenamiento
+  this.storageService.setItem(BENEFICIARIES_STORAGE_KEY, correctedBeneficiaries)
+    .subscribe(
+    );
+  
+  // 6. Corregir también el beneficiario activo si es necesario
+  const activeBeneficiary = this.getActiveBeneficiary();
+  if (activeBeneficiary) {
+    const original = originalMap.get(activeBeneficiary.id);
+    if (original) {
+      const correctedActive = {
+        ...activeBeneficiary,
+        health_data: original.health_data
+      };
+      
+      // Actualizar estado y storage
+      this.activeBeneficiarySubject.next(correctedActive);
+      this.storageService.setItem(ACTIVE_BENEFICIARY_KEY, correctedActive)
+        .subscribe(
+          (error) => console.error('Error al guardar beneficiario activo corregido:', error)
+        );
+    }
+  }
+  
+}
+
+// Función para exponer globalmente cuando sea necesaria reparar datos manualmente
+exposeFixFunction(): void {
+  (window as any).fixHealthData = () => {
+    this.fixHealthDataStructure();
+    return 'Intento de corrección completado.';
+  };
+}
+
 }

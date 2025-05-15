@@ -1,31 +1,30 @@
-// Modelo adaptado según la respuesta real del backend
 export interface Beneficiary {
   id: number;
-  code: string;            // Código único de paciente
-  nombre: string;          
-  apellido: string;        
-  tipoid: string;          
-  numeroid: string;        
-  telefono: string;        
-  fecha_nacimiento?: string;
-  genero: string;          
-  ciudad: string;          
-  departamento: any;    
-  direccion: string;       
-  rh: string;              
-  eps?: string;            
-  prepagada?: string;      
-  arl?: string;            
-  seguro_funerario?: string;
-  a_cargo_id: number;      // ID del cuidador/usuario responsable
-  image?: string | null;   // Path de la imagen
-  enterprise?: string | null;
-  nit?: string | null;     
-  city_id?: number | null; // Campo adicional que viene en la respuesta
-  created_at: string;      
-  updated_at: string;      
+  code: string;
+  nombre: string;
+  apellido: string;
+  tipoid: string;
+  numeroid: string;
+  telefono: string;
+  fecha_nacimiento: string;
+  genero: string;
+  ciudad: string;
+  departamento: any;
+  direccion: string;
+  rh: string;
+  eps?: string | null;
+  prepagada?: string | null;
+  arl?: string | null;
+  seguro_funerario?: string | null;
+  a_cargo_id: number;
+  image?: string | null;
+  city_id?: number | null;
+  public_name?: string | null;
+  created_at: string;
+  updated_at: string;
   photourl?: string | null;
-  imagebs64?: string;      
+  imagebs64?: string | null;
+  department_name?: string;
   health_data: Health_Data;
 }
 
@@ -160,3 +159,4 @@ export interface MedicineFile {
   created_at: string;
   base64?: string;
 }
+

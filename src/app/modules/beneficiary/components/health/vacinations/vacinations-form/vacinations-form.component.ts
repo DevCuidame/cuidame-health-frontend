@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -9,6 +9,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { IonicModule, NavController } from '@ionic/angular';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import {
   Beneficiary,
   Vaccine,
@@ -21,6 +23,7 @@ import { InputComponent } from 'src/app/shared/components/input/input.component'
 
 @Component({
   selector: 'app-vacinations-form',
+  standalone: true,
   imports: [
     ReactiveFormsModule,
     CommonModule,
@@ -31,9 +34,13 @@ import { InputComponent } from 'src/app/shared/components/input/input.component'
   templateUrl: './vacinations-form.component.html',
   styleUrls: ['./vacinations-form.component.scss'],
 })
-export class VacinationsFormComponent implements OnInit {
+export class VacinationsFormComponent implements OnInit, OnDestroy {
   public activeBeneficiary: Beneficiary | null = null;
   public buttonBackground: string = 'assets/background/button_secondary_bg.png';
+  public isLoading: boolean = false;
+
+  // Para limpiar suscripciones
+  private destroy$ = new Subject<void>();
 
   form: FormGroup;
 
@@ -48,10 +55,69 @@ export class VacinationsFormComponent implements OnInit {
       vaccinations: this.fb.array([]),
     });
 
-    this.beneficiaryService.activeBeneficiary$.subscribe((beneficiary) => {
-      this.activeBeneficiary = beneficiary;
-      this.initializeForm();
-    });
+    // Mejorar la suscripción con limpieza adecuada
+    this.beneficiaryService.activeBeneficiary$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((beneficiary) => {
+        if (!beneficiary) return;
+        
+        this.activeBeneficiary = beneficiary;
+        
+        // Verificar si necesita cargar datos de salud
+        if (!beneficiary.health_data || !beneficiary.health_data.medical_info) {
+          
+          // Si es necesario, cargar datos de salud primero
+          if (beneficiary.id) {
+            this.loadHealthData(beneficiary.id);
+          }
+        } else {
+          // Si ya tiene datos, inicializar el formulario directamente
+          this.initializeForm();
+        }
+      });
+  }
+
+  ngOnInit() {}
+
+  ngOnDestroy() {
+    // Limpiar suscripciones
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Carga los datos de salud del beneficiario si son necesarios
+   */
+  loadHealthData(beneficiaryId: number) {
+    this.isLoading = true;
+    
+    this.healthDataService.getHealthData(beneficiaryId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (healthData: any) => {
+          
+          if (this.activeBeneficiary) {
+            // Actualizar solo localmente para evitar ciclos
+            this.activeBeneficiary = {
+              ...this.activeBeneficiary,
+              health_data: healthData
+            };
+            
+            // Una vez cargados los datos, inicializar el formulario
+            this.initializeForm();
+          }
+          
+          this.isLoading = false;
+        },
+        (error) => {
+          console.error("Error al cargar datos de salud:", error);
+          this.toastService.presentToast('Error al cargar datos de salud', 'danger');
+          this.isLoading = false;
+          
+          // Intentar inicializar el formulario de todos modos
+          this.initializeForm();
+        }
+      );
   }
 
   initializeForm() {
@@ -75,8 +141,6 @@ export class VacinationsFormComponent implements OnInit {
       this.form.setControl('vaccinations', this.fb.array([]));
     }
   }
-
-  ngOnInit() {}
 
   isFormValid(): boolean {
     return this.vaccinations.length > 0 && this.vaccinations.valid;
@@ -112,63 +176,73 @@ export class VacinationsFormComponent implements OnInit {
   }
 
   async submitForm() {
-    if (this.form.valid && this.activeBeneficiary) {
-      const payload = {
-        id_paciente: this.activeBeneficiary.id,
-        vacunas: this.vaccinations.value.map((v: any) => ({
-          vacuna: v.vacuna,
-        }))
-      };
+    if (!this.form.valid || !this.activeBeneficiary) {
+      this.toastService.presentToast('Por favor complete todos los campos requeridos', 'warning');
+      return;
+    }
+    
+    this.isLoading = true;
 
-      console.log('Enviando vacunas:', payload);
+    const payload = {
+      id_paciente: this.activeBeneficiary.id,
+      vacunas: this.vaccinations.value.map((v: any) => ({
+        vacuna: v.vacuna,
+      }))
+    };
+
+    
+    try {
+      this.healthDataService.syncVaccines(payload)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(
+          async (response) => {
+            
+            if (response.data?.maintained) {
+              const updatedVaccines: Vaccine[] = response.data.maintained;
       
-      this.healthDataService.syncVaccines(payload).subscribe(
-        async (response) => {
-          console.log('Respuesta vacunas:', response);
-          
-          if (response.data?.maintained) {
-            const updatedVaccines: Vaccine[] = response.data.maintained;
-  
-            if (!this.activeBeneficiary?.id) {
-              return;
-            }
-  
-            // Crear una copia profunda del objeto para evitar mutaciones no deseadas
-            const updatedActiveBeneficiary: Beneficiary = {
-              ...this.activeBeneficiary,
-              health_data: {
-                ...this.activeBeneficiary.health_data,
-                medical_info: {
-                  ...this.activeBeneficiary.health_data.medical_info,
-                  vaccines: updatedVaccines
-                }
+              if (this.activeBeneficiary?.id) {
+                // Primero actualizar localmente
+                const updatedHealthData = {
+                  ...(this.activeBeneficiary.health_data || {}),
+                  medical_info: {
+                    ...(this.activeBeneficiary.health_data?.medical_info || {}),
+                    vaccines: updatedVaccines
+                  }
+                };
+                
+                // Crear una nueva referencia del beneficiario
+                const updatedBeneficiary = {
+                  ...this.activeBeneficiary,
+                  health_data: updatedHealthData
+                };
+
+                // Actualizar el beneficiario activo en el servicio
+                this.beneficiaryService.setActiveBeneficiary(updatedBeneficiary);
               }
-            };
-              
-            this.beneficiaryService.setActiveBeneficiary(updatedActiveBeneficiary);
-  
-            const updatedBeneficiaries = this.beneficiaryService
-              .getBeneficiaries()
-              .map((b) =>
-                b.id === updatedActiveBeneficiary.id
-                  ? updatedActiveBeneficiary
-                  : b
-              );
+            }
+            
+            this.isLoading = false;
+            await this.toastService.presentToast(
+              'Vacunas guardadas correctamente',
+              'success'
+            );
+            this.navCtrl.navigateRoot('/beneficiary/home/vacinations');
+          },
+          async (error) => {
+            console.error('Error al guardar vacunas:', error);
+            this.isLoading = false;
+            await this.toastService.presentToast(
+              'Error al guardar las vacunas',
+              'danger'
+            );
           }
-          
-          await this.toastService.presentToast(
-            'Vacunas guardadas correctamente',
-            'success'
-          );
-          this.navCtrl.navigateRoot('/beneficiary/home/vacinations');
-        },
-        async (error) => {
-          console.error('Error al guardar vacunas:', error);
-          await this.toastService.presentToast(
-            'Error al guardar las vacunas',
-            'danger'
-          );
-        }
+        );
+    } catch (error) {
+      console.error('Error al procesar el formulario:', error);
+      this.isLoading = false;
+      await this.toastService.presentToast(
+        'Error al guardar las vacunas',
+        'danger'
       );
     }
   }

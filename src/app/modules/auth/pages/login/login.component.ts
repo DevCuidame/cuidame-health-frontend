@@ -81,8 +81,6 @@ export class LoginComponent {
             const success = response.success || (response.data && response.data.access_token);
             
             if (success) {
-              console.log('Login exitoso, intentando redirección');
-              
               // Usar múltiples estrategias de navegación
               this.ngZone.run(() => {
                 // 1. Usar el Router directamente

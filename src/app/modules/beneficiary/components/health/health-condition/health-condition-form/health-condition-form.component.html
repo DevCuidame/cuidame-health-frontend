@@ -1,83 +1,94 @@
-<h2>¿Tu ser querido tiene alguna enfermedad?</h2>
-<form [formGroup]="form" (ngSubmit)="submitForm()">
-  <div formArrayName="diseases">
-    <div
-      class="container-item"
-      *ngFor="let disease of diseases.controls; let i = index"
-      [formGroup]="getDiseaseFormGroup(i)"
-    >
-      <app-input
-        label="Enfermedad"
-        type="text"
-        placeholder="Ej. Diabetes"
-        [control]="getFormControl(getDiseaseFormGroup(i), 'enfermedad')"
-      ></app-input>
+<div class="form-container">
+  <h2>¿Tu ser querido tiene alguna enfermedad?</h2>
+  <form [formGroup]="form" (ngSubmit)="submitForm()">
+    <div formArrayName="diseases">
+      <div
+        class="container-item"
+        *ngFor="let disease of diseases.controls; let i = index"
+        [formGroup]="getDiseaseFormGroup(i)"
+      >
+        <app-input
+          label="Enfermedad"
+          type="text"
+          placeholder="Ej. Diabetes"
+          [control]="getFormControl(getDiseaseFormGroup(i), 'enfermedad')"
+        ></app-input>
 
-      <button type="button" class="remove" (click)="removeDisease(i)">
-        Quitar
-      </button>
+        <button type="button" class="remove" (click)="removeDisease(i)">
+          Quitar
+        </button>
+      </div>
     </div>
-  </div>
 
-  <div class="add-box">
-    <button type="button" class="add" (click)="addDisease()">Añadir</button>
-  </div>
-
-  <h2>¿Tu ser querido tiene alguna discapacidad o condición?</h2>
-  <div formArrayName="disabilities">
-    <div
-      class="container-item"
-      *ngFor="let disability of disabilities.controls; let i = index"
-      [formGroup]="getDisabilityFormGroup(i)"
-    >
-      <app-input
-        label="Nombre"
-        type="text"
-        placeholder="Ej. Ceguera"
-        [control]="getFormControl(getDisabilityFormGroup(i), 'name')"
-      ></app-input>
+    <div class="add-box">
+      <button type="button" class="add" (click)="addDisease()">Añadir</button>
     </div>
-  </div>
 
-  <h2>¿Tu ser querido tiene algún rasgo distintivo?</h2>
-  <div formArrayName="distinctives">
-    <div
-      class="container-item"
-      *ngFor="let distinctive of distinctives.controls; let i = index"
-      [formGroup]="getDistinctiveFormGroup(i)"
-    >
+    <h2>¿Tu ser querido tiene alguna discapacidad o condición?</h2>
+    <div formArrayName="disabilities">
+      <div
+        class="container-item"
+        *ngFor="let disability of disabilities.controls; let i = index"
+        [formGroup]="getDisabilityFormGroup(i)"
+      >
+        <app-input
+          label="Nombre"
+          type="text"
+          placeholder="Ej. Ceguera"
+          [control]="getFormControl(getDisabilityFormGroup(i), 'name')"
+        ></app-input>
+        
+        <button type="button" class="remove" (click)="removeDisability(i)">
+          Quitar
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="disabilities.length === 0" class="add-box">
+      <button type="button" class="add" (click)="addDisability()">Añadir discapacidad</button>
+    </div>
+
+    <div *ngIf="isFemale" class="container-item">
+      <h3>¿Se encuentra embarazada?</h3>
       <app-input
-        label="Tipo"
+        label="Estado"
         type="select"
         [options]="[
-          { value: 'cicatrices', label: 'Cicatrices' },
-          { value: 'tatuajes', label: 'Tatuajes' }
+          { value: 'Si', label: 'Sí' },
+          { value: 'No', label: 'No' }
         ]"
-        [control]="getFormControl(getDistinctiveFormGroup(i), 'type')"
+        [control]="getFormControl(form, 'embarazada')"
       ></app-input>
+    </div>
 
+    <h2>¿Tu ser querido tiene algún rasgo distintivo?</h2>
+    
+    <div class="container-item">
+      <h3>Cicatrices</h3>
       <app-input
         label="Descripción"
         type="text"
-        placeholder="Ej. Lunar grande en la mejilla"
-        [control]="getFormControl(getDistinctiveFormGroup(i), 'description')"
+        placeholder="Ej. Cicatriz en el brazo izquierdo"
+        [control]="getFormControl(form, 'cicatrices')"
       ></app-input>
-
-      <button type="button" class="remove" (click)="removeDistinctive(i)">
-        Quitar
-      </button>
     </div>
-  </div>
 
-  <div class="add-box">
-    <button type="button" class="add" (click)="addDistinctive()">Añadir</button>
-  </div>
+    <div class="container-item">
+      <h3>Tatuajes</h3>
+      <app-input
+        label="Descripción"
+        type="text"
+        placeholder="Ej. Tatuaje de mariposa en el hombro"
+        [control]="getFormControl(form, 'tatuajes')"
+      ></app-input>
+    </div>
 
-  <app-custom-button
-    label="Guardar"
-    type="submit"
-    [disabled]="!isFormValid()"
-    [textColor]="'var(--ion-color-light)'"
-    [backgroundImage]="buttonBackground"
-  ></app-custom-button>
-</form>
+    <app-custom-button
+      label="Guardar"
+      type="submit"
+      [disabled]="!isFormValid()"
+      [textColor]="'var(--ion-color-light)'"
+      [backgroundImage]="buttonBackground"
+    ></app-custom-button>
+  </form>
+</div>

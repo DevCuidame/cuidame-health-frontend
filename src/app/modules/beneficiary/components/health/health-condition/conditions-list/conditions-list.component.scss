@@ -4,7 +4,8 @@
   gap: 5px;
   color: var(--ion-color-dark);
   width: 100%;
-  padding-bottom: 20px;
+  padding-bottom: 100px;
+  position: relative;
 }
 
 h2 {
@@ -19,12 +20,35 @@ h2 {
   align-items: flex-end;
 }
 
-.h-card {
-
-}
-
 .h-card p:nth-child(1) {
   font-size: 1.25rem;
   text-align: end;
   font-weight: bold;
+}
+
+/* Estilos para el indicador de carga */
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  margin: 10px 0;
+  background-color: rgba(var(--ion-color-light-rgb), 0.7);
+  border-radius: 8px;
+}
+
+.loading-indicator p {
+  margin-top: 10px;
+  color: var(--ion-color-medium);
+}
+
+/* Estilos para el botón de refresco */
+.refresh-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  --background-hover: transparent;
+  --ripple-color: var(--ion-color-primary-rgb);
+  z-index: 10;
 }

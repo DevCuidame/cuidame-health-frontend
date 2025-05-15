@@ -11,10 +11,11 @@ import { EditButtonComponent } from 'src/app/shared/components/edit-button/edit-
 import { HomeOptionsComponent } from 'src/app/shared/components/home-options/home-options.component';
 import { Subscription, filter, of, switchMap } from 'rxjs';
 import { ToastService } from 'src/app/core/services/toast.service';
+import { HealthDataService } from 'src/app/core/services/healthData.service';
 
 @Component({
   selector: 'app-home-beneficiary',
-  standalone: true, 
+  standalone: true,
   imports: [
     IonicModule,
     CommonModule,
@@ -23,7 +24,7 @@ import { ToastService } from 'src/app/core/services/toast.service';
     BasicDataComponent,
     RouterModule,
     EditButtonComponent,
-    HomeOptionsComponent
+    HomeOptionsComponent,
   ],
   templateUrl: './home-beneficiary.component.html',
   styleUrls: ['./home-beneficiary.component.scss'],
@@ -33,7 +34,7 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
   public selectedOption: string = '';
   public showBasicData: boolean = true;
   public isLoading: boolean = false;
-  
+
   // Variables para controlar animaciones y visibilidad
   public showCategoriesMenu: boolean = true;
   public isMenuAnimating: boolean = false;
@@ -42,16 +43,16 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
   private hideMenuOnUrls: string[] = [
     '/beneficiary/home/parameters',
     '/beneficiary/home/control-medicaments',
-    '/beneficiary/home/services'
+    '/beneficiary/home/services',
   ];
-  
+
   private subscriptions: Subscription = new Subscription();
 
   public categories: { label: string; route: string }[] = [
     { label: 'Condiciones', route: 'conditions' },
     { label: 'Antecedentes', route: 'medical-history' },
     { label: 'Alergias', route: 'medicaments-allergies' },
-    { label: 'Vacunas', route: 'vacinations' }
+    { label: 'Vacunas', route: 'vacinations' },
   ];
 
   constructor(
@@ -59,16 +60,22 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
     private navCtrl: NavController,
     private router: Router,
     private loadingController: LoadingController,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private healthDataService: HealthDataService
   ) {}
 
   ngOnInit() {
     this.checkCurrentUrl(this.router.url);
-    
+
     // Escuchar cambios en la ruta
     this.subscriptions.add(
       this.router.events
-        .pipe(filter((event: Event): event is NavigationEnd => event instanceof NavigationEnd))
+        .pipe(
+          filter(
+            (event: Event): event is NavigationEnd =>
+              event instanceof NavigationEnd
+          )
+        )
         .subscribe((event: NavigationEnd) => {
           this.checkCurrentUrl(event.url);
         })
@@ -76,7 +83,7 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
 
     // Suscribirse al estado de carga del servicio
     this.subscriptions.add(
-      this.beneficiaryService.isLoading$.subscribe(isLoading => {
+      this.beneficiaryService.isLoading$.subscribe((isLoading) => {
         this.isLoading = isLoading;
       })
     );
@@ -85,34 +92,45 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.beneficiaryService.activeBeneficiary$
         .pipe(
-          switchMap(beneficiary => {
+          switchMap((beneficiary) => {
             this.activeBeneficiary = beneficiary;
-            
+
             // Si no hay beneficiario activo, redirigir al dashboard
             if (!beneficiary) {
               this.navCtrl.navigateRoot(['/home/dashboard']);
               return of(null);
             }
-            
+
             // Si el beneficiario activo no tiene datos completos, cargarlos
-            if (beneficiary && (!beneficiary.health_data || !beneficiary.health_data.medical_info)) {
+            if (
+              beneficiary &&
+              (!beneficiary.health_data ||
+                !beneficiary.health_data.medical_info)
+            ) {
               return this.loadBeneficiaryDetails(beneficiary.id);
             }
-            
+
             return of(beneficiary);
           })
         )
-        .subscribe(beneficiary => {
+        .subscribe((beneficiary) => {
           // Actualizar el beneficiario activo con los datos completos
           if (beneficiary) {
             this.activeBeneficiary = beneficiary;
+
+            // Ahora que tenemos un beneficiario activo, obtenemos sus datos de salud
+            if (beneficiary.id) {
+              this.fetchHealthData(beneficiary.id);
+            }
           }
         })
     );
 
     // Establecer la categoría inicial basada en la ruta actual
     const currentRoute = this.router.url.split('/').pop();
-    const foundCategory = this.categories.find(cat => cat.route === currentRoute);
+    const foundCategory = this.categories.find(
+      (cat) => cat.route === currentRoute
+    );
     if (foundCategory) {
       this.selectedOption = foundCategory.label;
     }
@@ -123,27 +141,45 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Obtiene los datos de salud y los muestra por consola
+   * @param id ID del beneficiario
+   * @param forceRefresh Forzar recarga desde el servidor
+   * @param showLoading Mostrar indicador de carga
+   */
+  fetchHealthData(
+    id: number,
+    forceRefresh: boolean = false,
+    showLoading: boolean = true
+  ) {
+    this.healthDataService
+      .getHealthData(id, forceRefresh, showLoading)
+      .subscribe();
+  }
+
+  /**
    * Carga los datos detallados de un beneficiario
    */
   private loadBeneficiaryDetails(beneficiaryId: number | string) {
     return this.beneficiaryService.getBeneficiaryById(beneficiaryId);
   }
- 
+
   /**
    * Verifica la URL actual para determinar qué componentes mostrar
    */
   private checkCurrentUrl(url: string) {
     this.showBasicData = url === '/beneficiary/home';
-    
-    const shouldHideMenu = this.hideMenuOnUrls.some(hideUrl => url.includes(hideUrl));
-    
+
+    const shouldHideMenu = this.hideMenuOnUrls.some((hideUrl) =>
+      url.includes(hideUrl)
+    );
+
     if (shouldHideMenu !== !this.showCategoriesMenu) {
       this.isMenuAnimating = true;
       this.showCategoriesMenu = !shouldHideMenu;
-      
+
       setTimeout(() => {
         this.isMenuAnimating = false;
-      }, 500); 
+      }, 500);
     }
   }
 
@@ -158,14 +194,14 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
    * Selecciona una opción del menú y navega a la ruta correspondiente
    */
   selectOption(optionRoute: string) {
-    const category = this.categories.find(cat => cat.route === optionRoute);
+    const category = this.categories.find((cat) => cat.route === optionRoute);
     if (category) {
       this.selectedOption = category.label;
     }
-    
+
     this.router.navigate(['/beneficiary/home', optionRoute]);
   }
-  
+
   /**
    * Refresca los datos del beneficiario activo
    */
@@ -173,18 +209,44 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
     if (!this.activeBeneficiary) {
       return;
     }
-    
+
+    // Primero actualizamos la información básica del beneficiario
     this.loadBeneficiaryDetails(this.activeBeneficiary.id).subscribe({
       next: (beneficiary) => {
         if (beneficiary) {
           this.beneficiaryService.setActiveBeneficiary(beneficiary);
+
+          // Luego actualizamos los datos de salud (forzando una recarga desde el servidor)
+          if (beneficiary.id) {
+            this.fetchHealthData(beneficiary.id, true, true);
+          }
+
           this.toastService.presentToast('Información actualizada', 'success');
         }
       },
       error: (error) => {
         console.error('Error al actualizar beneficiario:', error);
-        this.toastService.presentToast('Error al actualizar la información', 'danger');
-      }
+        this.toastService.presentToast(
+          'Error al actualizar la información',
+          'danger'
+        );
+      },
     });
+  }
+
+  /**
+   * Método para uso directo desde la plantilla o para pruebas
+   * Actualiza solo los datos de salud del beneficiario actual
+   */
+  refreshHealthData() {
+    if (!this.activeBeneficiary?.id) {
+      console.warn(
+        'No hay un beneficiario activo para actualizar sus datos de salud'
+      );
+      return;
+    }
+
+    // Forzar recarga desde el servidor (forceRefresh = true)
+    this.fetchHealthData(this.activeBeneficiary.id, true, true);
   }
 }
