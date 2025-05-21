@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { Component, inject } from '@angular/core';
+import { AlertController, IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { Appointment } from 'src/app/core/interfaces/appointment.interface';
+import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
 // Component for patient appointment detail modal
 @Component({
   selector: 'app-patient-appointment-detail-modal',
@@ -163,32 +164,113 @@ export class PatientAppointmentDetailModalComponent {
 
   constructor(private modalController: ModalController) {}
 
+  private alertController = inject(AlertController);
+  private toastController = inject(ToastController);
+  private appointmentService = inject(AppointmentService);
+
   dismiss() {
     this.modalController.dismiss();
   }
 
   async cancelAppointment() {
-    // Show confirmation alert
-    //   const alert = await this.modalController.create({
-    //     header: 'Confirmar Cancelación',
-    //     message: '¿Estás seguro que deseas cancelar esta cita?',
-    //     buttons: [
-    //       {
-    //         text: 'No',
-    //         role: 'cancel'
-    //       },
-    //       {
-    //         text: 'Sí, cancelar',
-    //         handler: () => {
-    //           // Here you would call your API to cancel the appointment
-    //           console.log('Cancelling appointment...');
-    //           this.dismiss();
-    //         }
-    //       }
-    //     ]
-    //   });
-    //   await alert.present();
+    try {
+      // 1. Mostrar alert de confirmación
+      const alert = await this.alertController.create({
+        header: 'Confirmar Cancelación',
+        message: '¿Estás seguro que deseas cancelar esta cita?',
+        buttons: [
+          {
+            text: 'No',
+            role: 'cancel',
+            cssClass: 'secondary'
+          },
+          {
+            text: 'Sí, cancelar',
+            cssClass: 'danger',
+            handler: () => {
+              this.performCancellation();
+            }
+          }
+        ]
+      });
+
+      await alert.present();
+    } catch (error) {
+      console.error('Error showing confirmation alert:', error);
+      this.showErrorToast('Error al mostrar confirmación');
+    }
   }
+
+  private async performCancellation() {
+    try {
+      // 2. Mostrar loading
+      const loading = await this.alertController.create({
+        message: 'Cancelando cita...',
+      });
+      
+      await loading.present();
+
+      // 3. Llamar al servicio para cancelar
+      const response = await this.appointmentService.cancelAppointment(this.appointment.id).toPromise();
+
+      await loading.dismiss();
+
+      if (response && response.success !== false) {
+        // 4. Cancelación exitosa
+        await this.showSuccessToast('Cita cancelada exitosamente');
+        
+        // 5. Actualizar el estado local
+        this.appointment.status = 'cancelled';
+        
+        // 6. Cerrar modal con resultado
+        this.modalController.dismiss({
+          cancelled: true,
+          appointmentId: this.appointment.id
+        });
+      } else {
+        // 4. Error en la respuesta
+        await this.showErrorToast(response?.message || 'Error al cancelar la cita');
+      }
+
+    } catch (error) {
+      console.error('Error cancelling appointment:', error);
+      
+      // Dismissar loading si aún está presente
+      try {
+        const loading = await this.alertController.getTop();
+        if (loading && loading.tagName === 'ION-LOADING') {
+          await loading.dismiss();
+        }
+      } catch (dismissError) {
+        console.error('Error dismissing loading:', dismissError);
+      }
+
+      await this.showErrorToast('Error de conexión. Intenta nuevamente.');
+    }
+  }
+
+  private async showSuccessToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color: 'success',
+      position: 'top',
+      icon: 'checkmark-circle'
+    });
+    await toast.present();
+  }
+
+  private async showErrorToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 4000,
+      color: 'danger',
+      position: 'top',
+      icon: 'alert-circle'
+    });
+    await toast.present();
+  }
+
 
   // Añade este método a PatientAppointmentDetailModalComponent
   isUnassignedAppointment(): boolean {

@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
+import { tap, take } from 'rxjs/operators';
 import { ChatMessage, ChatService, ChatSession } from 'src/app/core/services/chat-session.service';
 import { TabBarComponent } from 'src/app/shared/components/tab-bar/tab-bar.component';
 
@@ -14,7 +14,7 @@ import { TabBarComponent } from 'src/app/shared/components/tab-bar/tab-bar.compo
   imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule, TabBarComponent],
   styleUrls: ['./chat.component.scss']
 })
-export class ChatComponent implements OnInit, AfterViewChecked {
+export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('chatContainer') chatContainer!: ElementRef;
   
   chatForm: FormGroup;
@@ -22,6 +22,9 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   session$!: Observable<ChatSession | null>;
   isTyping$!: Observable<boolean>;
   
+  private subscriptions: Subscription[] = [];
+  private sessionInitialized = false;
+
   constructor(
     private chatService: ChatService,
     private fb: FormBuilder
@@ -41,17 +44,25 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     this.session$ = this.chatService.session$;
     this.isTyping$ = this.chatService.isTyping$;
     
-    // Esperar un momento para que el servicio intente cargar la sesión
-    setTimeout(() => {
-      this.session$.subscribe(session => {
-        if (!session) {
-          this.initializeChat();
-        }
-      });
-    }, 100);
+    // Suscribirse a la sesión SOLO UNA VEZ
+    const sessionSub = this.session$.pipe(take(1)).subscribe(session => {
+      if (!session && !this.sessionInitialized) {
+        this.sessionInitialized = true;
+        this.initializeChat();
+      } else if (session) {
+        this.sessionInitialized = true;
+        console.log('Session already exists:', session.id);
+      }
+    });
+    
+    this.subscriptions.push(sessionSub);
+  }
+  
+  ngOnDestroy(): void {
+    // Limpiar suscripciones para evitar memory leaks
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  
   ngAfterViewChecked(): void {
     this.scrollToBottom();
   }
@@ -64,29 +75,39 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   }
   
   initializeChat(): void {
-    this.chatService.createSession().subscribe(
+    if (this.sessionInitialized) return;
+    
+    console.log('🚀 Initializing new chat session...');
+    
+    const createSub = this.chatService.createSession().subscribe(
       sessionId => {
-        console.log('Chat session created:', sessionId);
+        console.log('✅ Chat session created:', sessionId);
+        this.sessionInitialized = true;
       },
       error => {
-        console.error('Error creating chat session:', error);
+        console.error('❌ Error creating chat session:', error);
+        this.sessionInitialized = false; // Permitir retry en caso de error
       }
     );
+    
+    this.subscriptions.push(createSub);
   }
   
   sendMessage(): void {
     if (this.chatForm.valid) {
       const message = this.chatForm.get('message')?.value ?? '';
-      this.chatService.sendMessage(message);
-      this.chatForm.reset({ message: '' });
+      if (message.trim()) {
+        this.chatService.sendMessage(message.trim());
+        this.chatForm.reset({ message: '' });
+      }
     }
   }
   
   selectOption(option: any): void {
-    this.chatService.sendMessage(option.value);
+    if (option?.value) {
+      this.chatService.sendMessage(option.value);
+    }
   }
-  
-
   
   getMessageClasses(message: ChatMessage): any {
     return {
@@ -99,6 +120,13 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   }
   
   trackByFn(index: number, item: ChatMessage): string {
-    return item.id || String(index);
+    return item.id || `${item.sender}-${item.timestamp}-${index}`;
+  }
+
+  // Método para reiniciar el chat manualmente si es necesario
+  resetChat(): void {
+    this.sessionInitialized = false;
+    this.chatService.resetSession();
+    this.initializeChat();
   }
 }

@@ -27,9 +27,9 @@ export interface ChatSession {
     | 'city'
     | 'specialty'
     | 'appointmentType'
-    | 'professional'
-    | 'date'
-    | 'time'
+    // | 'professional'
+    // | 'date'
+    // | 'time'
     | 'confirmation';
 }
 
@@ -45,9 +45,13 @@ export class ChatService {
   private messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
   private isTypingSubject = new BehaviorSubject<boolean>(false);
   private connectionStatusSubject = new BehaviorSubject<boolean>(false);
+  
+  // Variables de control para evitar bucles
   private reconnectionAttempts = 0;
-  private maxReconnectionAttempts = 5;
+  private maxReconnectionAttempts = 3; // Reducido
   private reconnectionTimer?: any;
+  private isConnecting = false;
+  private sessionInitialized = false;
 
   session$ = this.sessionSubject.asObservable();
   messages$ = this.messagesSubject.asObservable();
@@ -59,8 +63,12 @@ export class ChatService {
   }
 
   private loadSessionFromStorage(): void {
+    if (this.sessionInitialized) return;
+
     const sessionId = localStorage.getItem('chatSessionId');
     if (sessionId) {
+      console.log('📱 Loading existing session:', sessionId);
+      
       this.getSession(sessionId).subscribe(
         (response: any) => {
           const session: ChatSession = {
@@ -71,13 +79,21 @@ export class ChatService {
 
           this.sessionSubject.next(session);
           this.messagesSubject.next(session.messages);
-          this.connectWebSocket(sessionId);
+          this.sessionInitialized = true;
+          
+          // Solo conectar WebSocket si no está ya conectando
+          if (!this.isConnecting && !this.connectionStatusSubject.value) {
+            this.connectWebSocket(sessionId);
+          }
         },
         (error) => {
           console.error('Error loading session:', error);
           localStorage.removeItem('chatSessionId');
+          this.sessionInitialized = true;
         }
       );
+    } else {
+      this.sessionInitialized = true;
     }
   }
 
@@ -93,7 +109,23 @@ export class ChatService {
             const sessionId = response.data?.sessionId;
             if (sessionId) {
               localStorage.setItem('chatSessionId', sessionId);
-              this.connectWebSocket(sessionId);
+              
+              // Crear sesión local
+              const session: ChatSession = {
+                id: sessionId,
+                status: 'active',
+                messages: response.data?.messages || []
+              };
+              
+              this.sessionSubject.next(session);
+              this.messagesSubject.next(session.messages);
+              this.sessionInitialized = true;
+              
+              // Conectar WebSocket solo si no está conectando
+              if (!this.isConnecting) {
+                this.connectWebSocket(sessionId);
+              }
+              
               observer.next(sessionId);
               observer.complete();
             } else {
@@ -146,8 +178,8 @@ export class ChatService {
     // Show typing indicator
     this.isTypingSubject.next(true);
 
-    // Send via WebSocket if connected
-    if (this.socket$ && !this.socket$.closed) {
+    // Send via WebSocket if connected, otherwise fallback to HTTP
+    if (this.socket$ && !this.socket$.closed && this.connectionStatusSubject.value) {
       const wsMessage = {
         type: 'message',
         sessionId,
@@ -194,9 +226,18 @@ export class ChatService {
   }
 
   connectWebSocket(sessionId: string): void {
+    // Prevenir múltiples conexiones simultáneas
+    if (this.isConnecting) {
+      console.log('🔄 WebSocket connection already in progress');
+      return;
+    }
+
+    this.isConnecting = true;
+
     // Clear any existing reconnection timer
     if (this.reconnectionTimer) {
       clearTimeout(this.reconnectionTimer);
+      this.reconnectionTimer = undefined;
     }
 
     // Close existing connection
@@ -213,6 +254,7 @@ export class ChatService {
           console.log('✅ WebSocket connection established');
           this.connectionStatusSubject.next(true);
           this.reconnectionAttempts = 0;
+          this.isConnecting = false;
 
           // Initialize session
           this.socket$.next({
@@ -225,17 +267,28 @@ export class ChatService {
         next: (event) => {
           console.log('❌ WebSocket connection closed:', event);
           this.connectionStatusSubject.next(false);
-          this.handleDisconnection(sessionId);
+          this.isConnecting = false;
+          
+          // Solo intentar reconexión si fue una desconexión inesperada
+          if (event.code !== 1000 && event.code !== 1001) {
+            this.handleDisconnection(sessionId);
+          }
         },
       },
     });
 
     this.socket$.subscribe(
       (message) => this.handleSocketMessage(message),
-      (error) => this.handleSocketError(error, sessionId),
+      (error) => {
+        console.error('WebSocket error:', error);
+        this.connectionStatusSubject.next(false);
+        this.isConnecting = false;
+        this.handleSocketError(error, sessionId);
+      },
       () => {
         console.log('WebSocket connection completed');
         this.connectionStatusSubject.next(false);
+        this.isConnecting = false;
       }
     );
   }
@@ -293,44 +346,63 @@ export class ChatService {
     console.error('WebSocket error:', error);
     this.connectionStatusSubject.next(false);
     this.isTypingSubject.next(false);
+    this.isConnecting = false;
     this.handleDisconnection(sessionId);
   }
 
   private handleDisconnection(sessionId: string): void {
-    if (this.reconnectionAttempts < this.maxReconnectionAttempts) {
-      this.reconnectionAttempts++;
-      const delay = Math.pow(2, this.reconnectionAttempts) * 1000; // Exponential backoff
-
-      console.log(
-        `🔄 Attempting to reconnect (${this.reconnectionAttempts}/${this.maxReconnectionAttempts}) in ${delay}ms...`
-      );
-
-      this.reconnectionTimer = setTimeout(() => {
-        this.connectWebSocket(sessionId);
-      }, delay);
-    } else {
+    // Evitar reconexiones infinitas
+    if (this.reconnectionAttempts >= this.maxReconnectionAttempts) {
       console.error('❌ Maximum reconnection attempts reached');
       this.connectionStatusSubject.next(false);
+      return;
     }
+
+    // No intentar reconectar si ya está reconectando
+    if (this.isConnecting) {
+      return;
+    }
+
+    this.reconnectionAttempts++;
+    const delay = Math.min(Math.pow(2, this.reconnectionAttempts) * 1000, 10000); // Max 10 segundos
+
+    console.log(
+      `🔄 Attempting to reconnect (${this.reconnectionAttempts}/${this.maxReconnectionAttempts}) in ${delay}ms...`
+    );
+
+    this.reconnectionTimer = setTimeout(() => {
+      if (!this.isConnecting && !this.connectionStatusSubject.value) {
+        this.connectWebSocket(sessionId);
+      }
+    }, delay);
   }
 
   resetSession(): void {
+    // Limpiar flags de control
+    this.sessionInitialized = false;
+    this.isConnecting = false;
+    this.reconnectionAttempts = 0;
+    
+    // Limpiar storage y conexiones
     localStorage.removeItem('chatSessionId');
+    
     if (this.socket$ && !this.socket$.closed) {
       this.socket$.complete();
     }
+    
     if (this.reconnectionTimer) {
       clearTimeout(this.reconnectionTimer);
+      this.reconnectionTimer = undefined;
     }
+    
+    // Reset subjects
     this.sessionSubject.next(null);
     this.messagesSubject.next([]);
     this.connectionStatusSubject.next(false);
-    this.reconnectionAttempts = 0;
   }
 
-  // Add method to manually test connection
   testConnection(): void {
-    if (this.socket$ && !this.socket$.closed) {
+    if (this.socket$ && !this.socket$.closed && this.connectionStatusSubject.value) {
       this.socket$.next({ type: 'ping' });
     }
   }

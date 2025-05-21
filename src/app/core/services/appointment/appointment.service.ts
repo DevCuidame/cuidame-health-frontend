@@ -31,22 +31,30 @@ export class AppointmentService {
     }
   }
 
-  cancelAppointment(id: number): Observable<any> {
-    return this.http
-      .delete(`${this.api}api/medical-appointment/cancel/${id}`)
-      .pipe(
-        tap(() => {
-          const updatedAppointments = this.appointments().filter(
-            (appt) => appt.id !== id
+  // En appointment.service.ts
+cancelAppointment(id: number): Observable<any> {
+  return this.http
+    .post(`${this.api}api/patient/appointments/${id}/cancel`, {
+      reason: 'personal', 
+      reasonDetails: 'Cancelada por el cuidador'
+    })
+    .pipe(
+      tap((response: any) => {
+        if (response.success) {
+          // Actualizar cache local
+          const updatedAppointments = this.appointments().map(appt =>
+            appt.id === id ? { ...appt, status: 'cancelled' } : appt
           );
           this.appointments.set(updatedAppointments);
-        }),
-        catchError((error) => {
-          console.error('Error al cancelar la cita:', error);
-          return of(null);
-        })
-      );
-  }
+          this.saveToCache(updatedAppointments);
+        }
+      }),
+      catchError((error) => {
+        console.error('Error al cancelar la cita:', error);
+        return of({ success: false, message: 'Error al cancelar la cita' });
+      })
+    );
+}
 
   createAppointment(appointment: Appointment): Observable<any> {
     const isManualPending = appointment.status === 'TO_BE_CONFIRMED';
