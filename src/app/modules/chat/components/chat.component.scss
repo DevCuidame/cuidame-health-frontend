@@ -202,6 +202,8 @@
   }
   
   ion-footer {
+    order: 0 !important; 
+    --order: 0 !important; 
     ion-toolbar {
       --padding-top: 0;
       --padding-bottom: 0;

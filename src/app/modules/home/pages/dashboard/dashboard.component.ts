@@ -237,6 +237,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  formatImageUrl(url: string): string {
+    if (!url) return '/assets/images/default_user.png';
+
+    let formattedUrl = url.replace(/\\/g, '/');
+
+    const apiUrl = this.environment.endsWith('/')
+      ? this.environment.slice(0, -1)
+      : this.environment;
+
+    if (formattedUrl.startsWith('/')) {
+      formattedUrl = formattedUrl.substring(1);
+    }
+
+    return `${apiUrl}/${formattedUrl}`;
+  }
+
   setActiveTab(tab: string) {
     this.activeTab = tab;
   }

@@ -44,12 +44,15 @@ export class ChatService {
   private sessionSubject = new BehaviorSubject<ChatSession | null>(null);
   private messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
   private isTypingSubject = new BehaviorSubject<boolean>(false);
+  private connectionStatusSubject = new BehaviorSubject<boolean>(false);
   private reconnectionAttempts = 0;
   private maxReconnectionAttempts = 5;
+  private reconnectionTimer?: any;
 
   session$ = this.sessionSubject.asObservable();
   messages$ = this.messagesSubject.asObservable();
   isTyping$ = this.isTypingSubject.asObservable();
+  connectionStatus$ = this.connectionStatusSubject.asObservable();
 
   constructor(private http: HttpClient) {
     this.loadSessionFromStorage();
@@ -60,61 +63,66 @@ export class ChatService {
     if (sessionId) {
       this.getSession(sessionId).subscribe(
         (response: any) => {
-          // Ajustar la estructura para manejar la respuesta correctamente
           const session: ChatSession = {
             id: response.data?.sessionId || sessionId,
             status: response.data?.status || 'active',
-            messages: response.data?.messages || []
+            messages: response.data?.messages || [],
           };
-          
+
           this.sessionSubject.next(session);
           this.messagesSubject.next(session.messages);
           this.connectWebSocket(sessionId);
         },
-        error => {
+        (error) => {
           console.error('Error loading session:', error);
           localStorage.removeItem('chatSessionId');
-          // No crear sesión automáticamente aquí
         }
       );
     }
   }
 
   createSession(): Observable<string> {
-    return new Observable(observer => {
-      this.http.post<{data: {sessionId: string}}>(`${this.apiUrl}api/chat/session`, {}).subscribe(
-        (response: any) => {
-          const sessionId = response.data?.sessionId;
-          if (sessionId) {
-            localStorage.setItem('chatSessionId', sessionId);
-            this.connectWebSocket(sessionId);
-            observer.next(sessionId);
-            observer.complete();
-          } else {
-            observer.error(new Error('No session ID received'));
+    return new Observable((observer) => {
+      this.http
+        .post<{ data: { sessionId: string } }>(
+          `${this.apiUrl}api/chat/session`,
+          {}
+        )
+        .subscribe(
+          (response: any) => {
+            const sessionId = response.data?.sessionId;
+            if (sessionId) {
+              localStorage.setItem('chatSessionId', sessionId);
+              this.connectWebSocket(sessionId);
+              observer.next(sessionId);
+              observer.complete();
+            } else {
+              observer.error(new Error('No session ID received'));
+            }
+          },
+          (error) => {
+            console.error('Error creating session:', error);
+            observer.error(error);
           }
-        },
-        error => {
-          console.error('Error creating session:', error);
-          observer.error(error);
-        }
-      );
+        );
     });
   }
 
   getSession(sessionId: string): Observable<ChatSession> {
-    return this.http.get<{data: any}>(`${this.apiUrl}/api/chat/session/${sessionId}`).pipe(
-      map(response => {
-        if (response.data) {
-          return {
-            id: response.data.sessionId,
-            status: 'active',
-            messages: response.data.messages || []
-          };
-        }
-        throw new Error('Invalid session data');
-      })
-    );
+    return this.http
+      .get<{ data: any }>(`${this.apiUrl}api/chat/session/${sessionId}`)
+      .pipe(
+        map((response) => {
+          if (response.data) {
+            return {
+              id: response.data.sessionId,
+              status: 'active',
+              messages: response.data.messages || [],
+            };
+          }
+          throw new Error('Invalid session data');
+        })
+      );
   }
 
   sendMessage(content: string): void {
@@ -131,7 +139,7 @@ export class ChatService {
       timestamp: new Date(),
     };
 
-    // Add message to local state
+    // Add message to local state immediately
     const currentMessages = this.messagesSubject.value;
     this.messagesSubject.next([...currentMessages, message]);
 
@@ -145,84 +153,102 @@ export class ChatService {
         sessionId,
         message: content,
       };
-      
-      // Agregar este console.log para mostrar lo que se envía al WebSocket
-      console.log('📤 Enviando al WebSocket:', wsMessage);
-      
-      this.socket$.next(wsMessage);
+
+      console.log('📤 Sending to WebSocket:', wsMessage);
+
+      try {
+        this.socket$.next(wsMessage);
+      } catch (error) {
+        console.error('Error sending WebSocket message:', error);
+        this.fallbackToHttp(sessionId, content);
+      }
     } else {
-      console.log('🔄 Fallback a HTTP - WebSocket no conectado');
-      
-      // Fallback to HTTP if WebSocket is not connected
-      const httpPayload = {
-        sessionId,
-        content,
-      };
-      
-      // También puedes mostrar lo que se envía via HTTP
-      console.log('📤 Enviando via HTTP:', httpPayload);
-      
-      this.http
-        .post<{ success: boolean }>(`${this.apiUrl}api/chat/message`, httpPayload)
-        .subscribe(
-          () => {
-            // HTTP fallback doesn't provide real-time responses,
-            // so we'll need to fetch the updated session after sending
-            this.getSession(sessionId).subscribe((session) => {
-              this.sessionSubject.next(session);
-              this.messagesSubject.next(session.messages);
-              this.isTypingSubject.next(false);
-            });
-          },
-          (error) => {
-            console.error('Error sending message:', error);
-            this.isTypingSubject.next(false);
-          }
-        );
+      console.log('🔄 Fallback to HTTP - WebSocket not connected');
+      this.fallbackToHttp(sessionId, content);
     }
   }
 
+  private fallbackToHttp(sessionId: string, content: string): void {
+    const httpPayload = {
+      sessionId,
+      content,
+    };
+
+    console.log('📤 Sending via HTTP:', httpPayload);
+
+    this.http
+      .post<{ success: boolean }>(`${this.apiUrl}api/chat/message`, httpPayload)
+      .subscribe(
+        () => {
+          this.getSession(sessionId).subscribe((session) => {
+            this.sessionSubject.next(session);
+            this.messagesSubject.next(session.messages);
+            this.isTypingSubject.next(false);
+          });
+        },
+        (error) => {
+          console.error('Error sending message:', error);
+          this.isTypingSubject.next(false);
+        }
+      );
+  }
+
   connectWebSocket(sessionId: string): void {
+    // Clear any existing reconnection timer
+    if (this.reconnectionTimer) {
+      clearTimeout(this.reconnectionTimer);
+    }
+
+    // Close existing connection
     if (this.socket$ && !this.socket$.closed) {
       this.socket$.complete();
     }
-    
+
+    console.log('🔗 Attempting WebSocket connection to:', this.wsUrl);
+
     this.socket$ = webSocket({
-      url: `${this.wsUrl}`,  // Solo la URL base
+      url: this.wsUrl,
       openObserver: {
         next: () => {
-          console.log('WebSocket connection established');
+          console.log('✅ WebSocket connection established');
+          this.connectionStatusSubject.next(true);
           this.reconnectionAttempts = 0;
-          
+
           // Initialize session
           this.socket$.next({
             type: 'init',
-            sessionId
+            sessionId,
           });
-        }
+        },
       },
       closeObserver: {
-        next: () => {
-          console.log('WebSocket connection closed');
+        next: (event) => {
+          console.log('❌ WebSocket connection closed:', event);
+          this.connectionStatusSubject.next(false);
           this.handleDisconnection(sessionId);
-        }
-      }
+        },
+      },
     });
-    
+
     this.socket$.subscribe(
       (message) => this.handleSocketMessage(message),
       (error) => this.handleSocketError(error, sessionId),
-      () => console.log('WebSocket connection completed')
+      () => {
+        console.log('WebSocket connection completed');
+        this.connectionStatusSubject.next(false);
+      }
     );
   }
 
   private handleSocketMessage(message: any): void {
+    console.log('📥 WebSocket message received:', message);
+
     switch (message.type) {
       case 'connection':
+        console.log('Connection confirmed:', message.message);
         break;
 
       case 'init':
-        // Ajustar la estructura esperada del mensaje
         if (message.sessionId && message.messages) {
           const session: ChatSession = {
             id: message.sessionId,
@@ -235,7 +261,6 @@ export class ChatService {
         break;
 
       case 'message':
-        // Verificar la estructura del mensaje antes de usarlo
         if (message.messages) {
           const currentMessages = this.messagesSubject.value;
           const newMessages = Array.isArray(message.messages)
@@ -245,24 +270,28 @@ export class ChatService {
         }
         this.isTypingSubject.next(false);
 
-        // Update session if provided
         if (message.session) {
           this.sessionSubject.next(message.session);
         }
         break;
 
       case 'error':
-        console.error('WebSocket error:', message.message);
+        console.error('WebSocket error message:', message.message);
         this.isTypingSubject.next(false);
         break;
 
+      case 'pong':
+        // Handle ping/pong for connection health
+        break;
+
       default:
-        console.warn('Unknown message type:', message.type);
+        console.warn('Unknown WebSocket message type:', message.type);
     }
   }
 
   private handleSocketError(error: any, sessionId: string): void {
     console.error('WebSocket error:', error);
+    this.connectionStatusSubject.next(false);
     this.isTypingSubject.next(false);
     this.handleDisconnection(sessionId);
   }
@@ -270,16 +299,18 @@ export class ChatService {
   private handleDisconnection(sessionId: string): void {
     if (this.reconnectionAttempts < this.maxReconnectionAttempts) {
       this.reconnectionAttempts++;
+      const delay = Math.pow(2, this.reconnectionAttempts) * 1000; // Exponential backoff
+
       console.log(
-        `Attempting to reconnect (${this.reconnectionAttempts}/${this.maxReconnectionAttempts})...`
+        `🔄 Attempting to reconnect (${this.reconnectionAttempts}/${this.maxReconnectionAttempts}) in ${delay}ms...`
       );
 
-      // Exponential backoff for reconnection
-      setTimeout(() => {
+      this.reconnectionTimer = setTimeout(() => {
         this.connectWebSocket(sessionId);
-      }, Math.pow(2, this.reconnectionAttempts) * 1000);
+      }, delay);
     } else {
-      console.error('Maximum reconnection attempts reached');
+      console.error('❌ Maximum reconnection attempts reached');
+      this.connectionStatusSubject.next(false);
     }
   }
 
@@ -288,7 +319,19 @@ export class ChatService {
     if (this.socket$ && !this.socket$.closed) {
       this.socket$.complete();
     }
+    if (this.reconnectionTimer) {
+      clearTimeout(this.reconnectionTimer);
+    }
     this.sessionSubject.next(null);
     this.messagesSubject.next([]);
+    this.connectionStatusSubject.next(false);
+    this.reconnectionAttempts = 0;
+  }
+
+  // Add method to manually test connection
+  testConnection(): void {
+    if (this.socket$ && !this.socket$.closed) {
+      this.socket$.next({ type: 'ping' });
+    }
   }
 }

@@ -4,7 +4,11 @@
   <div class="card">
     <div class="profile-container">
       <div class="circle left">
-        <img [src]="user.imagebs64" [alt]="user?.name" />
+        <img [src]="
+        user.photourl
+          ? formatImageUrl(user.path)
+          : user.imagebs64 || '/assets/images/default_user.png'
+      " [alt]="user?.name" />
       </div>
       <div class="content">
         <div class="user-name">

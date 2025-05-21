@@ -3,10 +3,10 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  url: 'http://localhost:4000/',
-  wsUrl: 'ws://localhost:4000/ws/chat',
-  // url: 'https://health-api.cuidame.tech/',
-  // wsUrl: 'wss://health-api.cuidame.tech/ws/chat',
+  // url: 'http://localhost:4000/',
+  // wsUrl: 'ws://localhost:4000/ws/chat',
+  url: 'https://health-api.cuidame.tech/',
+  wsUrl: 'wss://health-api.cuidame.tech/ws/chat',
   production: false,
 };
 
