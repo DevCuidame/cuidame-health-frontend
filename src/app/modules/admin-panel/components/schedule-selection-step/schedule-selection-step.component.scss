@@ -1,6 +1,4 @@
-// @import url("../../../styles/wizard.styles.scss");
-
-// Estilos específicos para el componente de selección de horarios
+@import url("../../../../shared/styles/wizard.styles.scss");
 
 .step-content{
   & .form-group {
@@ -576,3 +574,5 @@
     }
   }
 }
+
+

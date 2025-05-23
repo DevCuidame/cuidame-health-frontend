@@ -76,14 +76,14 @@ export class BeneficiaryService {
       this.getUserInfoAsync().subscribe({
         next: (user) => {
           if (user && user.id) {
-            this.fetchBeneficiaries().subscribe(
-              () => {},
-              (error) =>
-                console.warn(
-                  'Error cargando familiares inicialmente:',
-                  error
-                )
-            );
+            // this.fetchBeneficiaries().subscribe(
+            //   () => {},
+            //   (error) =>
+            //     console.warn(
+            //       'Error cargando familiares inicialmente:',
+            //       error
+            //     )
+            // );
           }
         },
         error: (error) =>

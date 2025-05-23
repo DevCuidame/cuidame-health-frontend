@@ -121,10 +121,6 @@ p {
   --ion-safe-area-bottom: env(safe-area-inset-bottom);
 }
 
-.ion-page {
-  background-color: var(--chat-bg-color);
-}
-
 /* Global Chat Styling */
 .message-item {
   animation: fade-in 0.3s ease-in-out;

@@ -29,14 +29,14 @@ import { ScheduleService } from 'src/app/core/services/schedule.service';
   template: `
     <div class="step-content">
       <!-- Barra de búsqueda del paciente para mostrar resumen -->
-      <app-patient-search-bar
+      <!-- <app-patient-search-bar
         [image_path]="patientData.image?.image_path"
         [first_name]="patientData.first_name"
         [last_name]="patientData.last_name"
         [firstTime]="appointmentFirstTime"
         [cityName]="cityName"
         [ticketNumber]="ticketNumber"
-      ></app-patient-search-bar>
+      ></app-patient-search-bar> -->
 
       <!-- Información del profesional para asignación de horario si estamos en modo asignación -->
       @if (isAssigningToPendingAppointment) {

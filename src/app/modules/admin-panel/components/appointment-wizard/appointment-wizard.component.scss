@@ -46,16 +46,6 @@
       text-align: center;
     }
   }
-
-  .step-line {
-    position: absolute;
-    top: 9px;
-    left: calc(100% / 8); /* 12.5% del ancho */
-    right: calc(100% / 8); /* 12.5% del ancho */
-    height: 3px;
-    background-color: var(--ion-color-secondary);
-    z-index: 1;
-  }
 }
 
 /* Contenido de los pasos */

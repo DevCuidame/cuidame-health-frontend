@@ -13,3 +13,48 @@
     </div>
   </div>
 </div>
+
+<!-- Add this to your component template for debugging -->
+
+<!-- Connection Status Indicator -->
+<div class="connection-status-container" style="margin-bottom: 16px;">
+  <span class="connection-status" [ngClass]="getConnectionStatusClass()">
+    {{ getConnectionStatus() }}
+  </span>
+  
+  <button 
+    *ngIf="!isConnected && !isLoading" 
+    class="retry-button"
+    (click)="onRetryConnection()"
+    [disabled]="isLoading">
+    Reconectar
+  </button>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="isLoadingData()" class="loading-appointments">
+  <div class="loading-spinner"></div>
+  Cargando appointments...
+</div>
+
+<!-- Error Message -->
+<div *ngIf="connectionError && !isLoading" class="connection-error">
+  <span>{{ connectionError }}</span>
+  <button class="retry-button" (click)="onRetryConnection()">
+    Reintentar
+  </button>
+</div>
+
+<!-- Your existing appointments content -->
+<div *ngIf="!isLoadingData()">
+  <!-- Your existing appointment display logic here -->
+</div>
+
+<!-- Debug Info (only in development) -->
+<div class="ws-debug-info">
+  <div>WebSocket: {{ isConnected ? 'Connected' : 'Disconnected' }}</div>
+  <div>Appointments: {{ appointments.length }}</div>
+  <div>Pending: {{ appointmentCounts.PENDING }}</div>
+  <div>Confirmed: {{ appointmentCounts.CONFIRMED }}</div>
+  <!-- <div>Last Update: {{ new Date().toLocaleTimeString() }}</div> -->
+</div>

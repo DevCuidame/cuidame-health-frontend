@@ -38,6 +38,8 @@ export interface Appointment {
   specialty_id?: any
 }
 
+
+
 export interface appointmentCounts {
   EXPIRED: number;
   PENDING: number;
@@ -138,4 +140,58 @@ export interface QuestionnaireResponse {
   question_id: number;
   answer: string;
   created_at: string;
+}
+
+// Interfaces para WebSocket
+export interface AppointmentWebSocketEvent {
+  type: 'appointmentsList' | 'newAppointment' | 'appointmentUpdated' | 'appointmentDeleted';
+  appointments?: Appointment[];
+  appointment?: Appointment;
+  appointmentId?: number;
+  timestamp?: Date;
+}
+
+export interface AppointmentFilter {
+  status?: AppointmentStatus[];
+  dateFrom?: string;
+  dateTo?: string;
+  professionalId?: number;
+  patientId?: number;
+}
+
+export interface AppointmentStats {
+  total: number;
+  byStatus: appointmentCounts;
+  todayCount: number;
+  weekCount: number;
+  monthCount: number;
+}
+
+// Para operaciones CRUD
+export interface CreateAppointmentRequest {
+  patient_id: number;
+  professional_id?: number;
+  appointment_type_id: number;
+  start_time?: string;
+  end_time?: string;
+  appointment_date?: string;
+  notes?: string;
+  is_for_beneficiary?: boolean;
+}
+
+export interface UpdateAppointmentRequest {
+  professional_id?: number;
+  start_time?: string;
+  end_time?: string;
+  appointment_date?: string;
+  status?: AppointmentStatus;
+  notes?: string;
+}
+
+// Para respuestas de la API
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
 }

@@ -32,7 +32,7 @@ export class PendingCardComponent implements OnInit {
   @Input() appointment!: Appointment;
   public environment = environment.url;
 
-  public buttonBackground: string = 'assets/background/primary_button_bg.svg';
+  public buttonBackground: string = 'assets/background/button_primary_bg.png';
   public confirmButtonBackground: string =
     'assets/background/primary_button_bg.svg';
   public faClock = faClock;
@@ -224,7 +224,7 @@ export class PendingCardComponent implements OnInit {
     }
 
     localStorage.setItem('selectedAppointment', JSON.stringify(appointment));
-    this.router.navigate(['/call-center/dash/pending'], {
+    this.router.navigate(['/admin-panel/dash/pending'], {
       state: { appointment },
     });
   }
@@ -238,7 +238,7 @@ export class PendingCardComponent implements OnInit {
 
     // Podemos usar la misma ruta pero con un query param para indicar que es asignación de horario
     localStorage.setItem('selectedAppointment', JSON.stringify(appointment));
-    this.router.navigate(['/call-center/dash/pending'], {
+    this.router.navigate(['/admin-panel/dash/pending'], {
       state: {
         appointment,
         scheduleAssignment: true, // Flag para indicar que es asignación de horario

@@ -38,7 +38,7 @@ export interface ChatSession {
 })
 export class ChatService {
   private apiUrl = environment.url;
-  private wsUrl = environment.wsUrl;
+  private wsUrl = `${environment.wsUrl}/chat`;
 
   private socket$!: WebSocketSubject<any>;
   private sessionSubject = new BehaviorSubject<ChatSession | null>(null);

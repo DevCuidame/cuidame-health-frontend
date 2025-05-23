@@ -19,8 +19,8 @@ const routes: Routes = [
       { path: '', redirectTo: 'assigment', pathMatch: 'full' }
     ]
   },
-  { path: '', redirectTo: 'call-center', pathMatch: 'full' },
-  { path: '**', redirectTo: 'call-center' }
+  { path: '', redirectTo: 'dash/assigment', pathMatch: 'full' },
+  { path: '**', redirectTo: 'dash/assigment' }
 ];
 
 @NgModule({

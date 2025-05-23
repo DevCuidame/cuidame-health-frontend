@@ -3,13 +3,13 @@
     <ul class="sidebar-options">
       <li>
         <app-custom-button
-          routerLink="/call-center/dash/assigment"
+          routerLink="/admin-panel/dash/assigment"
           (click)="setActive('assigment')"
           label="Citas por Agendar"
           type="submit"
           [disabled]="false"
-          [textColor]="'var(--color-highlighted-text)'"
-          [boxShadow]="'0px 2px 4px 2px rgba(78, 170, 3, 0.5)'"
+          [textColor]="'var(--ion-color-dark)'"
+          [boxShadow]="'0px 2px 4px 2px rgba(39, 82, 137, 0.5)'"
           [background]="
             activeButton === 'assigment'
               ? 'var(--color-button-background-active)'
@@ -20,13 +20,13 @@
       </li>
       <li>
         <app-custom-button
-          routerLink="/call-center/dash/daily"
+          routerLink="/admin-panel/dash/daily"
           (click)="setActive('daily')"
           label="Citas por Confirmar"
           type="submit"
           [disabled]="false"
-          [boxShadow]="'0px 2px 4px 2px rgba(78, 170, 3, 0.5)'"
-          [textColor]="'var(--color-highlighted-text)'"
+          [boxShadow]="'0px 2px 4px 2px rgba(39, 82, 137, 0.5)'"
+          [textColor]="'var(--ion-color-dark)'"
           [background]="
             activeButton === 'daily'
               ? 'var(--color-button-background-active)'
@@ -37,13 +37,13 @@
       </li>
       <li>
         <app-custom-button
-          routerLink="/call-center/dash/pending"
+          routerLink="/admin-panel/dash/pending"
           (click)="setActive('pending')"
           label="Asignación de Citas"
           type="submit"
           [disabled]="false"
-          [textColor]="'var(--color-highlighted-text)'"
-          [boxShadow]="'0px 2px 4px 2px rgba(78, 170, 3, 0.5)'"
+          [textColor]="'var(--ion-color-dark)'"
+          [boxShadow]="'0px 2px 4px 2px rgba(39, 82, 137, 0.5)'"
           [background]="
             activeButton === 'pending'
               ? 'var(--color-button-background-active)'

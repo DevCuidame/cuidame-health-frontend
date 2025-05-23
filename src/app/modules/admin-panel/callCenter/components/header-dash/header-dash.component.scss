@@ -1,14 +1,19 @@
 .header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  // background: url('../../../../../assets/background/background-header-dash.svg');
+  background-color: #fff;
   padding: 10px 20px;
   color: var(--color-highlighted-text);
+  box-shadow: 0 15px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+  border-radius: 20px;
+
 }
 
 .logo img {
-  height: 40px;
+  height: 50px;
 }
 
 .profile-container {
@@ -16,6 +21,10 @@
   align-items: center;
   gap: 15px;
   position: relative;
+}
+
+.profile-info {
+  color: var(--ion-color-dark);
 }
 
 .profile-info h2 {
@@ -26,8 +35,7 @@
 
 .profile-info p {
   margin: 0;
-  font-size: 12px;
-  opacity: 0.8;
+  font-size: 14px;
 }
 
 .profile-photo {
