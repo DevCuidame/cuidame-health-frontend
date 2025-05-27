@@ -67,13 +67,7 @@ export class PatientSearchService {
    * Procesa la respuesta cuando un usuario es encontrado
    */
   private handleUserFound(userData: any): void {
-    if ('user_id' in userData) {
-      // Es un beneficiario
       this.processBeneficiaryData(userData);
-    } else {
-      // Es un usuario
-      this.processUserData(userData);
-    }
 
     this.stateService.searchState.set({
       loading: false,
@@ -144,30 +138,20 @@ export class PatientSearchService {
    * Procesa los datos cuando el usuario encontrado es un beneficiario
    */
   private processBeneficiaryData(userData: any): void {
-    this.stateService.beneficiaryId.set(userData.id.toString());
-    this.stateService.userId.set(userData.user_id.toString());
+    console.log("🚀 ~ PatientSearchService ~ processBeneficiaryData ~ userData:", userData)
+    this.stateService.beneficiaryId.set(userData.id);
+    // this.stateService.userId.set(userData.user_id.toString());
     
     this.stateService.appointment.update((app: any)  => ({
       ...app,
-      beneficiary_id: userData.id.toString(),
-      user_id: userData.user_id.toString(),
-      is_for_beneficiary: true,
-      userData: {
+      patient_id: userData.id.toString(),
+      patient: {
         ...app.userData,
-        first_name: userData.first_name || '',
-        last_name: userData.last_name || '',
-        phone: userData.phone || '',
+        nombre: userData.nombre || '',
+        apellido: userData.apellido || '',
+        telefono: userData.telefono || '',
         email: userData.email || 'Sin correo electrónico',
-        image: userData.image
-          ? ({
-              id: userData.image.id || 0,
-              public_name: userData.image.public_name || '',
-              private_name: userData.image.private_name || '',
-              image_path: userData.image.image_path || '',
-              uploaded_at: userData.image.uploaded_at || '',
-              beneficiary_id: userData.id || ''
-            } as BeneficiaryImage)
-          : ({} as BeneficiaryImage),
+        image: userData.photourl || userData.imagebs64
       }
     }));
   }

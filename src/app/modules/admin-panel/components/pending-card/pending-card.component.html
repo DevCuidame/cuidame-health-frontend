@@ -8,13 +8,13 @@
         <div class="status-dropdown">
           <span
             [ngClass]="getStatusBadgeClass()"
-            (click)="toggleStatusMenu($event)"
+            (click)="appointment.status !== 'cancelled' && toggleStatusMenu($event)"
             [style.background-color]="getPatientStatusColor()"
           >
             {{ getStatusLabel() }}
             <fa-icon [icon]="faEllipsisV" class="dropdown-icon"></fa-icon>
           </span>
-          <div class="status-menu" *ngIf="showStatusMenu">
+          <div class="status-menu"  *ngIf="showStatusMenu && appointment.status !== 'cancelled'">
             <div
               class="menu-item"
               [class.active]="appointment.status === 'requested'"
@@ -43,7 +43,7 @@
               class="menu-item"
               [class.active]="appointment.status === 'cancelled'"
               data-status="cancelled"
-              (click)="updateStatus('cancelled')"
+              
             >
               <span class="status-dot cancelled"></span>Cancelada
             </div>
