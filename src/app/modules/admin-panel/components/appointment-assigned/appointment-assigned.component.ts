@@ -5,6 +5,7 @@ import { faCheckCircle, faCrown, faExclamationTriangle } from '@fortawesome/free
 import { Appointment } from 'src/app/core/interfaces/appointment.interface';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
+import { Specialty } from 'src/app/core/interfaces/appointment.interface';
 
 @Component({
   selector: 'app-appointment-assigned',
@@ -87,7 +88,7 @@ export class AppointmentAssignedComponent implements OnInit {
   @Input() public patientName: string = '';
   @Input() public professionalName: string = '';
   @Input() public professionalPhone: string = '';
-  @Input() public specialty: string = '';
+  @Input() public specialty!: Specialty;
   @Input() public date: string = '';
   @Input() public time: string = '';
   @Input() public dayOfWeek: string = '';
@@ -116,16 +117,16 @@ export class AppointmentAssignedComponent implements OnInit {
     });
     
     // Valores predeterminados para evitar que la plantilla muestre valores vacíos
-    if (!this.professionalName && this.appointment?.professionalData?.user) {
-      this.professionalName = `${this.appointment.professionalData.user.first_name || ''} ${this.appointment.professionalData.user.last_name || ''}`.trim();
+    if (!this.professionalName && this.appointment?.professional?.user) {
+      this.professionalName = `${this.appointment.professional.user.first_name || ''} ${this.appointment.professional.user.last_name || ''}`.trim();
     }
     
     if (!this.specialty && this.appointment?.specialty) {
       this.specialty = this.appointment.specialty;
     }
     
-    if (!this.patientName && this.appointment?.userData) {
-      this.patientName = `${this.appointment.userData.first_name || ''} ${this.appointment.userData.last_name || ''}`.trim();
+    if (!this.patientName && this.appointment?.patient) {
+      this.patientName = `${this.appointment.patient.nombre || ''} ${this.appointment.patient.apellido || ''}`.trim();
     }
   }
   
@@ -156,11 +157,11 @@ export class AppointmentAssignedComponent implements OnInit {
   }
   
   getDoctorLocation(): string {
-    if (!this.appointment || !this.appointment.professionalData) {
+    if (!this.appointment || !this.appointment.professional) {
       return 'la dirección indicada';
     }
     
-    const doctorData = this.appointment.professionalData;
+    const doctorData = this.appointment.professional;
     const address = doctorData.consultation_address || '';
     const city = doctorData.attention_township_id || '';
     

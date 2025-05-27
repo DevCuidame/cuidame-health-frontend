@@ -1,3 +1,5 @@
+import { Beneficiary } from './beneficiary.interface';
+import { MedicalSpecialty } from './medicalSpecialty.interface';
 import { Professional } from './professional.interface';
 
 export interface AppointmentType {
@@ -8,48 +10,43 @@ export interface AppointmentType {
   color_code: string;
 }
 
+// Interface principal actualizada según tu backend
 export interface Appointment {
   id: number;
-  patient_id: any;
-  professional_id?: any;
-  appointment_type_id: any;
+  patient_id: number;
+  professional_id?: number | null;
+  appointment_type_id: number | null;
   start_time: string;
   end_time: string;
-  appointment_time?: string;
   status: string;
-  notes: string;
-  cancellation_reason?: string;
-  professional?: Professional;
-  appointmentType?: AppointmentType;
-  professionalData?: any
-  userData?: any
-  first_time?: any
-  ticket_number?: any
-  location?: any
-  specialty?: any
-  appointment_date?: any
-  created_at?: any;
-  created_at_formatted?: any
-  specialtyData?: any
-  is_for_beneficiary?: any
-  control?: any
-  user_id?: any
-  beneficiary_id?: any
-  specialty_id?: any
+  notes: string | null;
+  cancellation_reason: string | null;
+  reminder_sent: boolean;
+  specialty_id: number;
+  location: any | null;
+  modified_by_id: number | null;
+  recurring_appointment_id: number | null;
+  created_at: string;
+  updated_at: string;
+  
+  // Relaciones
+  specialty: MedicalSpecialty;
+  patient: Beneficiary;
+  professional: Professional | null;
+  appointmentType?: AppointmentType | null;
 }
-
-
-
 export interface appointmentCounts {
   EXPIRED: number;
   PENDING: number;
   CONFIRMED: number;
+  COMPLETED: number;
   CANCELLED: number;
   RESCHEDULED: number;
 }
 
 export interface AppointmentResponse {
   message: string;
+  success: boolean;
   data: Appointment;
   statusCode: number;
 }

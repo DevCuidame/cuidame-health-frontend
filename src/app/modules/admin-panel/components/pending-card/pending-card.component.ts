@@ -107,6 +107,19 @@ export class PendingCardComponent implements OnInit {
       });
   }
 
+  isUnassignedAppointment(): boolean {
+    if (!this.appointment?.professional) {
+      return true;
+    }
+
+    const appointmentDate = new Date(this.appointment.start_time);
+    const today = new Date();
+    const fiftyYearsFromNow = new Date();
+    fiftyYearsFromNow.setFullYear(today.getFullYear() + 50);
+
+    return appointmentDate > fiftyYearsFromNow;
+  }
+
   handleUpdateError(previousStatus: any) {
     this.statusUpdating = false;
     this.appointment.status = previousStatus;
@@ -135,36 +148,36 @@ export class PendingCardComponent implements OnInit {
     const baseClass = 'status-badge';
 
     switch (this.appointment.status) {
-      case 'PENDING':
+      case 'requested':
         return {
           [baseClass]: true,
           'pending-badge': true,
           'badge-secondary': true,
         };
-      case 'CONFIRMED':
+      case 'confirmed':
         return {
           [baseClass]: true,
           'confirmed-badge': true,
           'badge-primary': true,
         };
-      case 'TO_BE_CONFIRMED':
-        return {
-          [baseClass]: true,
-          'to-be-confirmed-badge': true,
-          'badge-warning': true,
-        };
-      case 'RESCHEDULED':
+
+      case 'rescheduled':
         return {
           [baseClass]: true,
           'rescheduled-badge': true,
           'badge-secondary': true,
         };
-      case 'CANCELLED':
-      case 'EXPIRED':
+      case 'cancelled':
         return {
           [baseClass]: true,
           'cancelled-badge': true,
           'badge-danger': true,
+        };
+      case 'completed':
+        return {
+          [baseClass]: true,
+          'to-be-confirmed-badge': true,
+          'badge-warning': true,
         };
       default:
         return {
@@ -175,28 +188,36 @@ export class PendingCardComponent implements OnInit {
 
   getStatusLabel(): string {
     switch (this.appointment.status) {
-      case 'PENDING':
-        return 'Pendiente';
-      case 'CONFIRMED':
+      case 'requested':
+        return 'Solicitada';
+      case 'confirmed':
         return 'Confirmada';
-      case 'TO_BE_CONFIRMED':
-        return 'Pendiente por Asignar';
-      case 'RESCHEDULED':
+      case 'rescheduled':
         return 'Reagendada';
-      case 'CANCELLED':
+      case 'cancelled':
         return 'Cancelada';
-      case 'EXPIRED':
-        return 'Vencida';
+      case 'completed':
+        return 'Completada';
       default:
         return 'Desconocido';
     }
   }
 
-  // Verifica si la cita necesita asignación de horario
   needsScheduleAssignment(): boolean {
-    return (
-      !this.appointment.appointment_date || !this.appointment.appointment_time
-    );
+    if (!this.appointment.start_time) {
+      return true;
+    }
+  
+    try {
+      const appointmentDate = new Date(this.appointment.start_time);
+      const today = new Date();
+      const fiftyYearsFromNow = new Date();
+      fiftyYearsFromNow.setFullYear(today.getFullYear() + 50);
+  
+      return appointmentDate > fiftyYearsFromNow;
+    } catch (error) {
+      return true;
+    }
   }
 
   // Formatea la fecha para mostrarse de manera amigable
@@ -215,6 +236,44 @@ export class PendingCardComponent implements OnInit {
       return dateStr;
     }
   }
+
+  // En pending-card.component.ts, agrega este método:
+
+getPatientStatusClass(): string {
+  const baseClass = 'patient-status';
+  
+  switch (this.appointment.status) {
+    case 'requested':
+      return `${baseClass} status-requested`;
+    case 'confirmed':
+      return `${baseClass} status-confirmed`;
+    case 'rescheduled':
+      return `${baseClass} status-rescheduled`;
+    case 'cancelled':
+      return `${baseClass} status-cancelled`;
+    case 'completed':
+      return `${baseClass} status-completed`;
+    default:
+      return baseClass;
+  }
+}
+
+getPatientStatusColor(): string {
+  switch (this.appointment.status) {
+    case 'requested':
+      return '#ffc107'; // Amarillo
+    case 'confirmed':
+      return '#28a745'; // Verde
+    case 'rescheduled':
+      return '#17a2b8'; // Azul claro
+    case 'cancelled':
+      return '#dc3545'; // Rojo
+    case 'completed':
+      return '#6c757d'; // Gris
+    default:
+      return '#00c292'; // Color por defecto
+  }
+}
 
   // Navega a la página de asignación de cita
   goToAppointment(appointment: Appointment) {
@@ -251,8 +310,8 @@ export class PendingCardComponent implements OnInit {
     const alert = await this.alertController.create({
       header: 'Confirmar cita',
       message: `¿Está seguro que desea confirmar la cita para ${this.formatDate(
-        appointment.appointment_date
-      )} a las ${appointment.appointment_time}?`,
+        appointment.start_time
+      )} a las ${appointment.start_time}?`,
       buttons: [
         {
           text: 'Cancelar',

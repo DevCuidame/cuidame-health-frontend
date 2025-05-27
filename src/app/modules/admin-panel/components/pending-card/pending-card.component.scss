@@ -58,6 +58,7 @@
   top: 100%;
   left: 0;
   width: 200px;
+  color: var(--ion-color-dark);
   background-color: white;
   border-radius: 6px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
@@ -105,8 +106,11 @@
     background-color: var(--ion-color-secondary);
   }
   
-  &.cancelled, &.expired {
+  &.cancelled {
     background-color: var(--ion-color-danger);
+  }
+  &.completed {
+    background-color: var(--ion-color-success);
   }
 }
 

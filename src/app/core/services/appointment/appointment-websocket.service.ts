@@ -46,6 +46,7 @@ export class AppointmentWebSocketService {
     CONFIRMED: 0,
     CANCELLED: 0,
     RESCHEDULED: 0,
+    COMPLETED: 0,
   });
   private connectionStatusSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new Subject<string>();
@@ -355,6 +356,7 @@ export class AppointmentWebSocketService {
       EXPIRED: 0,
       PENDING: 0,
       CONFIRMED: 0,
+      COMPLETED: 0,
       CANCELLED: 0,
       RESCHEDULED: 0,
     };

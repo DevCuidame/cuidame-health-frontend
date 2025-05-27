@@ -25,9 +25,9 @@ import { MedicalSpecialtyService } from 'src/app/core/services/medicalSpecialty.
     <div class="step-content">
       <!-- Barra de búsqueda del paciente para mostrar resumen -->
       <app-patient-search-bar
-        [image_path]="patientData.image?.image_path"
-        [first_name]="patientData.first_name"
-        [last_name]="patientData.last_name"
+        [image_path]="patientData.photourl"
+        [first_name]="patientData.nombre"
+        [last_name]="patientData.apellido"
         [firstTime]="appointmentFirstTime"
         [cityName]="cityName"
         [ticketNumber]="ticketNumber"
@@ -77,9 +77,7 @@ export class SpecialtySelectionStepComponent implements OnInit {
 
   ngOnInit(): void {
     const appointment = this.stateService.appointment();
-    this.patientData = appointment.userData;
-    this.appointmentFirstTime = appointment.first_time;
-    this.ticketNumber = appointment.ticket_number!;
+    this.patientData = appointment.patient;
     if (
       appointment.location &&
       Array.isArray(appointment.location) &&

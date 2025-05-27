@@ -29,14 +29,14 @@ import { ScheduleService } from 'src/app/core/services/schedule.service';
   template: `
     <div class="step-content">
       <!-- Barra de búsqueda del paciente para mostrar resumen -->
-      <!-- <app-patient-search-bar
-        [image_path]="patientData.image?.image_path"
-        [first_name]="patientData.first_name"
-        [last_name]="patientData.last_name"
+      <app-patient-search-bar
+        [image_path]="patientData.photourl"
+        [first_name]="patientData.nombre"
+        [last_name]="patientData.apellido"
         [firstTime]="appointmentFirstTime"
         [cityName]="cityName"
         [ticketNumber]="ticketNumber"
-      ></app-patient-search-bar> -->
+      ></app-patient-search-bar>
 
       <!-- Información del profesional para asignación de horario si estamos en modo asignación -->
       @if (isAssigningToPendingAppointment) {
@@ -206,40 +206,40 @@ export class ScheduleSelectionStepComponent implements OnInit {
 
   ngOnInit(): void {
     const appointment = this.stateService.appointment();
-    // this.patientData = appointment.userData;
-    // this.appointmentFirstTime = appointment.first_time;
-    // this.ticketNumber = appointment.ticket_number || '';
-    // if (
-    //   appointment.location &&
-    //   Array.isArray(appointment.location) &&
-    //   appointment.location.length > 0
-    // ) {
-    //   this.cityName = appointment.location[0].township_name;
-    // } else {
-    //   this.cityName = 'No especificada';
-    // }
+    this.patientData = appointment.patient;
+    this.appointmentFirstTime = false;
+    this.ticketNumber = '';
+    if (
+      appointment.location &&
+      Array.isArray(appointment.location) &&
+      appointment.location.length > 0
+    ) {
+      this.cityName = appointment.location[0].township_name;
+    } else {
+      this.cityName = 'No especificada';
+    }
 
     // Extrae información del profesional para mostrar en el modo de asignación
-    // if (this.isAssigningToPendingAppointment && appointment.professionalData) {
-    //   this.professionalName = `${
-    //     appointment.professionalData.user?.first_name || ''
-    //   } ${appointment.professionalData.user?.last_name || ''}`;
-    //   this.specialtyName =
-    //     appointment.specialty || appointment.specialtyData?.name || '';
+    if (this.isAssigningToPendingAppointment && appointment.professional) {
+      this.professionalName = `${
+        appointment.professional.user?.first_name || ''
+      } ${appointment.professional.user?.last_name || ''}`;
+      this.specialtyName =
+        appointment.specialty?.name || 'Especialidad no especificada';
 
       // También inicializamos los campos del doctor si ya existen
-      // if (appointment.professionalData.user) {
-      //   this.doctorName = this.professionalName;
-      // }
-      // if (appointment.professionalData.consultation_address) {
-      //   this.doctorAddress = appointment.professionalData.consultation_address;
-      // }
+      if (appointment.professional.user) {
+        this.doctorName = this.professionalName;
+      }
+      if (appointment.professional.consultation_address) {
+        this.doctorAddress = appointment.professional.consultation_address;
+      }
 
       // Inicializar los valores de departamento/ciudad si existen
-      // if (appointment.professionalData.attention_township_id) {
-      //   this.selectedCity = appointment.professionalData.attention_township_id;
-      // }
-    // }
+      if (appointment.professional.attention_township_id) {
+        this.selectedCity = appointment.professional.attention_township_id;
+      }
+    }
 
     this.availableSchedule =
       this.stateService.selectedProfessionalAvailability();
@@ -258,8 +258,8 @@ export class ScheduleSelectionStepComponent implements OnInit {
         if (appointment.start_time) {
           this.selectedDate = appointment.start_time;
         }
-        if (appointment.appointment_time) {
-          this.selectedTime = appointment.appointment_time;
+        if (appointment.start_time) {
+          this.selectedTime = appointment.start_time;
         }
 
         // También actualizamos los datos del doctor si existen
@@ -413,7 +413,7 @@ export class ScheduleSelectionStepComponent implements OnInit {
 
   updateAppointmentManual() {
     // Creamos un objeto para los datos del profesional si no existe
-    let professionalData = this.stateService.appointment().professionalData || {};
+    let professionalData = this.stateService.appointment().professional || {};
 
     // Actualizamos o creamos los datos del profesional
     professionalData = {
@@ -422,29 +422,17 @@ export class ScheduleSelectionStepComponent implements OnInit {
       user: {
         ...(this.doctorName ? { first_name: this.doctorName.split(' ')[0] } : {}),
         ...(this.doctorName.split(' ').length > 1 ? { last_name: this.doctorName.split(' ').slice(1).join(' ') } : {}),
-        ...professionalData.user
+        ...professionalData
       },
       consultation_address: this.doctorAddress,
       attention_township_id: this.selectedCity ? this.selectedCity.toString() : ''
     };
-
-    // Actualizamos location tambien en la estructura si está disponible
-    if (this.selectedCity && this.selectedCityName && this.selectedDepartment && this.selectedDepartmentName) {
-      professionalData.location = {
-        township_id: this.selectedCity.toString(),
-        township_name: this.selectedCityName,
-        township_code: '',
-        department_id: this.selectedDepartment.toString(),
-        department_name: this.selectedDepartmentName
-      };
-    }
-
     // Actualizamos el appointment con los nuevos datos
     this.stateService.appointment.update((app) => ({
       ...app,
-      appointment_date: this.selectedDate,
-      appointment_time: this.selectedTime,
-      status: this.isAssigningToPendingAppointment ? 'CONFIRMED' : 'TO_BE_CONFIRMED',
+      start_time: this.selectedDate,
+      end_time: this.selectedTime,
+      status: this.isAssigningToPendingAppointment ? 'requested' : 'confirmed',
       professionalData: professionalData,
       // Utilizamos los nuevos campos de la interfaz Appointment
       city_id: this.selectedCity ? parseInt(this.selectedCity.toString()) : undefined,

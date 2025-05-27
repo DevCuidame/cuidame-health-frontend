@@ -208,7 +208,7 @@ cancelAppointment(id: number): Observable<any> {
   processAppointmentDates(appointments: Appointment[]): Appointment[] {
     return appointments.map((appointment) => {
       // Skip processing if appointment date is null
-      if (!appointment.appointment_date) {
+      if (!appointment.start_time) {
         return {
           ...appointment,
           appointment_date_formatted: 'Fecha por definir',
@@ -218,7 +218,7 @@ cancelAppointment(id: number): Observable<any> {
       }
 
       try {
-        const appDate = new Date(appointment.appointment_date);
+        const appDate = new Date(appointment.start_time);
 
         // Format the date
         const formattedDate = appDate.toLocaleDateString('es-ES', {
@@ -233,7 +233,7 @@ cancelAppointment(id: number): Observable<any> {
         });
 
         // Format time (if exists)
-        let formattedTime = appointment.appointment_time || 'Hora por definir';
+        let formattedTime = appointment.start_time || 'Hora por definir';
         if (formattedTime && formattedTime.length >= 5) {
           formattedTime = formattedTime.substring(0, 5);
         }

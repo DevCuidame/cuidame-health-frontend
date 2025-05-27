@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { Router } from '@angular/router';
-import { Appointment } from 'src/app/core/interfaces/appointment.interface';
+import { Appointment, Specialty } from 'src/app/core/interfaces/appointment.interface';
 import { AppointmentStateService } from 'src/app/core/services/appointment/appointment-state.service';
 import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
 import { PatientDataStepComponent } from '../patient-data-step/patient-data-step.component';
@@ -93,8 +93,8 @@ import { WizardStepperComponent } from '../wizard-stepper/wizard-stepper.compone
       [professionalName]="getSelectedProfessionalName()"
       [professionalPhone]="getProfessionalPhone()"
       [specialty]="getSelectedSpecialty()"
-      [date]="appointment().appointment_date"
-      [time]="appointment().appointment_time!"
+      [date]="appointment().start_time"
+      [time]="appointment().start_time!"
       [dayOfWeek]="getFormattedDayOfWeek()"
       [appointment]="appointment()"
       (appointmentSaved)="onAppointmentSaved($event)"
@@ -348,10 +348,9 @@ export class AppointmentWizardComponent implements OnInit {
     return '';
   }
 
-  getSelectedSpecialty(): string {
-    // const specialtyData = this.appointment().specialty;
-    // return specialtyData;
-    return '';
+  getSelectedSpecialty(): Specialty {
+    const specialtyData = this.appointment().specialty;
+    return specialtyData;
   }
 
   getFormattedDayOfWeek(): string {

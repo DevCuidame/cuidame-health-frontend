@@ -14,16 +14,17 @@
       height: 50px;
       object-fit: cover;
       border-radius: 50%;
+      border: 2px solid #fff;
     }
 
     .patient-text {
       display: flex;
       flex-direction: column;
+      color: var(--ion-color-light);
 
       .patient-name {
         margin: 0;
         font-size: 1.1rem;
-        color: var(--ion-color-primary);
         font-weight: 600;
       }
 
@@ -31,7 +32,7 @@
         margin: 0;
         font-size: 0.9rem;
         font-weight: bold;
-        color: var(--ion-color-dark);
+        color: var(--ion-color-light);
       }
     }
   }
@@ -50,7 +51,7 @@
       border-radius: 20px;
       font-size: 1.2rem;
       padding: 7px;
-      color: var(--ion-color-text-filter);
+      color: var(--ion-color-dark);
 
       &::placeholder {
         font-size: 1.2rem;

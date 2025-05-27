@@ -20,7 +20,7 @@ import { AppointmentStateService } from 'src/app/core/services/appointment/appoi
         <label>Identificación</label>
         <div class="row search-row">
           <select
-            [(ngModel)]="appointmentData.userData.identification_type"
+            [(ngModel)]="appointmentData.patient.tipoid"
             (change)="onIdentificationChange()"
           >
             <option value="">Seleccione</option>
@@ -32,7 +32,7 @@ import { AppointmentStateService } from 'src/app/core/services/appointment/appoi
           <input
             type="text"
             placeholder="#"
-            [(ngModel)]="appointmentData.userData.identification_number"
+            [(ngModel)]="appointmentData.patient.numeroid"
             (ngModelChange)="onIdentificationNumberChange()"
           />
 
@@ -84,27 +84,27 @@ import { AppointmentStateService } from 'src/app/core/services/appointment/appoi
             <input
               type="text"
               [disabled]="true"
-              [(ngModel)]="appointmentData.userData.phone"
+              [(ngModel)]="appointmentData.patient.telefono"
             />
           </div>
-          <div class="item">
+          <!-- <div class="item">
             <label>E-Mail</label>
             <input
               type="text"
               [disabled]="true"
-              [(ngModel)]="appointmentData.userData.email"
+              [(ngModel)]="appointmentData.patient.email"
             />
-          </div>
+          </div> -->
         </div>
       </div>
 
       <!-- Tipo de cita -->
-      <div class="form-group" style="display: flex; flex-direction: row;">
+      <!-- <div class="form-group" style="display: flex; flex-direction: row;">
         <div class="custom-checkbox-container">
           <input
             type="checkbox"
             id="firstTimeCheck"
-            [checked]="appointmentData.first_time"
+            [checked]="appointmentData.appointment_type"
             (change)="toggleSelection('firstTime')"
           />
           <label for="firstTimeCheck"> Cita primera vez </label>
@@ -119,7 +119,7 @@ import { AppointmentStateService } from 'src/app/core/services/appointment/appoi
           />
           <label for="controlCheck"> Control </label>
         </div>
-      </div>
+      </div> -->
     </div>
   `,
   styleUrls: ['./patient-data-step.component.scss'],
@@ -158,15 +158,15 @@ export class PatientDataStepComponent implements OnInit {
 
   get canSearch(): boolean {
     return (
-      !!this.appointmentData.userData.identification_type &&
-      !!this.appointmentData.userData.identification_number &&
+      !!this.appointmentData.patient.tipoid &&
+      !!this.appointmentData.patient.numeroid &&
       !this.searchState.loading
     );
   }
 
   searchUser(): void {
-    const idType = this.appointmentData.userData.identification_type;
-    const idNumber = this.appointmentData.userData.identification_number;
+    const idType = this.appointmentData.patient.tipoid;
+    const idNumber = this.appointmentData.patient.numeroid;
   
     if (!idType || !idNumber) {
       this.toastService.presentToast(
@@ -194,10 +194,10 @@ export class PatientDataStepComponent implements OnInit {
   onIdentificationChange(): void {
     this.stateService.appointment.update((app) => ({
       ...app,
-      // userData: {
-      //   ...app.userData,
-      //   identification_type: this.appointmentData.userData.identification_type,
-      // },
+      patient: {
+        ...app.patient,
+        tipoid: this.appointmentData.patient.tipoid,
+      },
     }));
 
     this.onIdentificationNumberChange();
@@ -207,11 +207,11 @@ export class PatientDataStepComponent implements OnInit {
     // Actualizar el estado
     this.stateService.appointment.update((app) => ({
       ...app,
-      // userData: {
-      //   ...app.userData,
-      //   identification_number:
-      //     this.appointmentData.userData.identification_number,
-      // },
+      patient: {
+        ...app.patient,
+        numeroid:
+          this.appointmentData.patient.numeroid,
+      },
     }));
     // Limpiar el timeout anterior
     if (this.debounceTimeout) {
@@ -220,8 +220,8 @@ export class PatientDataStepComponent implements OnInit {
 
     // Solo iniciar la búsqueda si hay suficiente información
     if (
-      this.appointmentData.userData.identification_type &&
-      this.appointmentData.userData.identification_number
+      this.appointmentData.patient.tipoid &&
+      this.appointmentData.patient.numeroid
     ) {
       this.debounceTimeout = setTimeout(() => {
         this.searchUser();
@@ -235,8 +235,8 @@ export class PatientDataStepComponent implements OnInit {
   }
 
   getFullName(): string {
-    const firstName = this.appointmentData.userData.first_name || '';
-    const lastName = this.appointmentData.userData.last_name || '';
+    const firstName = this.appointmentData.patient.nombre || '';
+    const lastName = this.appointmentData.patient.apellido || '';
     return firstName && lastName ? `${firstName} ${lastName}` : '';
   }
 }

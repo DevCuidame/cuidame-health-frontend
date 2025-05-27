@@ -119,7 +119,7 @@ export class UserService {
       return of(null);
     }
 
-    const url = `${this.baseUrl}api/user/identification/${identificationType}/${identificationNumber}`;
+    const url = `${this.baseUrl}api/patients/identification/${identificationType}/${identificationNumber}`;
 
     return this.http.get<User>(url).pipe(
       map((response: any) => {

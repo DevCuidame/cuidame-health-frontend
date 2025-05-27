@@ -16,7 +16,7 @@ export class MedicalSpecialtyService {
   private cacheKey = 'medicalSpecialtiesCache';
   public specialties = signal<MedicalSpecialty[]>([]);
   public api = environment.url;
-  public version = 'api/v1/';
+  public version = 'api/';
 
   constructor(private http: HttpClient) {
     this.loadFromCache(); // Cargar datos desde localStorage si existen
@@ -30,7 +30,7 @@ export class MedicalSpecialtyService {
     //   return of(this.specialties());
     // }
 
-    return this.http.get<MedicalSpecialtyResponse>(`${this.api}${this.version}medical-specialties/all`).pipe(
+    return this.http.get<MedicalSpecialtyResponse>(`${this.api}${this.version}specialties`).pipe(
       map((response) => response.data),
       tap((data) => this.saveToCache(data)), 
       catchError((error) => {

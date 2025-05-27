@@ -105,7 +105,7 @@ export class PatientSearchService {
     });
 
     // Reset appointment IDs
-    this.stateService.userId.set('');
+    this.stateService.userId.set(0);
     this.stateService.beneficiaryId.set('');
 
     // Reset user data fields to allow manual entry

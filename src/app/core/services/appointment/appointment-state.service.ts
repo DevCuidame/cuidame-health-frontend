@@ -1,7 +1,8 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Appointment } from 'src/app/core/interfaces/appointment.interface';
+import { Appointment, Specialty } from 'src/app/core/interfaces/appointment.interface';
 import { MedicalSpecialty } from 'src/app/core/interfaces/medicalSpecialty.interface';
 import { BeneficiaryImage, Image, UserImage } from 'src/app/core/interfaces/user.interface';
+import { Beneficiary } from '../../interfaces/beneficiary.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,7 @@ export class AppointmentStateService {
   
   // Datos del paciente
   public beneficiaryId = signal<string>('');
-  public userId = signal<string>('');
+  public userId = signal<number>(0);
   
   // Estado de búsqueda
   public searchState = signal<{
@@ -43,27 +44,23 @@ export class AppointmentStateService {
   // Datos completos de la cita
   public appointment = signal<Appointment>({
     id: 0,
-    user_id: '',
-    beneficiary_id: '',
-    professional_id: '',
-    specialty_id: '',
-    appointment_date: '',
-    appointment_time: '',
-    status: 'PENDING',
-    patient_id: '',
-    appointment_type_id: '',
+    appointment_type_id: 0,
+    patient: {} as Beneficiary,
+    specialty_id: 0,
+    patient_id: 0,
+    location: '',
+    modified_by_id: 0,
+    recurring_appointment_id: 0,
+    updated_at: '',
+    specialty: {} as MedicalSpecialty,
+    cancellation_reason: '',
+    reminder_sent: false,
     start_time: '',
     end_time: '',
+    status: '',
     notes: '',
-    specialty: '',
     created_at: '',
-    created_at_formatted: '',
-    is_for_beneficiary: false,
-    first_time: false,
-    control: false,
-    userData: {} as any,
-    professionalData: {} as any,
-    specialtyData: {} as any,
+    professional: {} as any,
   });
   
   // Estado del formulario
@@ -147,31 +144,17 @@ export class AppointmentStateService {
     const currentStep = this.currentStep();
     const currentAppointment = { ...this.appointment() };
     
-    if (this.userId()) {
-      currentAppointment.user_id = this.userId();
-    }
-    
-    if (this.beneficiaryId()) {
-      currentAppointment.beneficiary_id = this.beneficiaryId();
-      currentAppointment.is_for_beneficiary = true;
-    } else {
-      currentAppointment.is_for_beneficiary = false;
-    }
-    
     if (currentStep === 2) {
       // Update specialty data
       const specialtyId = this.selectedSpecialtyId();
       if (specialtyId !== null) {
-        currentAppointment.specialty_id = specialtyId.toString();
+        currentAppointment.specialty_id = specialtyId;
       }
     }
     
     if (currentStep === 3) {
-      // En el paso 3 ahora incluimos información del profesional y horario
-      // Los datos del profesional se actualizan en el componente de horario
-      
       // Si se seleccionó fecha y hora, actualizamos el estado a PENDING, si no a TO_BE_CONFIRMED
-      if (currentAppointment.appointment_date && currentAppointment.appointment_time) {
+      if (currentAppointment.start_time) {
         currentAppointment.status = 'PENDING';
       } else {
         currentAppointment.status = 'TO_BE_CONFIRMED';
@@ -199,32 +182,29 @@ export class AppointmentStateService {
     this.selectedHour.set('');
     this.selectedProfessionalAvailability.set([]);
     this.beneficiaryId.set('');
-    this.userId.set('');
+    this.userId.set(0);
     this.isSubmitting.set(false);
     this.success.set(false);
     this.appointment.set({
       id: 0,
-      user_id: '',
-      beneficiary_id: '',
-      professional_id: '',
-      patient_id: '',
-      appointment_type_id: '',
+      patient: {} as Beneficiary,
+      professional: {} as any,
+      professional_id: 0,
+      patient_id: 0,
+      appointment_type_id: 0,
+      cancellation_reason: '',
+      reminder_sent: false,
       start_time: '',
       end_time: '',
-      specialty_id: '',
-      appointment_date: '',
-      appointment_time: '',
       status: 'PENDING',
       notes: '',
-      specialty: '',
+      specialty_id: 0,
+      location: '',
+      modified_by_id: 0,
+      recurring_appointment_id: 0,
+      updated_at: '',
+      specialty: {} as MedicalSpecialty,
       created_at: '',
-      created_at_formatted: '',
-      is_for_beneficiary: false,
-      first_time: false,
-      control: false,
-      userData: {} as any,
-      professionalData: {} ,
-      specialtyData: {} ,
     });
     
     localStorage.removeItem('selectedAppointment');
@@ -262,19 +242,15 @@ export class AppointmentStateService {
   }
   
   private isPatientDataValid(): boolean {
-    const userData = this.appointment().userData;
+    const userData = this.appointment().patient;
     
     const fieldsValid =
-      !!userData.identification_type &&
-      !!userData.identification_number &&
-      !!userData.first_name &&
-      !!userData.phone &&
-      !!userData.email;
+      !!userData.tipoid &&
+      !!userData.numeroid &&
+      !!userData.nombre &&
+      !!userData.telefono
     
-    const optionSelected =
-      !!this.appointment().first_time || !!this.appointment().control;
-    
-    return fieldsValid && optionSelected;
+    return fieldsValid;
   }
   
   private isSpecialtySelectionValid(): boolean {
@@ -283,7 +259,7 @@ export class AppointmentStateService {
   
   private isScheduleAndDoctorValid(): boolean {
     // Verificamos si hay información básica del profesional
-    const professionalData = this.appointment().professionalData || {};
+    const professionalData = this.appointment().professional! || {};
     const hasProfessionalInfo = 
       professionalData.user &&
       (professionalData.user.first_name || professionalData.user.last_name);
@@ -308,14 +284,14 @@ export class AppointmentStateService {
     
     // En este caso podemos ser más estrictos con la información del doctor
     const appointment = this.appointment();
-    const professionalData = appointment.professionalData || {};
+    const professionalData = appointment.professional!;
     
     const hasDoctorName = !!(
       professionalData.user && 
       (professionalData.user.first_name || professionalData.user.last_name)
     );
     
-    const hasAppointmentSchedule = !!(appointment.appointment_date && appointment.appointment_time);
+    const hasAppointmentSchedule = !!(appointment.start_time && appointment.start_time);
     
     // Si tiene fecha y hora asignadas, debe tener al menos el nombre del doctor
     if (hasAppointmentSchedule && !hasDoctorName) {

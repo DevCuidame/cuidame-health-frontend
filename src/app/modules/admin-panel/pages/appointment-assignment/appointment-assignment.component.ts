@@ -25,6 +25,7 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
     CONFIRMED: 0,
     CANCELLED: 0,
     RESCHEDULED: 0,
+    COMPLETED: 0,
   };
   public requests: string = '0 solicitudes';
   public isConnected: boolean = false;
@@ -45,8 +46,6 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
     // Aumentar el timeout y verificar si ya hay conexión
     this.checkConnectionTimeout = setTimeout(() => {
       if (!this.isConnected && this.appointments.length === 0 && !this.isLoading) {
-        console.log('⚠️ Usando datos de prueba - sin conexión WebSocket después de 5s');
-        this.loadTestData();
         this.isLoading = false;
       }
     }, 5000); // Reducir a 5 segundos
@@ -174,101 +173,6 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  /**
-   * Cargar datos de prueba (fallback)
-   */
-  private loadTestData(): void {
-    console.log('📋 Cargando datos de prueba...');
-    
-    this.appointments = [
-      {
-        id: 1,
-        patient_id: 101,
-        professional_id: 201,
-        appointment_type_id: 1,
-        start_time: '2025-05-25T10:30:00Z',
-        end_time: '2025-05-25T11:00:00Z',
-        appointment_time: '10:30',
-        status: 'PENDING',
-        notes: 'Primera consulta cardiológica',
-        appointment_date: '2025-05-25',
-        created_at: '2025-05-22T08:00:00Z',
-        created_at_formatted: 'Solicitado el 22 de mayo, 2025',
-        is_for_beneficiary: true,
-        userData: {
-          first_name: 'María José',
-          last_name: 'González Rodríguez',
-          image: null
-        },
-        specialtyData: {
-          name: 'Cardiología'
-        },
-        professionalData: {
-          user: {
-            first_name: 'Carlos Eduardo',
-            last_name: 'Martínez López'
-          }
-        }
-      },
-      {
-        id: 2,
-        patient_id: 102,
-        professional_id: null,
-        appointment_type_id: 2,
-        start_time: '',
-        end_time: '',
-        appointment_time: undefined,
-        status: 'PENDING',
-        notes: 'Consulta dermatológica general',
-        appointment_date: null,
-        created_at: '2025-05-22T09:15:00Z',
-        created_at_formatted: 'Solicitado el 22 de mayo, 2025',
-        is_for_beneficiary: false,
-        userData: {
-          first_name: 'Juan Carlos',
-          last_name: 'Pérez Martín',
-          image: null
-        },
-        specialtyData: {
-          name: 'Dermatología'
-        },
-        professionalData: null
-      },
-      {
-        id: 3,
-        patient_id: 103,
-        professional_id: 203,
-        appointment_type_id: 3,
-        start_time: '2025-05-26T14:00:00Z',
-        end_time: '2025-05-26T14:30:00Z',
-        appointment_time: '14:00',
-        status: 'CONFIRMED',
-        notes: 'Control neurológico',
-        appointment_date: '2025-05-26',
-        created_at: '2025-05-21T16:30:00Z',
-        created_at_formatted: 'Solicitado el 21 de mayo, 2025',
-        is_for_beneficiary: true,
-        userData: {
-          first_name: 'Ana Patricia',
-          last_name: 'Ramírez Silva',
-          image: null
-        },
-        specialtyData: {
-          name: 'Neurología'
-        },
-        professionalData: {
-          user: {
-            first_name: 'Laura Cristina',
-            last_name: 'Hernández García'
-          }
-        }
-      }
-    ];
-
-    // Calcular contadores manualmente
-    this.updateAppointmentCountsFromData();
-    this.updateRequestsText();
-  }
 
   /**
    * Calcular contadores desde los datos actuales
@@ -280,6 +184,8 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
       CONFIRMED: 0,
       CANCELLED: 0,
       RESCHEDULED: 0,
+      COMPLETED: 0,
+
     };
 
     this.appointments.forEach(appointment => {

@@ -272,7 +272,6 @@ export class PatientAppointmentDetailModalComponent {
   }
 
 
-  // Añade este método a PatientAppointmentDetailModalComponent
   isUnassignedAppointment(): boolean {
     if (!this.appointment?.professional) {
       return true;
@@ -288,8 +287,6 @@ export class PatientAppointmentDetailModalComponent {
   }
 
   async leaveReview() {
-    // Navigate to review component or open review modal
-    console.log('Opening review form...');
   }
 
   confirmCancellation() {
