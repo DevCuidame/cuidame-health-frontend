@@ -242,15 +242,20 @@ export class AppointmentStateService {
   }
   
   private isPatientDataValid(): boolean {
-    const userData = this.appointment().patient;
+    const patient = this.appointment().patient;
+    const appointmentTypeId = this.appointment().appointment_type_id;
     
-    const fieldsValid =
-      !!userData.tipoid &&
-      !!userData.numeroid &&
-      !!userData.nombre &&
-      !!userData.telefono
-    
-    return fieldsValid;
+    return !!(
+      patient &&
+      patient.tipoid &&
+      patient.numeroid &&
+      patient.numeroid.length >= 5 &&
+      patient.nombre &&
+      patient.apellido &&
+      patient.telefono &&
+      appointmentTypeId && 
+      appointmentTypeId > 0
+    );
   }
   
   private isSpecialtySelectionValid(): boolean {

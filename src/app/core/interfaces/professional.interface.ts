@@ -4,4 +4,5 @@ export interface Professional {
     specialty: string;
     consultation_address: string;
     attention_township_id: string; 
+    attention_township_name: string;
   }

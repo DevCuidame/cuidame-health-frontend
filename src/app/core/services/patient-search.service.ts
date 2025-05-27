@@ -4,6 +4,7 @@ import { catchError, finalize, tap } from 'rxjs/operators';
 import { UserService } from 'src/app/modules/auth/services/user.service';
 import { BeneficiaryImage, UserImage } from 'src/app/core/interfaces/user.interface';
 import { AppointmentStateService } from './appointment/appointment-state.service';
+import { Beneficiary } from '../interfaces/beneficiary.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -41,9 +42,9 @@ export class PatientSearchService {
   
     // Usar directamente el observable del servicio, sin crear un nuevo Subject
     return this.userService.findByIdentification(idType, idNumber).pipe(
-      tap(userData => {
+      tap((userData: any) => {
         if (userData) {
-          this.handleUserFound(userData);
+          this.handleUserFound(userData[0]);
         } else {
           this.handleUserNotFound();
         }
@@ -66,7 +67,7 @@ export class PatientSearchService {
   /**
    * Procesa la respuesta cuando un usuario es encontrado
    */
-  private handleUserFound(userData: any): void {
+  private handleUserFound(userData: Beneficiary): void {
       this.processBeneficiaryData(userData);
 
     this.stateService.searchState.set({
@@ -107,50 +108,31 @@ export class PatientSearchService {
       ...app,
       user_id: '',
       beneficiary_id: '',
-      userData: {
-        ...app.userData,
-        first_name: '',
-        last_name: '',
-        phone: '',
-        email: '',
-        image: 'beneficiary_id' in app.userData 
-          ? { 
-              id: 0,
-              public_name: '',
-              private_name: '',
-              image_path: '',
-              uploaded_at: '',
-              beneficiary_id: ''
-            } as BeneficiaryImage
-          : {
-              id: 0,
-              public_name: '',
-              private_name: '',
-              image_path: '',
-              uploaded_at: '',
-              user_id: ''
-            } as UserImage
-      }
+      patient: {
+        ...app.patient, // Preservar los datos existentes del paciente, incluyendo tipoid y numeroid
+        nombre: '',
+        apellido: '',
+        telefono: '',
+        email: ''
+      },
     }));
   }
 
   /**
    * Procesa los datos cuando el usuario encontrado es un beneficiario
    */
-  private processBeneficiaryData(userData: any): void {
-    console.log("🚀 ~ PatientSearchService ~ processBeneficiaryData ~ userData:", userData)
-    this.stateService.beneficiaryId.set(userData.id);
-    // this.stateService.userId.set(userData.user_id.toString());
+  private processBeneficiaryData(userData: Beneficiary): void {
+    this.stateService.beneficiaryId.set(userData.id.toString());
     
     this.stateService.appointment.update((app: any)  => ({
       ...app,
       patient_id: userData.id.toString(),
       patient: {
-        ...app.userData,
+        ...app.patient, // Preservar los datos existentes del paciente, incluyendo tipoid y numeroid
         nombre: userData.nombre || '',
         apellido: userData.apellido || '',
         telefono: userData.telefono || '',
-        email: userData.email || 'Sin correo electrónico',
+        email: 'Sin correo electrónico',
         image: userData.photourl || userData.imagebs64
       }
     }));

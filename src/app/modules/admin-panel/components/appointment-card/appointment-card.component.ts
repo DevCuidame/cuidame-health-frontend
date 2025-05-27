@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { IonicModule, AlertController } from '@ionic/angular';
-import { PrimaryCardComponent } from '../primary-card/primary-card.component';
-import { AppointmentService } from 'src/app/core/services/appointment.service';
+import { catchError, EMPTY } from 'rxjs';
+import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
+import { PrimaryCardComponent } from 'src/app/shared/components/primary-card/primary-card.component';
 
 @Component({
   selector: 'app-appointment-card',
@@ -30,45 +31,67 @@ export class AppointmentCardComponent implements OnInit {
     private appointmentService: AppointmentService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.logInitialState();
+  }
 
-  edit() {
+  private logInitialState(): void {
+  }
+
+  toggleEdit(): void {
     this.edit_button = !this.edit_button;
   }
 
-  async confirmCancel() {
+  async presentCancelConfirm(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Confirmar cancelación',
+      header: 'Confirmar Cancelación',
       message: '¿Estás seguro de que deseas cancelar esta cita?',
       buttons: [
         {
           text: 'No',
           role: 'cancel',
-          cssClass: 'secondary',
+          cssClass: 'secondary-button' // Usar clases CSS para estilizar si es necesario
         },
         {
-          text: 'Sí, cancelar',
+          text: 'Sí, Cancelar',
+          cssClass: 'danger-button', // Usar clases CSS para estilizar si es necesario
           handler: () => {
-            this.cancelAppointment();
-          },
-        },
-      ],
+            this.processAppointmentCancellation();
+          }
+        }
+      ]
     });
-
     await alert.present();
   }
 
-  cancelAppointment() {
-    if (!this.appointmentId) return;
+  private processAppointmentCancellation(): void {
+    if (!this.appointmentId) {
+      console.warn('No se proporcionó un ID de cita para cancelar.');
+      // Considerar mostrar un toast al usuario aquí
+      return;
+    }
 
-    this.appointmentService.cancelAppointment(this.appointmentId).subscribe(
-      () => {
-        this.edit_button = false;
-        this.appointmentCanceled.emit(this.appointmentId);
-      },
-      (error: any) => {
-        console.error('Error al cancelar la cita:', error);
-      }
-    );
+    this.appointmentService.cancelAppointment(this.appointmentId)
+      .pipe(
+        catchError(error => {
+          this.handleCancellationError(error);
+          return EMPTY; // Devuelve un observable vacío para manejar el error
+        })
+      )
+      .subscribe(() => {
+        this.handleCancellationSuccess();
+      });
+  }
+
+  private handleCancellationSuccess(): void {
+    this.edit_button = false;
+    this.appointmentCanceled.emit(this.appointmentId);
+    // Considerar mostrar un toast de éxito al usuario aquí
+    console.log(`Cita ${this.appointmentId} cancelada exitosamente.`);
+  }
+
+  private handleCancellationError(error: any): void {
+    console.error(`Error al cancelar la cita ${this.appointmentId}:`, error);
+    // Considerar mostrar un toast de error al usuario aquí
   }
 }

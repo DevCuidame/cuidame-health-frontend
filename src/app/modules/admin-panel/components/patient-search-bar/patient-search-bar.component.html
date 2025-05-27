@@ -1,7 +1,8 @@
 <div class="patient-search-container">
   <div class="patient-info">
     <img
-      [src]="image_path"
+      [src]="processedImagePath"
+      (error)="onImageError()"
       [alt]="first_name"
       class="patient-img"
     />

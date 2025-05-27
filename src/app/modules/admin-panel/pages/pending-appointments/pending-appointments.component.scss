@@ -17,7 +17,7 @@
 }
 
 .pending-appointments::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, #4EAA03, #E8D641, #4EAA03);
+  background: linear-gradient(45deg, #35B6D9, #F58418, #275289);
   background-size: 200% 200%;
   animation: gradient 3s ease infinite;
   border-radius: 10px;
@@ -38,7 +38,7 @@
 }
 
 .pending-appointments::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, #E8D641, #275289, #E8D641); 
+  background: linear-gradient(45deg, #35B6D9, #275289, #F58418); 
   background-size: 200% 200%;
   animation: gradient 2s ease infinite;
 }

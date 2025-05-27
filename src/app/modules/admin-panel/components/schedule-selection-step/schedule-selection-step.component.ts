@@ -38,20 +38,6 @@ import { ScheduleService } from 'src/app/core/services/schedule.service';
         [ticketNumber]="ticketNumber"
       ></app-patient-search-bar>
 
-      <!-- Información del profesional para asignación de horario si estamos en modo asignación -->
-      @if (isAssigningToPendingAppointment) {
-      <div class="professional-info-card">
-        <div class="professional-header">
-          <h3>Información del Profesional</h3>
-        </div>
-        <div class="professional-details">
-          <p><strong>Profesional:</strong> {{ professionalName }}</p>
-          <p><strong>Especialidad:</strong> {{ specialtyName }}</p>
-          <p><strong>Tipo de agenda:</strong> {{ getScheduleTypeLabel() }}</p>
-        </div>
-      </div>
-      }
-
       <h2>Horario de atención</h2>
 
       <!-- Contenedor para agenda manual - incluye datos del doctor -->
@@ -412,35 +398,91 @@ export class ScheduleSelectionStepComponent implements OnInit {
   }
 
   updateAppointmentManual() {
-    // Creamos un objeto para los datos del profesional si no existe
-    let professionalData = this.stateService.appointment().professional || {};
+    // Validar datos antes de actualizar
+    if (!this.validateScheduleData()) {
+      return;
+    }
 
-    // Actualizamos o creamos los datos del profesional
-    professionalData = {
-      ...professionalData,
-      scheduleInfo: { type: 'MANUAL', description: 'Agenda manual', isBooking: false },
-      user: {
-        ...(this.doctorName ? { first_name: this.doctorName.split(' ')[0] } : {}),
-        ...(this.doctorName.split(' ').length > 1 ? { last_name: this.doctorName.split(' ').slice(1).join(' ') } : {}),
-        ...professionalData
-      },
-      consultation_address: this.doctorAddress,
-      attention_township_id: this.selectedCity ? this.selectedCity.toString() : ''
-    };
-    // Actualizamos el appointment con los nuevos datos
+    // Preparar datos del profesional de forma limpia
+    const professionalData = this.prepareProfessionalData();
+    
+    // Actualizar el appointment con los nuevos datos
     this.stateService.appointment.update((app) => ({
       ...app,
-      start_time: this.selectedDate,
-      end_time: this.selectedTime,
+      start_time: this.formatDateTime(this.selectedDate, this.selectedTime),
+      end_time: this.formatDateTime(this.selectedDate, this.selectedTime),
       status: this.isAssigningToPendingAppointment ? 'requested' : 'confirmed',
-      professionalData: professionalData,
-      // Utilizamos los nuevos campos de la interfaz Appointment
-      city_id: this.selectedCity ? parseInt(this.selectedCity.toString()) : undefined,
-      temp_address: this.doctorAddress ? this.doctorAddress : undefined,
-      temp_doctor_name: this.doctorName ? this.doctorName : undefined
+      professional: professionalData,
+      professional_id: professionalData?.id || null
     }));
 
+    // Actualizar estado del servicio
     this.stateService.selectHour(this.selectedTime);
     this.stateService.manualDate.set(this.selectedDate);
+  }
+
+  /**
+   * Validar que los datos del horario sean válidos
+   */
+  private validateScheduleData(): boolean {
+    // Si no hay fecha ni hora, es válido (cita pendiente)
+    if (!this.selectedDate && !this.selectedTime) {
+      return true;
+    }
+    
+    // Si hay fecha, debe haber hora y viceversa
+    if (this.selectedDate && !this.selectedTime) {
+      return false;
+    }
+    
+    if (this.selectedTime && !this.selectedDate) {
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
+   * Preparar datos del profesional de forma estructurada
+   */
+  private prepareProfessionalData(): any {
+    const currentProfessional = this.stateService.appointment().professional!;
+    
+    // Si no hay nombre de doctor, mantener datos existentes
+    if (!this.doctorName) {
+      return currentProfessional;
+    }
+    
+    // Dividir nombre completo en nombre y apellido
+    const nameParts = this.doctorName.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    
+    return {
+      ...currentProfessional,
+      user: {
+        ...currentProfessional.user,
+        first_name: firstName,
+        last_name: lastName
+      },
+      consultation_address: this.doctorAddress || '',
+      attention_township_id: this.selectedCity ? parseInt(this.selectedCity.toString()) : null
+    };
+  }
+
+  /**
+   * Formatear fecha y hora en formato ISO
+   */
+  private formatDateTime(date: string, time: string): string {
+    if (!date || !time) {
+      return '';
+    }
+    
+    try {
+      return `${date}T${time}:00`;
+    } catch (error) {
+      console.error('Error formateando fecha y hora:', error);
+      return '';
+    }
   }
 }

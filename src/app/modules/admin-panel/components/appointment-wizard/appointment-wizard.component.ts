@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { Router } from '@angular/router';
@@ -97,7 +97,6 @@ import { WizardStepperComponent } from '../wizard-stepper/wizard-stepper.compone
       [time]="appointment().start_time!"
       [dayOfWeek]="getFormattedDayOfWeek()"
       [appointment]="appointment()"
-      (appointmentSaved)="onAppointmentSaved($event)"
     ></app-appointment-assigned>
 
     <div class="action-buttons">
@@ -109,12 +108,15 @@ import { WizardStepperComponent } from '../wizard-stepper/wizard-stepper.compone
   `,
   styleUrls: ['./appointment-wizard.component.scss'],
 })
-export class AppointmentWizardComponent implements OnInit {
+export class AppointmentWizardComponent implements OnInit, OnDestroy {
   public currentStep = this.stateService.currentStep;
   public isSubmitting = this.stateService.isSubmitting;
   public success = this.stateService.success;
   public appointment = this.stateService.appointment;
   public isScheduleAssignment: boolean = false;
+  
+  // Modo de operación
+  private mode: 'new' | 'schedule' | 'edit' = 'new';
 
   constructor(
     private stateService: AppointmentStateService,
@@ -124,242 +126,295 @@ export class AppointmentWizardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.isScheduleAssignment = history.state.scheduleAssignment === true;
+    this.initializeWizard();
+  }
 
-    if (this.isScheduleAssignment) {
-      this.stateService.currentStep.set(3);
-    }
-
-    const navData = history.state.appointment;
-    if (navData) {
-      this.stateService.appointment.set(navData);
-      localStorage.setItem('selectedAppointment', JSON.stringify(navData));
-    }else{
-      localStorage.removeItem('selectedAppointment');
+  ngOnDestroy(): void {
+    // Limpiar estado si no se completó el proceso
+    if (!this.success()) {
+      this.stateService.resetState();
     }
   }
 
-  nextStep(): void {
-    if (this.isStepValid()) {
-      this.stateService.updateAppointmentForStep();
-
-      if (this.isScheduleAssignment) {
-        this.confirmScheduleAssignment();
-      } else if (this.currentStep() < 3) {
-        this.stateService.nextStep();
-      } else {
-        this.stateService.setSubmitting(true);
-        this.sendAppointmentData();
-      }
+  private initializeWizard(): void {
+    const navData = history.state;
+    
+    if (navData?.scheduleAssignment === true) {
+      this.mode = 'schedule';
+      this.isScheduleAssignment = true;
+      this.stateService.currentStep.set(3);
+    } else if (navData?.appointment) {
+      this.mode = 'edit';
+      this.loadExistingAppointment(navData.appointment);
     } else {
-      this.toastService.presentToast(
-        'Por favor, complete todos los campos antes de continuar.',
-        'warning'
-      );
+      this.mode = 'new';
+      this.stateService.resetState();
+    }
+  }
+
+  private loadExistingAppointment(appointment: Appointment): void {
+    // Validar datos mínimos requeridos
+    if (!appointment.patient || !appointment.specialty) {
+      this.toastService.presentToast('Datos de cita incompletos', 'danger');
+      this.router.navigate(['/admin-panel/dash/assigment']);
+      return;
+    }
+
+    this.stateService.appointment.set(appointment);
+    localStorage.setItem('selectedAppointment', JSON.stringify(appointment));
+  }
+
+  nextStep(): void {
+    if (!this.isStepValid()) {
+      this.showValidationError();
+      return;
+    }
+
+    this.stateService.updateAppointmentForStep();
+
+    if (this.isScheduleAssignment || this.currentStep() === 3) {
+      this.submitAppointment();
+    } else {
+      this.stateService.nextStep();
     }
   }
 
   prevStep(): void {
     if (this.isScheduleAssignment) {
-      // Si estamos en modo de asignación de horario, volver a la lista de citas
-      this.router.navigate(['/call-center/dash/assigment']);
+      this.router.navigate(['/admin-panel/dash/assigment']);
     } else {
       this.stateService.prevStep();
     }
   }
 
-  isStepValid(): boolean {
+  public isStepValid(): boolean {
     if (this.isScheduleAssignment) {
-      return true; // Siempre permitimos continuar en modo de asignación de horario
+      return this.validateScheduleData();
     }
-
-    // En el flujo normal verificamos cada paso
+    
     return this.stateService.isStepValid(this.currentStep());
   }
 
-  confirmScheduleAssignment(): void {
-    this.stateService.setSubmitting(true);
-  
-    const appointmentData = this.stateService.appointment();
-    console.log('Confirmando cita con datos:', appointmentData);
-  
-    // Asegurarse de que el estado sea CONFIRMED
-    const updatedAppointment = {
-      ...appointmentData,
-      status: 'CONFIRMED',
-    };
-  
-    this.appointmentService
-      .updateAppointment(appointmentData.id, updatedAppointment as Appointment)
-      .subscribe({
-        next: (response) => {
-          this.stateService.setSubmitting(false);
-  
-          if (response && response.statusCode === 200) {
-            console.log('Respuesta exitosa al confirmar cita:', response);
-            
-            // const updatedAppointment = {
-            //   ...response.data,
-            //   professionalData: appointmentData.professionalData,
-            //   specialtyData: appointmentData.specialtyData,
-            //   userData: appointmentData.userData,
-            //   specialty: appointmentData.specialty,
-            //   appointment_date: response.data.appointment_date?.split('T')[0] || response.data.appointment_date,
-            // };
-            
-            this.stateService.appointment.set(updatedAppointment);
-            
-            this.stateService.setSuccess(true);
-            
-            this.toastService.presentToast(
-              'Horario asignado exitosamente',
-              'success'
-            );
-          } else {
-            console.error('Error al confirmar horario:', response);
-            this.toastService.presentToast(
-              'Error al asignar horario. Intente nuevamente.',
-              'danger'
-            );
-          }
-        },
-        error: (error) => {
-          console.error('Error al confirmar horario:', error);
-          this.stateService.setSubmitting(false);
-          this.toastService.presentToast(
-            'Error al asignar horario. Intente nuevamente.',
-            'danger'
-          );
-        },
-      });
-  }
-
-  sendAppointmentData(): void {
-    const appointmentData = this.stateService.appointment();
-    console.log('Enviando datos de la cita:', appointmentData);
-
-    // Aquí se implementaría la llamada al servicio para crear/actualizar la cita
-    if (appointmentData.id === 0) {
-      this.appointmentService.createAppointment(appointmentData).subscribe({
-        next: (response) => {
-          this.stateService.setSubmitting(false);
-
-          if (response && response.statusCode === 200) {
-            this.stateService.setSuccess(true);
-            this.stateService.appointment.set(response.data);
-            this.toastService.presentToast(
-              'Cita creada exitosamente',
-              'success'
-            );
-          } else {
-            this.toastService.presentToast(
-              'Error al crear la cita. Intente nuevamente.',
-              'danger'
-            );
-          }
-        },
-        error: (error) => {
-          this.stateService.setSubmitting(false);
-          this.toastService.presentToast(
-            'Error al crear la cita. Intente nuevamente.',
-            'danger'
-          );
-        },
-      });
-    } else {
-      this.appointmentService
-        .updateAppointment(appointmentData.id, appointmentData)
-        .subscribe({
-          next: (response) => {
-            this.stateService.setSubmitting(false);
-
-            if (response.statusCode === 200) {
-              this.stateService.setSuccess(true);
-              this.toastService.presentToast(
-                'Cita actualizada exitosamente',
-                'success'
-              );
-            } else {
-              this.toastService.presentToast(
-                'Error al actualizar la cita. Intente nuevamente.',
-                'danger'
-              );
-            }
-          },
-          error: (error) => {
-            this.stateService.setSubmitting(false);
-            this.toastService.presentToast(
-              'Error al actualizar la cita. Intente nuevamente.',
-              'danger'
-            );
-          },
-        });
+  private validateScheduleData(): boolean {
+    const appointment = this.stateService.appointment();
+    
+    // Validar que tenga información básica del doctor
+    if (!appointment.professional || !appointment.professional.user) {
+      return false;
     }
-  }
 
-  // Método para manejar cuando se guarda una cita pendiente
-  onAppointmentSaved(success: boolean): void {
-    if (success) {
-      // Resetear el estado del wizard
-      setTimeout(() => {
-        this.stateService.resetState();
-      }, 2000);
+    // Si tiene fecha/hora, ambas deben estar presentes
+    if (appointment.start_time || appointment.end_time) {
+      return !!(appointment.start_time && appointment.end_time);
     }
-  }
 
-  // Navegar de vuelta a la lista de citas
-  goBackToAppointments(): void {
-    this.router.navigate(['/call-center/dash/assigment']);
-  }
-
-  // La agenda siempre es manual en este nuevo flujo
-  isManualAgenda(): boolean {
     return true;
   }
 
-  // Verificar si la cita está pendiente
-  isAgendaPendiente(): boolean {
-    return (
-      this.appointment().status === 'PENDING' ||
-      this.appointment().status === 'TO_BE_CONFIRMED'
-    );
+  private showValidationError(): void {
+    const errorMessages: { [key: number]: string } = {
+      1: 'Complete los datos del paciente',
+      2: 'Seleccione una especialidad',
+      3: 'Complete la información del horario'
+    };
+
+    const message = this.isScheduleAssignment 
+      ? 'Complete la información del profesional y horario'
+      : errorMessages[this.currentStep()] || 'Complete todos los campos requeridos';
+
+    this.toastService.presentToast(message, 'warning');
   }
 
-  // Métodos auxiliares para la plantilla
+  private submitAppointment(): void {
+    this.stateService.setSubmitting(true);
+    const appointmentData = this.prepareAppointmentData();
+
+    if (this.mode === 'new') {
+      this.createNewAppointment(appointmentData);
+    } else {
+      this.updateExistingAppointment(appointmentData);
+    }
+  }
+
+  private prepareAppointmentData(): Appointment {
+    const appointment = this.stateService.appointment();
+    
+    // Validar datos mínimos antes de preparar
+    if (!this.validateAppointmentData(appointment)) {
+      throw new Error('Datos de cita incompletos para envío');
+    }
+    
+    // Limpiar y estructurar datos para envío
+    const cleanedAppointment: Appointment = {
+      id: appointment.id,
+      patient_id: appointment.patient_id || appointment.patient?.id || 0,
+      professional_id: this.extractProfessionalId(appointment),
+      appointment_type_id: appointment.appointment_type_id || 1, // Valor por defecto
+      start_time: appointment.start_time || '',
+      end_time: appointment.end_time || appointment.start_time || '',
+      status: this.determineStatus(appointment),
+      notes: appointment.notes || '',
+      specialty_id: appointment.specialty_id || appointment.specialty?.id || 0,
+      patient: appointment.patient,
+      specialty: appointment.specialty,
+      professional: this.cleanProfessionalData(appointment.professional),
+      created_at: appointment.created_at || '',
+      updated_at: appointment.updated_at || '',
+      cancellation_reason: null,
+      reminder_sent: false,
+      location: appointment.location || null,
+      modified_by_id: null,
+      recurring_appointment_id: null
+    };
+
+    return cleanedAppointment;
+  }
+
+  /**
+   * Validar que los datos de la cita sean suficientes para envío
+   */
+  private validateAppointmentData(appointment: Appointment): boolean {
+    return !!(appointment.patient && 
+             appointment.patient.nombre && 
+             appointment.specialty && 
+             (appointment.specialty_id || appointment.specialty.id));
+  }
+
+  /**
+   * Extraer ID del profesional de forma segura
+   */
+  private extractProfessionalId(appointment: Appointment): number | null {
+    if (appointment.professional_id) {
+      return appointment.professional_id;
+    }
+    
+    if (appointment.professional?.id) {
+      return appointment.professional.id;
+    }
+    
+    return null;
+  }
+
+  /**
+   * Limpiar datos del profesional eliminando campos temporales
+   */
+  private cleanProfessionalData(professional: any): any {
+    if (!professional) {
+      return null;
+    }
+    
+    // Crear copia limpia sin campos temporales
+    const cleanedProfessional = { ...professional };
+    
+    // Eliminar campos temporales que no deberían enviarse al backend
+    delete cleanedProfessional.professionalData;
+    delete cleanedProfessional.scheduleInfo;
+    
+    return cleanedProfessional;
+  }
+
+  private determineStatus(appointment: Appointment): string {
+    if (this.isScheduleAssignment) {
+      return 'confirmed';
+    }
+    
+    if (appointment.start_time && appointment.professional_id) {
+      return 'confirmed';
+    }
+    
+    return 'requested';
+  }
+
+  private createNewAppointment(appointmentData: Appointment): void {
+    this.appointmentService.createAppointment(appointmentData).subscribe({
+      next: (response) => {
+        this.handleSuccess(response, 'Cita creada exitosamente');
+      },
+      error: (error) => {
+        this.handleError(error, 'Error al crear la cita');
+      }
+    });
+  }
+
+  private updateExistingAppointment(appointmentData: Appointment): void {
+    this.appointmentService
+      .updateAppointment(appointmentData.id, appointmentData)
+      .subscribe({
+        next: (response) => {
+          this.handleSuccess(response, 'Cita actualizada exitosamente');
+        },
+        error: (error) => {
+          this.handleError(error, 'Error al actualizar la cita');
+        }
+      });
+  }
+
+  private handleSuccess(response: any, message: string): void {
+    this.stateService.setSubmitting(false);
+    
+    if (response?.data) {
+      this.stateService.appointment.set(response.data);
+      this.stateService.setSuccess(true);
+      this.toastService.presentToast(message, 'success');
+    } else {
+      this.handleError(null, 'Respuesta inválida del servidor');
+    }
+  }
+
+  private handleError(error: any, message: string): void {
+    this.stateService.setSubmitting(false);
+    console.error(error);
+    this.toastService.presentToast(message, 'danger');
+  }
+
+  goBackToAppointments(): void {
+    this.stateService.resetState();
+    this.router.navigate(['/admin-panel/dash/assigment']);
+  }
+
+  // Métodos auxiliares para el template
+  isManualAgenda(): boolean {
+    return true; // Siempre es manual en el nuevo flujo
+  }
+
+  isAgendaPendiente(): boolean {
+    const status = this.appointment().status;
+    return status === 'requested' || status === 'TO_BE_CONFIRMED';
+  }
+
   getFullName(): string {
-    // const userData = this.appointment().userData;
-    // return `${userData.first_name || ''} ${userData.last_name || ''}`.trim();
-    return ""
+    const patient = this.appointment().patient;
+    if (patient) {
+      return `${patient.nombre || ''} ${patient.apellido || ''}`.trim();
+    }
+    return '';
   }
 
   getSelectedProfessionalName(): string {
-    // const professionalData = this.appointment().professionalData;
-    // if (professionalData && professionalData.user) {
-    //   return `${professionalData.user.first_name || ''} ${
-    //     professionalData.user.last_name || ''
-    //   }`.trim();
-    // }
+    const professional = this.appointment().professional;
+    if (professional?.user) {
+      return `${professional.user.first_name || ''} ${professional.user.last_name || ''}`.trim();
+    }
     return '';
   }
 
   getProfessionalPhone(): string {
-    // const professionalData = this.appointment().professionalData;
-    // return professionalData?.user?.phone || '';
-    return '';
+    return this.appointment().professional?.user?.phone || '';
   }
 
-  getSelectedSpecialty(): Specialty {
-    const specialtyData = this.appointment().specialty;
-    return specialtyData;
+  getSelectedSpecialty(): any {
+    return this.appointment().specialty || { name: 'Sin especialidad' };
   }
 
   getFormattedDayOfWeek(): string {
-    const dayIndex = this.stateService.selectedDayIndex();
-    if (dayIndex !== -1) {
-      const selectedDay =
-        this.stateService.selectedProfessionalAvailability()[dayIndex];
-      return selectedDay ? selectedDay.day : '';
+    const startTime = this.appointment().start_time;
+    if (!startTime) return '';
+    
+    try {
+      const date = new Date(startTime);
+      return date.toLocaleDateString('es-ES', { weekday: 'long' });
+    } catch {
+      return '';
     }
-    return '';
   }
 }

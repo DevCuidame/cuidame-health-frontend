@@ -2,11 +2,11 @@ import { Component, OnInit, ViewChild, ElementRef, computed } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatientSearchBarComponent } from '../patient-search-bar/patient-search-bar.component';
-import { HealthProfessionalCardComponent } from 'src/app/shared/components/health-professional-card/health-professional-card.component';
-import { MedicalProfessionalService } from 'src/app/core/services/medicalProfessional.service';
-import { AppointmentStateService } from 'src/app/core/services/appointment-state.service';
 import { ScheduleService } from 'src/app/core/services/schedule.service';
 import { ToastService } from 'src/app/core/services/toast.service';
+import { AppointmentStateService } from 'src/app/core/services/appointment/appointment-state.service';
+import { HealthProfessionalCardComponent } from '../health-professional-card/health-professional-card.component';
+import { MedicalProfessionalService } from 'src/app/core/services/medicalProfessional.service';
 
 @Component({
   selector: 'app-professional-selection-step',
@@ -41,14 +41,12 @@ import { ToastService } from 'src/app/core/services/toast.service';
           @for (prof of professionals(); track prof.id) {
             <app-health-professional-card
               [buttonVisible]="false"
-              [first_name]="prof.user.first_name"
-              [gender]="prof.user.gender"
-              [last_name]="prof.user.last_name"
+              [first_name]="prof.user.name"
+              [last_name]="prof.user.lastname"
               [specialty_name]="prof.specialty_name"
               [profileImage]="prof.image.header_path"
               [scheduleInfo]="prof.scheduleInfo"
               [agendaColor]="getAgendaColor(prof.scheduleInfo.type)"
-              [class.selected]="isSelected(prof.id)"
               [class.unavailable]="prof.scheduleInfo.type === 'UNAVAILABLE'"
               (click)="selectProfessional(prof)"
               [availability]="true"
@@ -62,14 +60,14 @@ import { ToastService } from 'src/app/core/services/toast.service';
       </div>
       
       <!-- Información sobre agenda manual si está seleccionada -->
-      @if (isManualAgendaSelected()) {
+      <!-- @if (isManualAgendaSelected()) {
         <div class="manual-agenda-info">
           <div class="info-box">
             <i class="fas fa-info-circle"></i>
             <p>El profesional seleccionado maneja agenda manual. En el siguiente paso podrás introducir opcionalmente la fecha y hora acordada o continuar sin especificarla.</p>
           </div>
         </div>
-      }
+      } -->
     </div>
   `,
   styles: [`
@@ -118,8 +116,8 @@ export class ProfessionalSelectionStepComponent implements OnInit {
 
   ngOnInit(): void {
     const appointment = this.stateService.appointment();
-    this.patientData = appointment.userData;
-    this.appointmentFirstTime = appointment.first_time;
+    this.patientData = appointment.patient;
+    // this.appointmentFirstTime = appointment.appointmentType === 'Primera vez';
     
     // Cargar profesionales para la especialidad seleccionada si aún no se han cargado
     const specialtyId = this.stateService.selectedSpecialtyId();
@@ -134,15 +132,15 @@ export class ProfessionalSelectionStepComponent implements OnInit {
     return professional.scheduleInfo?.type !== 'UNAVAILABLE';
   }
 
-  isManualAgendaSelected(): boolean {
-    const index = this.stateService.selectedProfessionalIndex();
-    if (index === null) return false;
+  // isManualAgendaSelected(): boolean {
+  //   const index = this.stateService.selec();
+  //   if (index === null) return false;
     
-    const professionals = this.professionals();
-    if (!professionals || !professionals[index]) return false;
+  //   const professionals = this.professionals();
+  //   if (!professionals || !professionals[index]) return false;
     
-    return professionals[index].scheduleInfo?.type === 'MANUAL';
-  }
+  //   return professionals[index].scheduleInfo?.type === 'MANUAL';
+  // }
   
   getAgendaColor(type: string): string {
     switch (type) {
@@ -161,7 +159,7 @@ export class ProfessionalSelectionStepComponent implements OnInit {
       return [];
     }
 
-    return this.medicalProfessionalService.professionals().filter((prof) => {
+    return this.medicalProfessionalService.professionals().filter((prof: any) => {
       const firstName = prof.user?.first_name?.toLowerCase() || '';
       const lastName = prof.user?.last_name?.toLowerCase() || '';
 
@@ -186,14 +184,14 @@ export class ProfessionalSelectionStepComponent implements OnInit {
     }
 
     // Encontrar el índice del profesional seleccionado
-    const index = this.professionals().findIndex(prof => prof.id === professional.id);
+    const index = this.professionals().findIndex((prof:any) => prof.id === professional.id);
     
     if (index !== -1) {
       // Actualizar estado con el profesional seleccionado
-      this.stateService.selectProfessional(index);
+      // this.stateService.selectProfessional(index);
       
       // Actualizar el ID del profesional en la cita
-      this.stateService.appointment.update(app => ({
+      this.stateService.appointment.update((app: any) => ({
         ...app,
         professional_id: professional.id.toString(),
         professionalData: professional,
@@ -225,13 +223,13 @@ export class ProfessionalSelectionStepComponent implements OnInit {
     }
   }
 
-  isSelected(professionalId: number): boolean {
-    const selectedIndex = this.stateService.selectedProfessionalIndex();
-    if (selectedIndex === null) return false;
+  // isSelected(professionalId: number): boolean {
+  //   const selectedIndex = this.stateService.selectedProfessionalIndex();
+  //   if (selectedIndex === null) return false;
     
-    const selectedProfessional = this.professionals()[selectedIndex];
-    return selectedProfessional?.id === professionalId;
-  }
+  //   const selectedProfessional = this.professionals()[selectedIndex];
+  //   return selectedProfessional?.id === professionalId;
+  // }
 
   scrollLeft(): void {
     if (this.carouselContent) {

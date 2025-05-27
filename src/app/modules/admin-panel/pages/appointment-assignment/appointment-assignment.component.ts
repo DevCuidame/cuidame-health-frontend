@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
   Appointment,
@@ -13,7 +13,12 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-appointment-assignment',
-  imports: [PendingCardComponent, FontAwesomeModule, SearchBarComponent, CommonModule],
+  imports: [
+    PendingCardComponent,
+    FontAwesomeModule,
+    SearchBarComponent,
+    CommonModule,
+  ],
   templateUrl: './appointment-assignment.component.html',
   styleUrls: ['./appointment-assignment.component.scss'],
 })
@@ -29,11 +34,14 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
   };
   public requests: string = '0 solicitudes';
   public isConnected: boolean = false;
+  public filteredAppointments: Appointment[] = [];
   public connectionError: string | null = null;
   public isLoading: boolean = true;
   private checkConnectionTimeout?: any;
 
   private destroy$ = new Subject<void>();
+  private readonly VALID_STATUSES = ['requested', 'confirmed', 'rescheduled'];
+  private readonly MANAGEABLE_STATUSES = ['requested', 'confirmed', 'rescheduled'];
 
   constructor(
     private appointmentWebSocketService: AppointmentWebSocketService
@@ -42,10 +50,14 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setupSubscriptions();
     this.initializeWebSocketConnection();
-    
+
     // Aumentar el timeout y verificar si ya hay conexión
     this.checkConnectionTimeout = setTimeout(() => {
-      if (!this.isConnected && this.appointments.length === 0 && !this.isLoading) {
+      if (
+        !this.isConnected &&
+        this.appointments.length === 0 &&
+        !this.isLoading
+      ) {
         this.isLoading = false;
       }
     }, 5000); // Reducir a 5 segundos
@@ -55,107 +67,133 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
    * Configurar suscripciones a observables con proper cleanup
    */
   private setupSubscriptions(): void {
-    // Suscribirse a appointments
+    // Suscripción a appointments con filtrado
     this.appointmentWebSocketService.appointments$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(
+          (appointments) => appointments !== null && appointments !== undefined
+        )
+      )
       .subscribe({
         next: (appointments: Appointment[]) => {
           this.appointments = appointments;
+          this.filterAppointments();
           this.isLoading = false;
-          console.log('📊 Appointments actualizadas:', appointments.length);
         },
         error: (error) => {
-          console.error('Error en appointments$:', error);
+          console.error('Error al recibir appointments:', error);
           this.isLoading = false;
-        }
+          this.connectionError = 'Error al cargar las citas';
+        },
       });
 
-    // Suscribirse a contadores
+    // Suscripción a contadores
     this.appointmentWebSocketService.appointmentCounts$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (counts: appointmentCounts) => {
           this.appointmentCounts = counts;
           this.updateRequestsText();
-          console.log('🔢 Contadores actualizados:', counts);
         },
-        error: (error) => {
-          console.error('Error en appointmentCounts$:', error);
-        }
       });
 
-    // Suscribirse a estado de conexión
+    // Estado de conexión
     this.appointmentWebSocketService.connectionStatus$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (connected: boolean) => {
           this.isConnected = connected;
-          console.log(`🔌 Estado de conexión: ${connected ? 'Conectado' : 'Desconectado'}`);
-          
+
           if (connected) {
             this.connectionError = null;
-            // Si se reconectó y no hay datos, solicitar appointments
             if (this.appointments.length === 0) {
-              setTimeout(() => this.refreshAppointments(), 1000);
+              this.refreshAppointments();
             }
           }
         },
-        error: (error) => {
-          console.error('Error en connectionStatus$:', error);
-        }
       });
 
-    // Suscribirse a errores
+    // Manejo de errores
     this.appointmentWebSocketService.error$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (error: string) => {
           this.connectionError = error;
           this.isLoading = false;
-          console.error('❌ Error WebSocket:', error);
         },
-        error: (error) => {
-          console.error('Error en error$:', error);
-        }
       });
   }
 
+  private filterAppointments(): void {
+    // Filtrar solo citas con estados válidos para gestión y datos completos
+    this.filteredAppointments = this.appointments.filter(
+      (appointment) => this.isValidAppointmentForManagement(appointment)
+    );
+  }
+
   /**
-   * Inicializar conexión WebSocket
+   * Validar si una cita es válida para gestión en el admin panel
    */
+  private isValidAppointmentForManagement(appointment: Appointment): boolean {
+    // Verificar estado válido
+    if (!this.MANAGEABLE_STATUSES.includes(appointment.status)) {
+      return false;
+    }
+
+    // Verificar datos mínimos del paciente
+    if (!appointment.patient || 
+        !appointment.patient.nombre || 
+        !appointment.patient.tipoid || 
+        !appointment.patient.numeroid) {
+      return false;
+    }
+
+    // Verificar que tenga especialidad
+    if (!appointment.specialty || !appointment.specialty_id) {
+      return false;
+    }
+
+    // Verificar que tenga ID válido
+    if (!appointment.id || appointment.id <= 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private updateRequestsText(): void {
+    const requestedCount = this.appointments.filter(
+      (a) => a.status === 'requested'
+    ).length;
+    this.requests =
+      requestedCount > 0
+        ? `${requestedCount} solicitud${requestedCount !== 1 ? 'es' : ''}`
+        : '0 solicitudes';
+  }
+
   private initializeWebSocketConnection(): void {
     try {
       this.appointmentWebSocketService.connect();
     } catch (error) {
-      console.error('Error inicializando WebSocket:', error);
-      this.connectionError = 'Error al inicializar la conexión';
+      console.error('Error al conectar WebSocket:', error);
+      this.connectionError = 'No se pudo establecer conexión con el servidor';
       this.isLoading = false;
     }
   }
 
-  /**
-   * Actualizar texto de solicitudes
-   */
-  private updateRequestsText(): void {
-    const pendingCount = this.appointmentCounts.PENDING;
-    this.requests = pendingCount > 0
-      ? `${pendingCount} solicitud${pendingCount !== 1 ? 'es' : ''}`
-      : '0 solicitudes';
-  }
-
-  /**
-   * Solicitar actualización manual de appointments
-   */
   public refreshAppointments(): void {
-    console.log('🔄 Solicitando actualización manual de appointments');
-    
     if (this.isConnected) {
       this.appointmentWebSocketService.requestAllAppointments();
     } else {
-      console.log('🔄 No conectado, intentando reconectar...');
-      this.isLoading = true;
-      this.reconnect();
+      this.initializeWebSocketConnection();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.appointmentWebSocketService.disconnect();
   }
 
   /**
@@ -165,37 +203,12 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
     console.log('🔄 Reconectando manualmente...');
     this.isLoading = true;
     this.connectionError = null;
-    
+
     this.appointmentWebSocketService.disconnect();
-    
+
     setTimeout(() => {
       this.appointmentWebSocketService.connect();
     }, 1000);
-  }
-
-
-  /**
-   * Calcular contadores desde los datos actuales
-   */
-  private updateAppointmentCountsFromData(): void {
-    const counts: appointmentCounts = {
-      EXPIRED: 0,
-      PENDING: 0,
-      CONFIRMED: 0,
-      CANCELLED: 0,
-      RESCHEDULED: 0,
-      COMPLETED: 0,
-
-    };
-
-    this.appointments.forEach(appointment => {
-      const status = appointment.status as keyof appointmentCounts;
-      if (status && counts[status] !== undefined) {
-        counts[status]++;
-      }
-    });
-
-    this.appointmentCounts = counts;
   }
 
   /**
@@ -237,7 +250,9 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
    * Obtener appointments filtradas por estado
    */
   public getAppointmentsByStatus(status: string): Appointment[] {
-    return this.appointments.filter(appointment => appointment.status === status);
+    return this.appointments.filter(
+      (appointment) => appointment.status === status
+    );
   }
 
   /**
@@ -252,27 +267,5 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
    */
   public onRetryConnection(): void {
     this.reconnect();
-  }
-
-  ngOnDestroy(): void {
-    console.log('🧹 Destruyendo AppointmentAssignmentComponent...');
-    
-    // Limpiar el timeout si existe
-    if (this.checkConnectionTimeout) {
-      clearTimeout(this.checkConnectionTimeout);
-    }
-    
-    // Completar el subject de destroy para cancelar todas las suscripciones
-    this.destroy$.next();
-    this.destroy$.complete();
-    
-    // Desconectar WebSocket
-    try {
-      this.appointmentWebSocketService.disconnect();
-    } catch (error) {
-      console.error('Error desconectando WebSocket:', error);
-    }
-    
-    console.log('✅ Componente AppointmentAssignment destruido y limpiado');
   }
 }

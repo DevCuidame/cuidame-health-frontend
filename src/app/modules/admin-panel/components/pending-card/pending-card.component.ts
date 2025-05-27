@@ -1,4 +1,3 @@
-import { environment } from './../../../../../environments/environment';
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -14,6 +13,7 @@ import { AlertController, IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { CustomButtonComponent } from 'src/app/shared/components/custom-button/custom-button.component';
 import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-pending-card',
@@ -28,20 +28,26 @@ import { AppointmentService } from 'src/app/core/services/appointment/appointmen
   styleUrls: ['./pending-card.component.scss'],
 })
 export class PendingCardComponent implements OnInit {
-  @Input() color: string = '';
   @Input() appointment!: Appointment;
+  @Input() color: string = '';
+  
   public environment = environment.url;
-
   public buttonBackground: string = 'assets/background/button_primary_bg.png';
-  public confirmButtonBackground: string =
-    'assets/background/primary_button_bg.svg';
+  public confirmButtonBackground: string = 'assets/background/primary_button_bg.svg';
+  
   public faClock = faClock;
   public faCalendar = faCalendar;
   public faEllipsisV = faEllipsisV;
-
+  
   public showStatusMenu = false;
   public statusUpdating = false;
-  public originalStatus = '';
+  
+  // Datos procesados
+  public patientFullName: string = '';
+  public professionalFullName: string = '';
+  public formattedDate: string = '';
+  public formattedTime: string = '';
+  public hasValidSchedule: boolean = false;
 
   constructor(
     private router: Router,
@@ -50,28 +56,151 @@ export class PendingCardComponent implements OnInit {
     private alertController: AlertController
   ) {}
 
-  ngOnInit() {
-    // Guardar el estado original para poder revertirlo en caso de error
-    this.originalStatus = this.appointment.status;
+  ngOnInit(): void {
+    this.initializeCardData();
+    this.logInitialState(); // Para consistencia y depuración
   }
 
-  toggleStatusMenu(event: Event) {
+  private initializeCardData(): void {
+    if (!this.appointment) {
+      console.error('Error: No se proporcionó la cita (appointment) para PendingCardComponent.');
+      this.patientFullName = 'Error: Datos no disponibles';
+      this.professionalFullName = 'Error: Datos no disponibles';
+      this.formattedDate = 'Error';
+      this.formattedTime = 'Error';
+      this.hasValidSchedule = false;
+      return;
+    }
+
+    if (!this.isValidAppointmentData(this.appointment)) {
+      console.warn(`Advertencia: La cita (ID: ${this.appointment.id}) tiene datos incompletos o inválidos.`);
+      // Aún así, intentamos mostrar lo que se pueda
+    }
+
+    this.patientFullName = this.formatPatientFullName(this.appointment.patient);
+    this.professionalFullName = this.formatProfessionalFullName(this.appointment.professional);
+    this.hasValidSchedule = this.tryProcessSchedule(this.appointment.start_time);
+  }
+
+  private logInitialState(): void {
+    console.log('PendingCardComponent initialized with:', {
+      appointmentId: this.appointment?.id,
+      patient: this.patientFullName,
+      professional: this.professionalFullName,
+      date: this.formattedDate,
+      time: this.formattedTime,
+      hasValidSchedule: this.hasValidSchedule,
+      status: this.appointment?.status
+    });
+  }
+
+  private isValidAppointmentData(appointment: Appointment): boolean {
+    // Validaciones más robustas
+    return !!(
+      appointment &&
+      typeof appointment.id === 'number' &&
+      appointment.patient &&
+      typeof appointment.patient.nombre === 'string' && // Asumiendo que nombre es siempre string
+      appointment.specialty &&
+      typeof appointment.specialty.name === 'string' // Asumiendo que specialty tiene un nombre
+    );
+  }
+
+  private formatPatientFullName(patient: Appointment['patient']): string {
+    if (!patient) return 'Paciente no asignado';
+    const { nombre, apellido } = patient;
+    const fullName = `${nombre || ''} ${apellido || ''}`.trim();
+    return fullName || 'Paciente sin nombre registrado';
+  }
+
+  private formatProfessionalFullName(professional: Appointment['professional']): string {
+    if (!professional?.user) return 'Profesional no asignado';
+    const { first_name, last_name } = professional.user;
+    const fullName = `${first_name || ''} ${last_name || ''}`.trim();
+    return fullName || 'Profesional sin nombre registrado';
+  }
+
+  private tryProcessSchedule(startTime?: string | Date): boolean {
+    if (!startTime) {
+      this.formattedDate = 'Fecha no disponible';
+      this.formattedTime = 'Hora no disponible';
+      return false;
+    }
+
+    try {
+      const date = new Date(startTime);
+      if (isNaN(date.getTime())) {
+        console.warn('Fecha de inicio inválida proporcionada:', startTime);
+        this.formattedDate = 'Fecha inválida';
+        this.formattedTime = 'Hora inválida';
+        return false;
+      }
+
+      // Opcional: Validación de fecha futura razonable (ej. no más de 5 años en el futuro)
+      const fiveYearsFromNow = new Date();
+      fiveYearsFromNow.setFullYear(fiveYearsFromNow.getFullYear() + 5);
+      if (date > fiveYearsFromNow) {
+        console.warn('Fecha de inicio demasiado lejana en el futuro:', startTime);
+        this.formattedDate = 'Fecha muy lejana';
+        this.formattedTime = '';
+        return false;
+      }
+
+      this.formattedDate = date.toLocaleDateString('es-ES', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      });
+      this.formattedTime = date.toLocaleTimeString('es-ES', {
+        hour: '2-digit', minute: '2-digit', hour12: true // Considerar formato AM/PM
+      });
+      return true;
+    } catch (error) {
+      console.error('Error al procesar la fecha de la cita:', startTime, error);
+      this.formattedDate = 'Error de fecha';
+      this.formattedTime = 'Error de hora';
+      return false;
+    }
+  }
+
+  public getPatientImage(): string {
+    const patientPhotoUrl = this.appointment?.patient?.photourl;
+    if (patientPhotoUrl) {
+      // Asegurarse de que la URL base no termine con / si photourl ya empieza con /
+      const baseUrl = this.environment.endsWith('/') ? this.environment.slice(0, -1) : this.environment;
+      const photoPath = patientPhotoUrl.startsWith('/') ? patientPhotoUrl : `/${patientPhotoUrl}`;
+      return `${baseUrl}${photoPath}`;
+    }
+    return 'assets/images/default_user.png'; // Ruta a imagen por defecto local
+  }
+
+  public canAssignSchedule(): boolean {
+    return this.appointment.status === 'requested' && !this.hasValidSchedule;
+  }
+
+  public canConfirm(): boolean {
+    return this.appointment.status === 'requested' && this.hasValidSchedule;
+  }
+
+  toggleStatusMenu(event: Event): void {
     event.stopPropagation();
+    
+    if (this.appointment.status === 'cancelled') {
+      return;
+    }
+
     this.showStatusMenu = !this.showStatusMenu;
 
-    // Cerrar el menú si se hace clic fuera de él
     if (this.showStatusMenu) {
       setTimeout(() => {
-        const closeClickHandler = () => {
+        const closeHandler = () => {
           this.showStatusMenu = false;
-          document.removeEventListener('click', closeClickHandler);
+          document.removeEventListener('click', closeHandler);
         };
-        document.addEventListener('click', closeClickHandler);
+        document.addEventListener('click', closeHandler);
       }, 0);
     }
   }
 
-  updateStatus(newStatus: any) {
+  updateStatus(newStatus: string): void {
     if (this.statusUpdating || this.appointment.status === newStatus) {
       this.showStatusMenu = false;
       return;
@@ -80,71 +209,160 @@ export class PendingCardComponent implements OnInit {
     this.statusUpdating = true;
     const previousStatus = this.appointment.status;
 
-    this.appointment.status = newStatus;
-    this.showStatusMenu = false;
-
     this.appointmentService
       .updateAppointmentStatus(this.appointment.id, newStatus)
       .subscribe({
         next: (response) => {
-          this.statusUpdating = false;
-          if (response && response.statusCode === 200) {
+          if (response?.success) {
+            this.appointment.status = newStatus;
             this.toastService.presentToast(
-              `Estado actualizado a "${this.getStatusLabel()}"`,
+              `Estado actualizado correctamente`,
               'success'
             );
-            // Si es necesario, actualizar la lista completa
-            if (['CANCELLED', 'EXPIRED'].includes(newStatus)) {
-              this.appointmentService.getAppointmentsList();
-            }
           } else {
-            this.handleUpdateError(previousStatus);
+            this.appointment.status = previousStatus;
+            this.toastService.presentToast(
+              'Error al actualizar el estado',
+              'danger'
+            );
           }
+          this.statusUpdating = false;
         },
-        error: (err) => {
-          this.handleUpdateError(previousStatus);
-        },
+        error: () => {
+          this.appointment.status = previousStatus;
+          this.toastService.presentToast(
+            'Error al actualizar el estado',
+            'danger'
+          );
+          this.statusUpdating = false;
+        }
       });
+
+    this.showStatusMenu = false;
   }
 
+  goToAppointment(appointment: Appointment): void {
+    // Validar datos mínimos antes de navegar
+    if (!this.validateAppointmentForNavigation(appointment)) {
+      return;
+    }
+
+    // Limpiar datos temporales previos
+    this.cleanupTemporaryData(appointment);
+
+    // Guardar el appointment actual
+    localStorage.setItem('selectedAppointment', JSON.stringify(appointment));
+    
+    // Navegar al wizard con el modo apropiado
+    this.router.navigate(['/admin-panel/dash/pending'], {
+      state: { 
+        appointment,
+        scheduleAssignment: this.needsScheduleAssignment(),
+        mode: this.needsScheduleAssignment() ? 'schedule' : 'edit'
+      }
+    });
+  }
+
+  /**
+   * Validar que la cita tenga los datos necesarios para navegar al wizard
+   */
+  private validateAppointmentForNavigation(appointment: Appointment): boolean {
+    if (!appointment || !appointment.id) {
+      this.toastService.presentToast('Error: Datos de cita inválidos', 'danger');
+      return false;
+    }
+
+    if (!appointment.patient || !appointment.patient.nombre) {
+      this.toastService.presentToast('Error: Datos del paciente incompletos', 'danger');
+      return false;
+    }
+
+    if (!appointment.specialty) {
+      this.toastService.presentToast('Error: Especialidad no especificada', 'danger');
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Limpiar datos temporales que puedan causar inconsistencias
+   */
+  private cleanupTemporaryData(appointment: Appointment): void {
+    // Eliminar campos temporales que no deberían persistir
+    const cleanedAppointment = { ...appointment };
+    
+    // Remover campos temporales si existen
+    delete (cleanedAppointment as any).temp_doctor_name;
+    delete (cleanedAppointment as any).temp_address;
+    delete (cleanedAppointment as any).professionalData;
+    delete (cleanedAppointment as any).userData;
+    
+    // Actualizar el appointment con datos limpios
+    Object.assign(appointment, cleanedAppointment);
+  }
+
+  async confirmAppointment(appointment: Appointment): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Confirmar cita',
+      message: `¿Confirmar la cita de ${this.patientFullName} para el ${this.formattedDate} a las ${this.formattedTime}?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Confirmar',
+          handler: () => {
+            this.updateStatus('confirmed');
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  getStatusLabel(): string {
+    const statusMap: { [key: string]: string } = {
+      'requested': 'Solicitada',
+      'confirmed': 'Confirmada',
+      'rescheduled': 'Reagendada',
+      'cancelled': 'Cancelada',
+      'completed': 'Completada'
+    };
+    
+    return statusMap[this.appointment.status] || 'Desconocido';
+  }
+
+  getPatientStatusColor(): string {
+    const colorMap: { [key: string]: string } = {
+      'requested': '#ffc107',
+      'confirmed': '#28a745',
+      'rescheduled': '#17a2b8',
+      'cancelled': '#dc3545',
+      'completed': '#6c757d'
+    };
+    
+    return colorMap[this.appointment.status] || '#00c292';
+  }
+
+  /**
+   * Verificar si la cita necesita asignación de profesional
+   */
   isUnassignedAppointment(): boolean {
-    if (!this.appointment?.professional) {
-      return true;
-    }
-
-    const appointmentDate = new Date(this.appointment.start_time);
-    const today = new Date();
-    const fiftyYearsFromNow = new Date();
-    fiftyYearsFromNow.setFullYear(today.getFullYear() + 50);
-
-    return appointmentDate > fiftyYearsFromNow;
+    return !this.appointment?.professional || !this.hasValidSchedule;
   }
 
-  handleUpdateError(previousStatus: any) {
-    this.statusUpdating = false;
-    this.appointment.status = previousStatus;
-    this.toastService.presentToast(
-      'Error al actualizar el estado. Intente nuevamente.',
-      'danger'
-    );
+  /**
+   * Verificar si la cita necesita asignación de horario
+   * Unificamos la lógica que estaba duplicada
+   */
+  needsScheduleAssignment(): boolean {
+    return !this.hasValidSchedule;
   }
 
-  getClockColor(appointment: Appointment): string {
-    const createdAt = new Date(appointment.created_at).getTime();
-    const expirationTime = createdAt + 2 * 60 * 60 * 1000;
-    const now = Date.now();
-
-    if (now >= expirationTime) {
-      return 'var(--ion-color-danger)';
-    }
-    const remaining = expirationTime - now;
-    if (remaining <= 30 * 60 * 1000) {
-      return 'var(--ion-color-secondary)';
-    }
-    return 'var(--ion-color-primary)';
-  }
-
-  getStatusBadgeClass(): any {
+    getStatusBadgeClass(): any {
     const baseClass = 'status-badge';
 
     switch (this.appointment.status) {
@@ -184,181 +402,5 @@ export class PendingCardComponent implements OnInit {
           [baseClass]: true,
         };
     }
-  }
-
-  getStatusLabel(): string {
-    switch (this.appointment.status) {
-      case 'requested':
-        return 'Solicitada';
-      case 'confirmed':
-        return 'Confirmada';
-      case 'rescheduled':
-        return 'Reagendada';
-      case 'cancelled':
-        return 'Cancelada';
-      case 'completed':
-        return 'Completada';
-      default:
-        return 'Desconocido';
-    }
-  }
-
-  needsScheduleAssignment(): boolean {
-    if (!this.appointment.start_time) {
-      return true;
-    }
-  
-    try {
-      const appointmentDate = new Date(this.appointment.start_time);
-      const today = new Date();
-      const fiftyYearsFromNow = new Date();
-      fiftyYearsFromNow.setFullYear(today.getFullYear() + 50);
-  
-      return appointmentDate > fiftyYearsFromNow;
-    } catch (error) {
-      return true;
-    }
-  }
-
-  // Formatea la fecha para mostrarse de manera amigable
-  formatDate(dateStr: string): string {
-    if (!dateStr) return '';
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('es-ES', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      });
-    } catch (error) {
-      console.error('Error formateando fecha:', error);
-      return dateStr;
-    }
-  }
-
-  // En pending-card.component.ts, agrega este método:
-
-getPatientStatusClass(): string {
-  const baseClass = 'patient-status';
-  
-  switch (this.appointment.status) {
-    case 'requested':
-      return `${baseClass} status-requested`;
-    case 'confirmed':
-      return `${baseClass} status-confirmed`;
-    case 'rescheduled':
-      return `${baseClass} status-rescheduled`;
-    case 'cancelled':
-      return `${baseClass} status-cancelled`;
-    case 'completed':
-      return `${baseClass} status-completed`;
-    default:
-      return baseClass;
-  }
-}
-
-getPatientStatusColor(): string {
-  switch (this.appointment.status) {
-    case 'requested':
-      return '#ffc107'; // Amarillo
-    case 'confirmed':
-      return '#28a745'; // Verde
-    case 'rescheduled':
-      return '#17a2b8'; // Azul claro
-    case 'cancelled':
-      return '#dc3545'; // Rojo
-    case 'completed':
-      return '#6c757d'; // Gris
-    default:
-      return '#00c292'; // Color por defecto
-  }
-}
-
-  // Navega a la página de asignación de cita
-  goToAppointment(appointment: Appointment) {
-    if (!appointment) {
-      console.error('Error: appointment no está definido.');
-      return;
-    }
-
-    localStorage.setItem('selectedAppointment', JSON.stringify(appointment));
-    this.router.navigate(['/admin-panel/dash/pending'], {
-      state: { appointment },
-    });
-  }
-
-  // Navega a la página de asignación de horario para citas pendientes por confirmar
-  assignSchedule(appointment: Appointment) {
-    if (!appointment) {
-      console.error('Error: appointment no está definido.');
-      return;
-    }
-
-    // Podemos usar la misma ruta pero con un query param para indicar que es asignación de horario
-    localStorage.setItem('selectedAppointment', JSON.stringify(appointment));
-    this.router.navigate(['/admin-panel/dash/pending'], {
-      state: {
-        appointment,
-        scheduleAssignment: true, // Flag para indicar que es asignación de horario
-      },
-    });
-  }
-
-  // Confirma una cita que ya tiene fecha y hora asignadas
-  async confirmAppointment(appointment: Appointment) {
-    const alert = await this.alertController.create({
-      header: 'Confirmar cita',
-      message: `¿Está seguro que desea confirmar la cita para ${this.formatDate(
-        appointment.start_time
-      )} a las ${appointment.start_time}?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Confirmar',
-          handler: () => {
-            // Actualizar estado de la cita
-            const updatedAppointment = {
-              ...appointment,
-              status: 'CONFIRMED',
-            };
-
-            this.appointmentService
-              .updateAppointment(
-                appointment.id,
-                updatedAppointment as Appointment
-              )
-              .subscribe({
-                next: (response) => {
-                  if (response && response.statusCode === 200) {
-                    this.toastService.presentToast(
-                      'Cita confirmada exitosamente',
-                      'success'
-                    );
-                    // Emitir evento o recargar datos
-                  } else {
-                    this.toastService.presentToast(
-                      'Error al confirmar la cita',
-                      'danger'
-                    );
-                  }
-                },
-                error: (error) => {
-                  console.error('Error al confirmar cita:', error);
-                  this.toastService.presentToast(
-                    'Error al confirmar la cita',
-                    'danger'
-                  );
-                },
-              });
-          },
-        },
-      ],
-    });
-
-    await alert.present();
   }
 }

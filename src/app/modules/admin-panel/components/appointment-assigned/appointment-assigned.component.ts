@@ -6,6 +6,7 @@ import { Appointment } from 'src/app/core/interfaces/appointment.interface';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
 import { Specialty } from 'src/app/core/interfaces/appointment.interface';
+import { catchError, EMPTY } from 'rxjs';
 
 @Component({
   selector: 'app-appointment-assigned',
@@ -105,39 +106,46 @@ export class AppointmentAssignedComponent implements OnInit {
   ) {}
   
   ngOnInit() {
+    this.logInitialState();
+    this.initializeDefaultValues();
+  }
+
+  private logInitialState(): void {
     console.log('AppointmentAssignedComponent initialized with:', {
       isPending: this.isPending,
       isManual: this.isManual,
       patientName: this.patientName,
       professionalName: this.professionalName,
-      specialty: this.specialty,
+      specialty: this.specialty?.name,
       date: this.date,
       time: this.time,
-      dayOfWeek: this.dayOfWeek
+      dayOfWeek: this.dayOfWeek,
+      appointmentId: this.appointment?.id
     });
-    
-    // Valores predeterminados para evitar que la plantilla muestre valores vacíos
+  }
+
+  private initializeDefaultValues(): void {
     if (!this.professionalName && this.appointment?.professional?.user) {
-      this.professionalName = `${this.appointment.professional.user.first_name || ''} ${this.appointment.professional.user.last_name || ''}`.trim();
+      this.professionalName = this.formatFullName(this.appointment.professional.user.first_name, this.appointment.professional.user.last_name);
     }
-    
+
     if (!this.specialty && this.appointment?.specialty) {
       this.specialty = this.appointment.specialty;
     }
-    
+
     if (!this.patientName && this.appointment?.patient) {
-      this.patientName = `${this.appointment.patient.nombre || ''} ${this.appointment.patient.apellido || ''}`.trim();
+      this.patientName = this.formatFullName(this.appointment.patient.nombre, this.appointment.patient.apellido);
     }
+  }
+
+  private formatFullName(firstName?: string, lastName?: string): string {
+    return `${firstName || ''} ${lastName || ''}`.trim();
   }
   
   getAppointmentTitle(): string {
-    if (this.isManual) {
-      return 'CITA PENDIENTE POR ASIGNACIÓN';
-    } else if (this.isPending) {
-      return 'CITA PENDIENTE';
-    } else {
-      return 'CITA ASIGNADA';
-    }
+    if (this.isManual) return 'CITA PENDIENTE POR ASIGNACIÓN';
+    if (this.isPending) return 'CITA PENDIENTE';
+    return 'CITA ASIGNADA';
   }
   
   getFormattedDate(): string {
@@ -145,66 +153,102 @@ export class AppointmentAssignedComponent implements OnInit {
     
     try {
       const dateObj = new Date(this.date);
+      // Asegurarse de que la fecha es válida antes de formatear
+      if (isNaN(dateObj.getTime())) {
+        console.warn('Fecha inválida proporcionada:', this.date);
+        return this.date; // Devolver la fecha original si no es válida
+      }
       return dateObj.toLocaleDateString('es-ES', {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
       });
     } catch (e) {
-      console.error('Error formatting date:', e);
-      return this.date;
+      console.error('Error al formatear la fecha:', this.date, e);
+      return this.date; // Devolver la fecha original en caso de error
     }
   }
   
   getDoctorLocation(): string {
-    if (!this.appointment || !this.appointment.professional) {
-      return 'la dirección indicada';
-    }
-    
-    const doctorData = this.appointment.professional;
-    const address = doctorData.consultation_address || '';
-    const city = doctorData.attention_township_id || '';
-    
-    if (address && city) {
-      return `${address}, ${city}`;
-    } else if (address) {
-      return address;
-    } else if (city) {
-      return city;
-    } else {
-      return 'la dirección indicada';
-    }
+    const professional = this.appointment?.professional;
+    if (!professional) return 'la dirección indicada';
+
+    const { consultation_address: address, attention_township_name: city } = professional;
+
+    if (address && city) return `${address}, ${city}`;
+    if (address) return address;
+    if (city) return city;
+    return 'la dirección indicada';
   }
   
-  savePendingAppointment() {
-    if (!this.appointment) {
-      this.toastService.presentToast('No hay datos de cita para guardar', 'danger');
+  savePendingAppointment(): void {
+    if (!this.isValidAppointmentForSave()) {
       return;
     }
-    
-    const appointmentToSave = {
-      ...this.appointment,
+
+    const appointmentToSave: Appointment = {
+      ...(this.appointment as Appointment),
       status: 'TO_BE_CONFIRMED'
     };
-    
-    this.appointmentService.createAppointment(appointmentToSave as Appointment).subscribe({
-      next: (response: any) => {
-        this.toastService.presentToast('Cita pendiente guardada exitosamente', 'success');
-        this.appointmentSaved.emit(true);
-      },
-      error: (error: any) => {
-        console.error('Error al guardar la cita pendiente:', error);
-        this.toastService.presentToast('Error al guardar la cita pendiente', 'danger');
-        this.appointmentSaved.emit(false);
-      }
-    });
+
+    this.appointmentService.createAppointment(appointmentToSave)
+      .pipe(
+        catchError(error => {
+          this.handleSaveAppointmentError(error);
+          return EMPTY; // Devuelve un observable vacío para manejar el error y no romper la cadena
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.handleSaveAppointmentSuccess();
+        }
+      });
   }
-  
-  openWhatsApp() {
-    const phone = this.professionalPhone || '573043520351';
-    const text = `Hola, me gustaría agendar una cita con ${this.professionalName || 'el profesional'} para la especialidad de ${this.specialty || 'la especialidad seleccionada'}. El nombre del beneficiario es: ${this.patientName || 'el paciente'}.`;
-    
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-    window.open(whatsappUrl, '_blank');
+
+  private isValidAppointmentForSave(): boolean {
+    if (!this.appointment) {
+      this.toastService.presentToast('No hay datos de cita para guardar.', 'danger');
+      return false;
+    }
+    // Aquí se podrían añadir más validaciones si fueran necesarias
+    return true;
+  }
+
+  private handleSaveAppointmentSuccess(): void {
+    this.toastService.presentToast('Cita pendiente guardada exitosamente.', 'success');
+    this.appointmentSaved.emit(true);
+  }
+
+  private handleSaveAppointmentError(error: any): void {
+    console.error('Error al guardar la cita pendiente:', error);
+    const errorMessage = error?.error?.message || 'Error desconocido al guardar la cita pendiente.';
+    this.toastService.presentToast(errorMessage, 'danger');
+    this.appointmentSaved.emit(false);
+  }
+
+  openWhatsApp(): void {
+    if (!this.professionalPhone) {
+      this.toastService.presentToast('Número de WhatsApp del profesional no disponible.', 'warning');
+      return;
+    }
+
+    const cleanedPhone = this.cleanPhoneNumber(this.professionalPhone);
+    if (!cleanedPhone) {
+      this.toastService.presentToast('Número de WhatsApp inválido.', 'warning');
+      return;
+    }
+
+    const whatsappUrl = `https://wa.me/${cleanedPhone}`;
+    this.openUrlInNewTab(whatsappUrl);
+  }
+
+  private cleanPhoneNumber(phone: string): string {
+    // Elimina caracteres no numéricos. Considerar prefijos internacionales si es necesario.
+    return phone.replace(/\D/g, '');
+  }
+
+  private openUrlInNewTab(url: string): void {
+    // Validar la URL podría ser una buena práctica aquí, aunque wa.me es conocido.
+    window.open(url, '_blank');
   }
 }

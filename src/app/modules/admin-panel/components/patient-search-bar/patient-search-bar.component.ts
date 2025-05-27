@@ -14,6 +14,7 @@ export class PatientSearchBarComponent implements OnInit {
   @Input() public first_name: string = '';
   @Input() public last_name: string = '';
   @Input() public image_path: string = '';
+  @Input() public bs64: string = '';
   @Input() public firstTime: boolean = false;
   @Input() public cityName: string = '';
   @Input() public ticketNumber: string = '';
@@ -21,18 +22,71 @@ export class PatientSearchBarComponent implements OnInit {
   @Output() searchTermChanged = new EventEmitter<string>();
 
   public environment = environment.url;
-
   public faSearch = faSearch;
+  public processedImagePath: string = '';
 
   ngOnInit(): void {
-    if (!this.image_path) {
-      this.image_path = 'assets/images/default_user.png';
-    }else {
-      this.image_path = this.environment + this.image_path; 
+    this.processedImagePath = this.getProcessedImagePath();
+  }
+
+  /**
+   * Obtener la ruta de imagen procesada
+   */
+  private getProcessedImagePath(): string {
+    if (this.bs64 && this.bs64.trim() !== '') {
+      // Agregar prefijo si no lo tiene
+      if (!this.bs64.startsWith('data:image')) {
+        return `data:image/jpeg;base64,${this.bs64}`;
+      }
+      return this.bs64;
+    }
+  
+    if (!this.image_path || this.image_path.trim() === '') {
+      return 'assets/images/default_user.png';
+    }
+  
+    if (this.image_path.startsWith('http://') || this.image_path.startsWith('https://')) {
+      return this.image_path;
+    }
+  
+    if (this.image_path.startsWith('assets/')) {
+      return this.image_path;
+    }
+  
+    return this.environment + this.image_path;
+  }
+  
+  
+
+  /**
+   * Obtener el nombre completo del paciente
+   */
+  public getFullName(): string {
+    const firstName = this.first_name?.trim() || '';
+    const lastName = this.last_name?.trim() || '';
+    
+    if (!firstName && !lastName) {
+      return 'Paciente sin nombre';
+    }
+    
+    return `${firstName} ${lastName}`.trim();
+  }
+
+  /**
+   * Manejar cambios en el término de búsqueda
+   */
+  onSearchTermChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target && typeof target.value === 'string') {
+      const searchTerm = target.value.trim();
+      this.searchTermChanged.emit(searchTerm);
     }
   }
 
-  onSearchTermChange(event: any) {
-    this.searchTermChanged.emit(event.target.value);
+  /**
+   * Manejar errores de carga de imagen
+   */
+  onImageError(): void {
+    this.processedImagePath = 'assets/images/default_user.png';
   }
 }
