@@ -204,4 +204,18 @@ export class LoginComponent {
           );
       });
   }
+
+
+  goToResetPassword(){
+
+  }
+
+  loginWithGoogle() {
+    
+  }
+
+  loginWithFacebook() {
+    
+  }
+
 }

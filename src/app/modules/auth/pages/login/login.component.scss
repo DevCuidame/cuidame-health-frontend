@@ -1,77 +1,238 @@
-ion-content {
-  --background: url("../../../../../assets/background/background.png") no-repeat
-    center center / cover;
-}
-
-form {
+.auth-form {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 20px;
   padding: 30px 10px 10px 10px;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-group {
+  width: 100%;
 }
 
 .custom-input {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 5px 0;
-  font-size: 1.063rem;
-  font-weight: bold;
+  gap: 8px;
+}
+
+.custom-input label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper ion-icon:first-child {
+  position: absolute;
+  left: 15px;
+  font-size: 1.2rem;
+  color: var(--ion-color-medium);
+  pointer-events: none;
 }
 
 .custom-input input {
-  background: transparent;
-  border: 1px solid var(--ion-color-dark);
-  border-radius: 20px;
-  padding: 10px;
-  transition: border-color 0.3s ease-in-out;
+  background: #f8f9fa;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 12px 45px;
+  width: 100%;
+  font-size: 1rem;
+  transition: all 0.3s ease;
   outline: none;
 }
 
 .custom-input input:focus {
   border-color: var(--ion-color-primary);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(var(--ion-color-primary-rgb), 0.1);
 }
 
+.custom-input input::placeholder {
+  color: var(--ion-color-medium);
+}
+
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  font-size: 1.2rem;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+  color: var(--ion-color-primary);
+}
 
 .error-text {
   color: var(--ion-color-danger);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 0.85rem;
+  margin-top: 5px;
+  margin-left: 5px;
 }
 
-.signup-text {
-  text-align: center;
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
 }
 
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ion-color-primary);
+  cursor: pointer;
+}
+
+.remember-me label {
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.forgot-password {
+  font-size: 0.9rem;
+  color: var(--ion-color-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
 
 .button-container {
-  margin: 10px 0;
-
+  margin-top: 20px;
 }
 
-ion-item.show-pass {
-  --background: transparent !important;
-  --border-color: transparent !important;
-  --inner-border-width: 0px !important;
-  --highlight-color-focused: transparent !important;
-  --ion-item-background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-  padding: 0 !important;
+.divider {
+  text-align: center;
+  position: relative;
+  margin: 25px 0;
+}
 
-  ion-label{
-    color: #192a54;
+.divider span {
+  background: white;
+  padding: 0 15px;
+  color: var(--ion-color-medium);
+  font-size: 0.9rem;
+  position: relative;
+  z-index: 1;
+}
 
-    &:hover{
-      color:  #192a54;
-    }
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.social-login {
+  display: flex;
+  gap: 15px;
+}
+
+.social-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.social-button:hover {
+  background: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.social-button ion-icon {
+  font-size: 1.2rem;
+}
+
+.social-button.google {
+  color: #4285f4;
+}
+
+.social-button.facebook {
+  color: #1877f2;
+}
+
+/* Tablet Styles */
+@media (min-width: 768px) {
+  .auth-form {
+    padding: 20px 0;
   }
 
-  &:hover{
-    background-color: white;
+  .custom-input input {
+    padding: 14px 50px;
+    font-size: 1.05rem;
+  }
+
+  .input-wrapper ion-icon:first-child {
+    left: 18px;
+    font-size: 1.3rem;
+  }
+
+  .toggle-password {
+    right: 18px;
+    font-size: 1.3rem;
   }
 }
 
-ion-checkbox {
-  --border-color: #192a54  !important;
+/* Desktop Styles */
+@media (min-width: 1024px) {
+  .auth-form {
+    gap: 24px;
+  }
+
+  .custom-input label {
+    font-size: 1rem;
+  }
+
+  .social-button {
+    padding: 14px;
+    font-size: 1rem;
+  }
+
+  .social-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
 }
