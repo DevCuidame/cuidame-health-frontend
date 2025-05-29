@@ -1,39 +1,30 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Routes } from '@angular/router';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { AuthGuard } from 'src/app/core/guards/auth.guard';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { TabBarComponent } from 'src/app/shared/components/tab-bar/tab-bar.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HomeRoutingModule } from './home-routing.module';
+import { SharedModule } from 'src/app/shared/shared.module';
 
-const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'dashboard',
-    pathMatch: 'full',
-  },
-  {
-    path: 'dashboard',
-    component: DashboardComponent,
-    canActivate: [AuthGuard], 
-  },
-  {
-    path: '**',
-    redirectTo: 'dashboard'
-  }
-];
+// Pages
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { AppointmentsComponent } from './pages/appointments/appointments.component';
+import { ProfileComponent } from './pages/profile/profile.component';
+import { SettingsComponent } from './pages/settings/settings.component';
 
+// Components
+import { DashboardSidebarComponent } from 'src/app/shared/components/dashboard-sidebar/dashboard-sidebar.component';
+import { DashboardMainComponent } from 'src/app/shared/components/dashboard-main/dashboard-main.component';
 
 @NgModule({
-  declarations: [],
+  declarations: [
+  ],
   imports: [
     CommonModule,
+    IonicModule,
     FormsModule,
     ReactiveFormsModule,
-    IonicModule,
-    RouterModule.forChild(routes),
-    TabBarComponent,
-  ],
+    HomeRoutingModule,
+    SharedModule
+  ]
 })
-export class HomeModule {}
+export class HomeModule { }

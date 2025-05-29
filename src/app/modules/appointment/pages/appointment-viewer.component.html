@@ -1,202 +1,236 @@
-<!-- patient-appointments-viewer.component.html -->
-<div class="patient-appointments-viewer">
-  <!-- Header -->
-  <div class="header">
-    <h1>Citas Médicas</h1>
-    <button class="filter-toggle" (click)="toggleView()">
-      <ion-icon [name]="showCalendarView ? 'list' : 'calendar'"></ion-icon>
-    </button>
+<ion-content class="appointment-viewer-container">
+  <!-- Versión de escritorio -->
+  <div class="desktop-layout" *ngIf="isDesktop">
+    <app-dashboard-sidebar [user]="user"></app-dashboard-sidebar>
+
+    <app-appointment-main
+      style="width: 100%"
+      [appointments]="appointments"
+      [professionals]="professionals"
+      [loading]="loading"
+      [showCalendarView]="showCalendarView"
+      [selectedDate]="selectedDate"
+      [currentMonth]="currentMonth"
+      [currentYear]="currentYear"
+      [monthNames]="monthNames"
+      [weekDays]="weekDays"
+      [statusColors]="statusColors"
+      (viewToggled)="handleViewToggled($event)"
+      (dateSelected)="handleDateSelected($event)"
+      (appointmentSelected)="handleAppointmentSelected($event)"
+      (newAppointmentRequested)="handleNewAppointmentRequested()"
+      (monthChanged)="handleMonthChanged($event)"
+    >
+    </app-appointment-main>
   </div>
 
-  <!-- Calendar View -->
-  <div class="calendar-container" *ngIf="showCalendarView">
-    <div class="calendar-header">
-      <button (click)="previousMonth()" class="month-nav">
-        <ion-icon name="chevron-back"></ion-icon>
-      </button>
-      <h2>{{ monthNames[currentMonth] }} {{ currentYear }}</h2>
-      <button (click)="nextMonth()" class="month-nav">
-        <ion-icon name="chevron-forward"></ion-icon>
-      </button>
+  <!-- Versión móvil (existente) -->
+  <div class="mobile-layout" *ngIf="!isDesktop">
+    <div class="header">
+      <div class="title">Mis Citas</div>
+      <div class="view-toggle" (click)="toggleView()">
+        <ion-icon
+          [name]="showCalendarView ? 'list-outline' : 'calendar-outline'"
+        ></ion-icon>
+        {{ showCalendarView ? "Lista" : "Calendario" }}
+      </div>
     </div>
 
-    <div class="calendar-grid">
-      <div class="weekday-header">
-        <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+    <!-- Vista de calendario -->
+    <div class="calendar-view" *ngIf="showCalendarView">
+      <div class="month-selector">
+        <ion-icon
+          name="chevron-back-outline"
+          (click)="previousMonth()"
+        ></ion-icon>
+        <div class="month-name">
+          {{ monthNames[currentMonth] }} {{ currentYear }}
+        </div>
+        <ion-icon
+          name="chevron-forward-outline"
+          (click)="nextMonth()"
+        ></ion-icon>
       </div>
 
-      <div class="days-grid">
+      <div class="weekdays">
+        <div class="weekday" *ngFor="let day of weekDays">{{ day }}</div>
+      </div>
+
+      <div class="days">
         <div
-          *ngFor="let date of getDaysInMonth()"
-          class="day-cell"
-          [class.today]="isToday(date)"
-          [class.other-month]="!isSelectedMonth(date)"
-          [class.has-appointments]="getAppointmentsForDate(date).length > 0"
-          (click)="selectedDate = date"
-          [class.selected]="
-            formatDateToCompare(selectedDate) === formatDateToCompare(date)
-          "
+          *ngFor="let day of getDaysInMonth()"
+          class="day"
+          [class.today]="isToday(day)"
+          [class.other-month]="!isSelectedMonth(day)"
+          [class.has-appointments]="getAppointmentsForDate(day).length > 0"
+          (click)="selectedDate = day"
         >
-          <span class="day-number">{{ date.getDate() }}</span>
-          <div
-            class="appointment-indicators"
-            *ngIf="getAppointmentsForDate(date).length > 0"
-          >
+          <div class="day-number">{{ day.getDate() }}</div>
+          <div class="appointment-indicators">
             <div
-              *ngFor="let appointment of getAppointmentsForDate(date)"
-              class="appointment-dot"
+              *ngFor="
+                let appointment of getAppointmentsForDate(day).slice(0, 3)
+              "
+              class="appointment-indicator"
               [style.background-color]="getStatusColor(appointment.status)"
             ></div>
+            <div
+              class="more-indicator"
+              *ngIf="getAppointmentsForDate(day).length > 3"
+            >
+              +{{ getAppointmentsForDate(day).length - 3 }}
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Selected Date Appointments -->
-    <div
-      class="selected-date-appointments"
-      *ngIf="getAppointmentsForDate(selectedDate).length > 0"
-    >
-      <h3>{{ selectedDate | date : "EEEE, d MMMM" }}</h3>
-      <div class="appointments-list">
+      <div class="selected-date-appointments">
+        <div class="date-header">
+          <div class="date">{{ selectedDate | date }}</div>
+          <div
+            class="appointment-count"
+            *ngIf="getAppointmentsForDate(selectedDate).length > 0"
+          >
+            {{ getAppointmentsForDate(selectedDate).length }} cita{{
+              getAppointmentsForDate(selectedDate).length !== 1 ? "s" : ""
+            }}
+          </div>
+        </div>
+
         <div
-          *ngFor="let appointment of getAppointmentsForDate(selectedDate)"
-          class="appointment-card"
-          (click)="selectAppointment(appointment)"
+          class="no-appointments"
+          *ngIf="getAppointmentsForDate(selectedDate).length === 0"
         >
-          <div class="appointment-header">
-            <div class="time">
-              {{ appointment.start_time | date : "h:mm a" }}
+          No hay citas programadas para este día
+        </div>
+
+        <div class="appointments-list">
+          <div
+            *ngFor="let appointment of getAppointmentsForDate(selectedDate)"
+            class="appointment-card"
+            (click)="selectAppointment(appointment)"
+          >
+            <div class="appointment-time">
+              {{ appointment.start_time | date : "shortTime" }}
+            </div>
+            <div class="appointment-details">
+              <div class="appointment-title">
+                {{ appointment.professional?.user.nombre }}
+                {{ appointment.professional?.user.apellido }}
+              </div>
+              <div class="appointment-type">
+                {{ appointment.appointmentType?.name || "Consulta general" }}
+              </div>
             </div>
             <div
-              class="status-badge"
+              class="appointment-status"
               [style.background-color]="getStatusColor(appointment.status)"
             >
               {{ getStatusText(appointment.status) }}
             </div>
           </div>
-          <div class="appointment-info">
-            <p class="professional-name">
-              Dr. {{ appointment?.professional?.user?.name }}
-              {{ appointment?.professional?.user?.lastname }}
-            </p>
-            <p class="appointment-details">
-              {{ appointment?.appointmentType?.name }} -
-              {{ appointment?.professional?.specialty }}
-            </p>
-          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div
-    class="unassigned-appointments-section"
-    *ngIf="showCalendarView && getUnassignedAppointments().length > 0"
-  >
-    <h3>Citas pendientes de asignación</h3>
-    <div class="appointments-list">
+    <!-- Vista de lista -->
+    <div class="list-view" *ngIf="!showCalendarView">
+      <!-- Sección de citas sin asignar -->
       <div
-        *ngFor="let appointment of getUnassignedAppointments()"
-        class="appointment-card"
-        (click)="selectAppointment(appointment)"
+        class="unassigned-appointments-section"
+        *ngIf="getUnassignedAppointments().length > 0"
       >
-        <div class="appointment-header">
-          <div class="time">
-            {{ getDisplayTimeForUnassignedAppointment(appointment) }}
-          </div>
+        <div class="section-title">Citas pendientes de asignación</div>
+
+        <div class="appointments-list">
           <div
-            class="status-badge"
-            [style.background-color]="getStatusColor(appointment.status)"
+            *ngFor="let appointment of getUnassignedAppointments()"
+            class="appointment-card unassigned"
+            (click)="selectAppointment(appointment)"
           >
-            {{ getStatusText(appointment.status) }}
+            <div class="appointment-time pending">
+              {{ getDisplayTimeForUnassignedAppointment(appointment) }}
+            </div>
+            <div class="appointment-details">
+              <div class="appointment-title">Pendiente de asignación</div>
+              <div class="appointment-type">
+                {{ appointment.appointmentType?.name || "Consulta general" }}
+              </div>
+            </div>
+            <div
+              class="appointment-status"
+              [style.background-color]="getStatusColor(appointment.status)"
+            >
+              {{ getStatusText(appointment.status) }}
+            </div>
           </div>
         </div>
-        <div class="appointment-info">
-          <p class="professional-name">Pendiente de asignación</p>
-          <p class="appointment-details">
-            {{ appointment?.appointmentType?.name || "Consulta general" }}
-          </p>
-          <div class="patient-info">
-            <p class="patient-name">
-              Familiar: {{ getPatientName(appointment) }}
-            </p>
-            <p class="patient-id">{{ getPatientInfo(appointment) }}</p>
+      </div>
+
+      <!-- Lista de todas las citas -->
+      <div class="all-appointments-section">
+        <div class="section-title">Todas las citas</div>
+
+        <div class="appointments-list">
+          <div
+            *ngFor="let appointment of filteredAppointments"
+            class="appointment-card"
+            (click)="selectAppointment(appointment)"
+            [class.unassigned]="isUnassignedAppointment(appointment)"
+          >
+            <div
+              class="appointment-time"
+              [class.pending]="isUnassignedAppointment(appointment)"
+            >
+              <ng-container *ngIf="!isUnassignedAppointment(appointment)">
+                {{ appointment.start_time | date : "dd MMM yyyy" }}<br />
+                {{ appointment.start_time | date : "shortTime" }}
+              </ng-container>
+              <ng-container *ngIf="isUnassignedAppointment(appointment)">
+                {{ getDisplayTimeForUnassignedAppointment(appointment) }}
+              </ng-container>
+            </div>
+            <div class="appointment-details">
+              <div class="appointment-title">
+                <ng-container *ngIf="!isUnassignedAppointment(appointment)">
+                  {{ appointment.professional?.user.name }}
+                  {{ appointment.professional?.user.lastname }}
+                </ng-container>
+                <ng-container *ngIf="isUnassignedAppointment(appointment)">
+                  Pendiente de asignación
+                </ng-container>
+              </div>
+              <div class="appointment-type">
+                {{ appointment.appointmentType?.name || "Consulta general" }}
+              </div>
+            </div>
+            <div
+              class="appointment-status"
+              [style.background-color]="getStatusColor(appointment.status)"
+            >
+              {{ getStatusText(appointment.status) }}
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Botón flotante para nueva cita -->
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button (click)="openNewAppointmentModal()">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   </div>
 
-  <div class="list-container" *ngIf="!showCalendarView">
-    <div class="appointments-list">
-      <div
-        *ngFor="let appointment of filteredAppointments"
-        class="appointment-card"
-        (click)="selectAppointment(appointment)"
-      >
-        <div class="appointment-header">
-          <div class="date-time">
-            <div class="date" *ngIf="!isUnassignedAppointment(appointment)">
-              {{ appointment.start_time | date : "EEEE, MMM d" }}
-            </div>
-            <div class="date" *ngIf="isUnassignedAppointment(appointment)">
-              Pendiente de asignación
-            </div>
-            <div class="time" *ngIf="!isUnassignedAppointment(appointment)">
-              {{ appointment.start_time | date : "h:mm a" }}
-            </div>
-          </div>
-          <div
-            class="status-badge"
-            [style.background-color]="getStatusColor(appointment.status)"
-          >
-            {{ getStatusText(appointment.status) }}
-          </div>
-        </div>
-        <div class="appointment-info">
-          <p
-            class="professional-name"
-            *ngIf="!isUnassignedAppointment(appointment)"
-          >
-            Dr. {{ appointment?.professional?.user?.name }}
-            {{ appointment?.professional?.user?.lastname }}
-          </p>
-          <p
-            class="professional-name"
-            *ngIf="isUnassignedAppointment(appointment)"
-          >
-            Pendiente de asignación
-          </p>
-          <p class="appointment-details">
-            {{ appointment?.appointmentType?.name || "Consulta general" }}
-            <ng-container *ngIf="!isUnassignedAppointment(appointment)">
-              - {{ appointment?.professional?.specialty }}
-            </ng-container>
-          </p>
-          <div class="patient-info">
-            <p class="patient-name">
-              Familiar: {{ getPatientName(appointment) }}
-            </p>
-            <p class="patient-id">{{ getPatientInfo(appointment) }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Floating Action Button for New Appointment -->
-  <button class="fab" (click)="openNewAppointmentModal()">
-    <ion-icon name="add"></ion-icon>
-  </button>
-</div>
+</ion-content>
 
 <app-tab-bar
-  [isVisible]="true"
-  [buttons]="[
-    { icon: 'arrow-back-outline', route: '/home/dashboard', visible: true },
-    { icon: 'menu-outline', route: '/', visible: true },
-    { icon: 'exit-outline', route: '/', visible: true }
-  ]"
-  [background]="'var(--ion-color-light)'"
+[isVisible]="true"
+[buttons]="[
+  { icon: 'arrow-back-outline', route: '/home/dashboard', visible: true },
+  { icon: 'menu-outline', route: '/', visible: true },
+  { icon: 'exit-outline', route: '/', visible: true }
+]"
+[background]="'var(--ion-color-light)'"
 ></app-tab-bar>

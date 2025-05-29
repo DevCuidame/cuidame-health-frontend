@@ -1,0 +1,101 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: -webkit-fill-available;
+  width: 250px;
+  background-color: white;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px 0;
+  overflow-y: auto;
+  margin: 20px;
+  border-radius: 20px;
+}
+
+.profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.avatar-container {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 15px;
+  border: 3px solid var(--ion-color-secondary);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-info {
+  text-align: center;
+}
+
+.user-info h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.menu-section {
+  flex: 1;
+  padding: 20px 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--ion-color-dark);
+}
+
+.menu-item:hover {
+  background-color: rgba(var(--ion-color-secondary-rgb), 0.1);
+}
+
+.menu-item.active {
+  background-color: var(--ion-color-secondary);
+  color: white;
+  border-right: 4px solid var(--ion-color-primary);
+}
+
+.menu-item ion-icon {
+  font-size: 1.3rem;
+  margin-right: 15px;
+}
+
+.menu-item span {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.logout-section {
+  padding: 20px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.logout-section .menu-item {
+  color: var(--ion-color-danger);
+}
+
+.logout-section .menu-item:hover {
+  background-color: rgba(var(--ion-color-danger-rgb), 0.1);
+}
+
+/* Media queries para diseño responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none; /* Ocultar en dispositivos móviles */
+  }
+}

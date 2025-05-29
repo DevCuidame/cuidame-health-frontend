@@ -11,21 +11,23 @@
         {{ first_name.split(" ")[0] }} {{ last_name.split(" ")[0] }}
       </p>
       <p class="appointment-type">
-        {{ firstTime ? "Primera vez" : "Control" }}
+        {{ appointmentType }}
       </p>
     </div>
     <div class="patient-text">
       <p class="patient-name">Ciudad</p>
       <p class="appointment-type">{{ cityName || "Sin ciudad asignada" }}</p>
     </div>
-    <div class="patient-text">
-      <p class="patient-name">Ticket</p>
-      <p class="appointment-type">
-        {{ ticketNumber || "Sin ticket asignado" }}
-      </p>
-    </div>
+    @if (ticketNumber){
+      <div class="patient-text">
+        <p class="patient-name">Ticket</p>
+        <p class="appointment-type">
+          {{ ticketNumber || "Sin ticket asignado" }}
+        </p>
+      </div>
+    }
   </div>
-
+  @if(showBar){
   <div class="search-wrapper">
     <input
       type="text"
@@ -34,4 +36,6 @@
     />
     <fa-icon class="search-icon" [icon]="faSearch"></fa-icon>
   </div>
+
+  }
 </div>

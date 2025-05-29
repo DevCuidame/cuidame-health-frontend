@@ -11,7 +11,12 @@ import { IonicModule, NavController } from '@ionic/angular';
 })
 export class GreetingComponent implements OnInit {
   @Input() userName: string = '';
+  @Input() background: string = '';
+  @Input() border: string = '';
+  @Input() boxshadow: string = '';
+  @Input() icon: boolean = false;
   greeting: string = '';
+  
 
   constructor(private navCtrl: NavController) { }
 

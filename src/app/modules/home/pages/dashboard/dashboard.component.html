@@ -1,44 +1,58 @@
-<ion-content scroll-y="false">
-  <app-greeting [userName]="user?.name"></app-greeting>
+<!-- Versión de escritorio -->
+<div class="desktop-layout" *ngIf="isDesktop">
+  <app-dashboard-sidebar 
+    [user]="user" 
+  ></app-dashboard-sidebar>
+  
+  <app-dashboard-main 
+    [user]="user" 
+    [beneficiaries]="beneficiaries"
+  ></app-dashboard-main>
+</div>
 
-  <div class="card">
-    <div class="profile-container">
-      <div class="circle left">
-        <img [src]="
-        user.photourl
-          ? formatImageUrl(user.path)
-          : user.imagebs64 || '/assets/images/default_user.png'
-      " [alt]="user?.name" />
-      </div>
-      <div class="content">
-        <div class="user-name">
-          {{ user.name.split(" ")[0] }} {{ user.lastname.split(" ")[0] }}
+<!-- Versión móvil (mantiene el diseño actual) -->
+<div class="mobile-layout" *ngIf="!isDesktop">
+  <ion-content scroll-y="false">
+    <app-greeting [userName]="user?.name" [icon]="false"></app-greeting>
+  
+    <div class="card">
+      <div class="profile-container">
+        <div class="circle left">
+          <img [src]="
+          user?.photourl
+            ? formatImageUrl(user.path)
+            : user?.imagebs64 || '/assets/images/default_user.png'
+        " [alt]="user?.name" />
+        </div>
+        <div class="content">
+          <div class="user-name">
+            {{ user?.name?.split(" ")[0] }} {{ user?.lastname?.split(" ")[0] }}
+          </div>
         </div>
       </div>
+  
+      <div class="counter-wrapper">
+        <app-animated-counter
+          [targetValue]="beneficiaries.length"
+          [label]="'Familiares'"
+          [duration]="1500"
+          [showProgress]="false"
+          [showConfetti]="true"
+        ></app-animated-counter>
+      </div>
+  
+      <!-- Beneficiary Cards -->
+      <app-beneficiary-card></app-beneficiary-card>
     </div>
-
-    <div class="counter-wrapper">
-      <app-animated-counter
-        [targetValue]="beneficiaries.length"
-        [label]="'Familiares'"
-        [duration]="1500"
-        [showProgress]="false"
-        [showConfetti]="true"
-      ></app-animated-counter>
-    </div>
-
-    <!-- Beneficiary Cards -->
-
-    <app-beneficiary-card></app-beneficiary-card>
-  </div>
-</ion-content>
-
-<app-tab-bar
-  [isVisible]="true"
-  [buttons]="[
-    { icon: 'arrow-back-outline', route: '/', visible: true },
-    { icon: 'menu-outline', route: '/', visible: true },
-    { icon: 'exit-outline', route: '/', visible: true }
-  ]"
-  [background]="'var(--ion-color-light)'"
-></app-tab-bar>
+  </ion-content>
+  
+  <app-tab-bar
+    [isVisible]="true"
+    [buttons]="[
+      { icon: 'arrow-back-outline', route: '/', visible: true },
+      { icon: 'menu-outline', route: '/', visible: true },
+      { icon: 'exit-outline', route: '/', visible: true }
+    ]"
+    [background]="'var(--ion-color-light)'"
+  ></app-tab-bar>
+</div>

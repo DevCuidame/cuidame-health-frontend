@@ -1,0 +1,93 @@
+.dashboard-main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* width: 100%; */
+  padding: 0 20px;
+  /* background-color: var(--ion-color-light); */
+  margin: 20px;
+  border-radius: 20px;
+}
+
+.main-header {
+  margin-bottom: 20px;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.stats-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.stats-card {
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  flex: 1;
+  min-width: 250px;
+}
+
+.beneficiaries-section {
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 20px 20px 60px 20px;
+  overflow-y: auto;
+  max-height: 45vw;
+  scrollbar-width: none;
+}
+
+.beneficiaries-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para el componente app-beneficiary-card */
+:host ::ng-deep app-beneficiary-card .card-container {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 25px;
+  padding: 20px;
+  max-width: 100%;
+  max-height: none;
+  overflow-y: visible;
+}
+
+:host ::ng-deep app-beneficiary-card .card {
+  height: 180px;
+  transition: all 0.3s ease;
+  transform: scale(1);
+}
+
+:host ::ng-deep app-beneficiary-card .card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Media queries para diseño responsive */
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 10px;
+  }
+
+  .stats-card {
+    min-width: 100%;
+  }
+}
+
+@media (min-width: 1200px) {
+  :host ::ng-deep app-beneficiary-card .card-container {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}

@@ -1,5 +1,10 @@
+/* Estilos compartidos */
 ion-content {
   --background: var(--ion-color-light);
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
 }
 
 .user-name {
@@ -7,10 +12,24 @@ ion-content {
   color: var(--ion-color-tertiary);
 }
 
-.box {
-padding: 20px 0 0 0;
+/* Estilos para la versión de escritorio */
+.desktop-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-background);
 }
-.card {
+
+/* Estilos para la versión móvil */
+.mobile-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+.mobile-layout .card {
   background: url("../../../../../assets/background/background.png") no-repeat
     top center / cover;
   border-radius: 20px 20px 0% 0%;
@@ -22,9 +41,11 @@ padding: 20px 0 0 0;
   overflow-y: visible;
   bottom: 0;
   min-height: 65%;
+  transition: all 0.3s ease;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
 }
 
-.profile-container {
+.mobile-layout .profile-container {
   position: absolute;
   top: 0;
   left: 50%;
@@ -35,9 +56,10 @@ padding: 20px 0 0 0;
   margin-top: -25px;
   width: 100%;
   padding: 0 0 0 20px;
+  transition: all 0.3s ease;
 }
 
-.circle {
+.mobile-layout .circle {
   width: 143px;
   height: 143px;
   border-radius: 50%;
@@ -48,15 +70,18 @@ padding: 20px 0 0 0;
   margin: 0 10px;
   min-width: 143px;
   min-height: 143px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 3px solid var(--ion-color-light);
+  transition: all 0.3s ease;
 }
 
-.circle img {
+.mobile-layout .circle img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.content {
+.mobile-layout .content {
   display: flex;
   gap: 10px;
   align-items: flex-start;
@@ -65,188 +90,65 @@ padding: 20px 0 0 0;
   position: relative;
   top: -10px;
   color: var(--ion-color-primary);
+  transition: all 0.3s ease;
 }
 
-.username {
-  font-size: 16px;
-  font-weight: bold;
-  color: #236596;
-}
-
-.options-container {
-  min-height: 240px;
-}
-
-ion-icon {
-  color: var(--ion-color-secondary);
-}
-
-
-.nav-container {
+.mobile-layout .counter-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px; /* Espaciado entre elementos */
-  padding: 10px 0;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
 }
 
-.nav-item {
-  font-size: 16px;
-  font-weight: bold;
-  color: var(--ion-color-secondary);
-  padding: 10px;
-  cursor: pointer;
-  position: relative;
-}
-
-.nav-item.active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 3px;
-  background-color: var(--ion-color-light);
-}
-
-// Button Persona - Mascota
-.buttons-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  margin-top: 5px;
-  // position: absolute;
-  left: 0;
-  // padding: 0 20px;
-}
-
-.buttons {
-  display: flex;
-  width: 100%;
-  position: relative;
-}
-
-.button {
-  padding: 20px;
-  color: var(--ion-color-dark);
-  text-align: center;
-  background-color: var(--ion-color-light);
-  width: 100%;
-  border: none;
-  font-size: 1rem;
-  font-weight: bold;
-  transition: color 0.3s;
-  position: relative;
-  z-index: 2;
-}
-
-.button:first-child {
-  border-radius: 20px 0 0 20px;
-}
-
-.button:last-child {
-  border-radius: 0 20px 20px 0;
-}
-
-.selected-indicator {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 50%;
-  background: var(--ion-color-secondary);
-  transition: left 0.5s, right 0.5s, width 0.5s, border-radius 1s;
-  z-index: 3;
-  border-radius: 20px 0 0px 20px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ion-color-light);
-  font-weight: bold;
-}
-
-.selected-indicator:before {
-  content: "";
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
-  left: -2px;
-  right: -2px;
-  border-radius: inherit;
-  border: 2px solid transparent;
-}
-
-.button:focus {
-  outline: none;
-}
-
-.button.active {
-  color: var(--ion-color-light);
-  z-index: 2;
-}
-
-.button.active span {
-  position: relative;
-  z-index: 3;
-}
-
-/* Estilos para el alert personalizado */
-
-:host ::ng-deep .custom-alert {
-  --backdrop-opacity: 0.8;
-
-  .alert-wrapper {
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-    background: linear-gradient(145deg, #ffffff, #f5f5f5);
-    padding: 20px;
-    max-width: 80%;
+/* Media queries para diseño responsive */
+@media (min-width: 768px) and (max-width: 991px) {
+  .mobile-layout app-greeting {
+    margin-top: 20px;
+    margin-bottom: 40px;
+    display: block;
+  }
+  
+  .mobile-layout .card {
+    max-width: 90%;
+    left: 5%;
+    border-radius: 20px;
+    min-height: 60%;
+    max-height: 80%;
+    padding: 60px 5% 0 5%;
   }
 
-  .alert-head {
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(var(--ion-color-secondary-rgb), 0.3);
-  }
-
-  .alert-title {
-    color: var(--ion-color-primary);
-    font-size: 1.3rem;
-    font-weight: 700;
-  }
-
-  .alert-sub-title {
-    color: var(--ion-color-secondary);
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  .alert-message {
-    color: var(--ion-color-dark);
-    font-size: 1rem;
-    padding: 20px 0;
-    text-align: center;
-  }
-
-  .alert-button-group {
+  .mobile-layout .profile-container {
     justify-content: center;
-    padding-top: 10px;
+    padding: 0;
   }
 
-  .alert-button-confirm {
-    --background: var(--ion-color-secondary);
-    --color: var(--ion-color-light);
-    --border-radius: 10px;
-    font-weight: bold;
-    min-width: 120px;
-    font-size: 1rem;
-    margin: 0 auto;
-    padding: 12px;
+  .mobile-layout .circle {
+    width: 160px;
+    height: 160px;
+    min-width: 160px;
+    min-height: 160px;
+  }
 
-    &:hover {
-      --background: var(--ion-color-secondary-shade);
-    }
+  .mobile-layout .content {
+    font-size: 1.8rem;
+  }
+
+  .mobile-layout .user-name {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 992px) {
+  /* Estilos específicos para escritorio */
+  app-dashboard-sidebar {
+    width: 250px;
+    height: 100%;
+  }
+  
+  app-dashboard-main {
+    flex: 1;
+    height: 100%;
   }
 }

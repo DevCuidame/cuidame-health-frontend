@@ -372,9 +372,8 @@ export class AppointmentWizardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/admin-panel/dash/assigment']);
   }
 
-  // Métodos auxiliares para el template
   isManualAgenda(): boolean {
-    return true; // Siempre es manual en el nuevo flujo
+    return true; 
   }
 
   isAgendaPendiente(): boolean {

@@ -1,539 +1,341 @@
-/* appointment-viewer-mobile.component.scss */
+// Estilos generales
+.appointment-viewer-container {
+  --background: #f5f7fa;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  height: 100%;
+}
 
-.patient-appointments-viewer {
-  height: 100vh;
+// Estilos para la versión de escritorio
+.desktop-layout {
   display: flex;
-  flex-direction: column;
-  background-color: #fafafa;
-}
-
-/* Header */
-.header {
-  background-color: var(--ion-color-dark);
-  color: white;
-  padding: 20px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-}
-
-.header h1 {
-  font-size: 20px;
-  margin: 0;
-  font-weight: 600;
-}
-
-.filter-toggle {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-}
-
-/* Filters */
-.filters-container {
-  background-color: white;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.filter-row {
-  margin-bottom: 8px;
-}
-
-.filter-row:last-child {
-  margin-bottom: 0;
-}
-
-.filter-select {
+  height: 100%;
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  background-color: white;
-  color: var(--ion-color-dark);
+  overflow: hidden;
+  background-color: var(--color-background);
 }
 
-/* Calendar View */
-.calendar-container[_ngcontent-ng-c886546223] {
-  flex: 1;
-  overflow-y: auto;
-  background-color: white;
-  
-  /* Por defecto (móviles primero): ancho completo */
-  width: 100%;
-  max-width: 100%;
-}
-
-/* Para tablets - ajusta los breakpoints según tus necesidades */
-@media (min-width: 768px) {
-  .calendar-container[_ngcontent-ng-c886546223] {
-    width: 40%;
-    max-width: 80%;
-    margin: 0 auto; /* Centrar el contenedor */
-  }
-}
-
-/* Para computadoras de escritorio */
-@media (min-width: 1024px) {
-  .calendar-container[_ngcontent-ng-c886546223] {
-    width: 30%;
-    max-width: 900px; /* Limitar el ancho máximo */
-    margin: 0 auto; /* Centrar el contenedor */
-  }
-}
-
-.calendar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  background-color: var(--ion-color-secondary);
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.calendar-header h2 {
-  font-size: 18px;
-  margin: 0;
-  font-weight: 600;
-}
-
-.month-nav {
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: var(--ion-color-medium);
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.calendar-grid {
-  padding: 0 16px;
-  color: var(--ion-color-dark);
-}
-
-.weekday-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.weekday {
-  text-align: center;
-  font-size: 12px;
-  color: var(--ion-color-dark);
-  font-weight: 600;
-}
-
-.days-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  padding: 12px 0;
-}
-
-.day-cell {
-  aspect-ratio: 1;
+// Estilos para la versión móvil
+.mobile-layout {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.day-cell.today {
-  background-color: var(--ion-color-primary-tint);
-}
-
-.day-cell.selected {
-  background-color: var(--ion-color-primary);
-  color: white;
-}
-
-.day-cell.other-month {
-  opacity: 0.3;
-}
-
-.day-number {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.appointment-indicators {
-  position: absolute;
-  bottom: 2px;
-  display: flex;
-  gap: 2px;
-}
-
-.appointment-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-}
-
-/* Selected Date Appointments */
-.selected-date-appointments {
-  padding: 16px;
-  border-top: 1px solid #e0e0e0;
-  background-color: #fafafa;
-}
-
-.selected-date-appointments h3 {
-  font-size: 16px;
-  margin: 0 0 12px 0;
-  font-weight: 600;
-  color: var(--ion-color-dark);
-}
-
-/* Appointments List */
-.appointments-list {
-  padding: 8px 16px;
-}
-
-.appointment-card {
-  background-color: white;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  padding: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #f0f0f0;
-}
-
-.appointment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.time, .date {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ion-color-dark);
-}
-
-.date-time {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.date {
-  font-size: 12px;
-  color: var(--ion-color-medium);
-  font-weight: normal;
-}
-
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  color: white;
-  font-weight: 500;
-}
-
-.appointment-info {
-  padding-left: 4px;
-}
-
-.patient-name {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-  color: var(--ion-color-dark);
-}
-
-.professional-info {
-  font-size: 12px;
-  color: var(--ion-color-medium);
-  margin: 0;
-}
-
-/* Floating Action Button */
-.fab {
-  position: fixed;
-  bottom: 60px;
-  right: 24px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background-color: var(--ion-color-dark);
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-size: 24px;
-  z-index: 100;
-  transition: transform 0.2s ease;
-}
-
-.fab:active {
-  transform: scale(0.95);
-}
-
-/* List Container */
-.list-container {
   flex: 1;
+  overflow: hidden;
   overflow-y: auto;
-  background-color: #f5f5f5;
-}
+  max-height: 100%;
+  scrollbar-width: none;
+  padding: 25px;
 
-/* Responsive adjustments */
-@media (max-width: 375px) {
   .header {
-    padding: 16px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+
+    .view-toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      background-color: var(--ion-color-dark);
+      border-radius: 16px;
+      font-size: 14px;
+      color: var(--ion-color-medium);
+      cursor: pointer;
+
+      ion-icon {
+        font-size: 18px;
+      }
+    }
   }
-  
-  .header h1 {
-    font-size: 18px;
+
+  // Estilos para la vista de calendario
+  .calendar-view {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+
+    .month-selector {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+
+      .month-name {
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--ion-color-dark);
+      }
+
+      ion-icon {
+        font-size: 24px;
+        color: var(--ion-color-medium);
+        cursor: pointer;
+        padding: 8px;
+      }
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 8px;
+
+      .weekday {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ion-color-medium);
+        padding: 8px 0;
+      }
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 16px;
+
+      .day {
+        aspect-ratio: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        cursor: pointer;
+        position: relative;
+        color: var(--ion-color-dark);
+
+        &.today {
+          background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+          font-weight: 600;
+          color: var(--ion-color-primary);
+        }
+
+        &.other-month {
+          opacity: 0.5;
+        }
+
+        &.has-appointments {
+          .day-number {
+            font-weight: 600;
+          }
+        }
+
+        .day-number {
+          font-size: 16px;
+          margin-bottom: 4px;
+        }
+
+        .appointment-indicators {
+          display: flex;
+          gap: 2px;
+
+          .appointment-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+          }
+
+          .more-indicator {
+            font-size: 10px;
+            color: var(--ion-color-medium);
+          }
+        }
+      }
+    }
+
+    .selected-date-appointments {
+      flex: 1;
+      overflow-y: auto;
+      background-color: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+      .date-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+
+        .date {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--ion-color-dark);
+        }
+
+        .appointment-count {
+          font-size: 14px;
+          color: var(--ion-color-medium);
+        }
+      }
+
+      .no-appointments {
+        text-align: center;
+        padding: 32px 0;
+        color: var(--ion-color-medium);
+        font-size: 16px;
+      }
+    }
   }
-  
-  .calendar-header {
-    padding: 12px;
+
+  // Estilos para la vista de lista
+  .list-view {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    overflow-y: auto;
+    max-height: 100%;
+    scrollbar-width: none;
+
+    .filter-section {
+      margin-bottom: 16px;
+      background-color: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+      .filter-button {
+        margin-top: 16px;
+      }
+    }
+
+    .unassigned-appointments-section,
+    .all-appointments-section {
+      margin-bottom: 16px;
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin-bottom: 12px;
+      }
+    }
   }
-  
-  .calendar-grid {
-    padding: 0 8px;
+
+  // Estilos comunes para las listas de citas
+  .appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .appointment-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      &.unassigned {
+        border-left: 4px solid var(--ion-color-warning);
+      }
+
+      .appointment-time {
+        min-width: 80px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ion-color-dark);
+
+        &.pending {
+          color: var(--ion-color-warning);
+        }
+      }
+
+      .appointment-details {
+        flex: 1;
+        margin: 0 16px;
+
+        .appointment-title {
+          font-size: 16px;
+          font-weight: 500;
+          color: var(--ion-color-dark);
+          margin-bottom: 4px;
+        }
+
+        .appointment-type {
+          font-size: 14px;
+          color: var(--ion-color-medium);
+        }
+      }
+
+      .appointment-status {
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 500;
+        color: white;
+      }
+    }
   }
-  
-  .day-cell {
-    border-radius: 6px;
-  }
-  
-  .day-number {
-    font-size: 12px;
-  }
-  
-  .appointment-card {
-    padding: 10px;
-  }
-  
-  .fab {
-    width: 48px;
-    height: 48px;
-    bottom: 20px;
-    right: 20px;
-    font-size: 20px;
+
+  .no-appointments {
+    text-align: center;
+    padding: 32px 0;
+    color: var(--ion-color-medium);
+    font-size: 16px;
+    background-color: white;
+    border-radius: 16px;
+    margin-bottom: 16px;
   }
 }
 
-/* Custom scrollbar for WebKit browsers */
+// Estilos para el botón flotante
+ion-fab {
+  // margin-bottom: 70px;
+}
+
+// Media queries para ajustes responsivos
+@media (max-width: 991px) {
+  .desktop-layout {
+    display: none;
+  }
+}
+
+@media (min-width: 992px) {
+  .mobile-layout {
+    display: none;
+  }
+
+  app-tab-bar {
+    display: none;
+  }
+}
+
+// Estilos para personalizar scrollbars
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 2px;
+  background: #c1c1c1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Ion-specific overrides */
-ion-content {
-  --background: #f5f5f5;
-}
-
-ion-toolbar {
-  --background: var(--ion-color-primary);
-  --color: white;
-}
-
-ion-modal {
-  --backdrop-opacity: 0.4;
-}
-
-/* Animations */
-.appointment-card {
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Estilos para la sección de citas sin asignar */
-.unassigned-appointments-section {
-  margin-top: 24px;
-  padding: 0 16px;
-  max-height: 300px; /* Altura máxima para permitir scroll */
-  overflow-y: auto; /* Habilita el scroll vertical */
-  
-  /* Estilo personalizado para la barra de scroll */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-  }
-  
-  &::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
-  
-  
-  h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 12px;
-  }
-}
-
-/* Asegurarnos de que las appointment-cards mantengan el mismo estilo */
-.appointment-card {
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-  }
-  
-  .appointment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    
-    .time, .date-time {
-      .date {
-        font-size: 14px;
-        font-weight: 500;
-        color: #555;
-      }
-      
-      .time {
-        font-size: 14px;
-        color: #777;
-      }
-    }
-    
-    .status-badge {
-      font-size: 12px;
-      font-weight: 500;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 12px;
-    }
-  }
-  
-  .appointment-info {
-    .professional-name {
-      font-size: 15px;
-      font-weight: 500;
-      margin-bottom: 2px;
-      color: #333;
-    }
-    
-    .appointment-details {
-      font-size: 13px;
-      color: #666;
-    }
-  }
-}
-
-/* Estilos para los elementos de fechas pendientes */
-.pending-date {
-  color: #888;
-}
-
-/* Asegurarnos de que la sección de appointments-list mantenga el estilo */
-.appointments-list {
-  margin-top: 8px;
-  margin-bottom: 16px;
-  
-  .appointment-card:last-child {
-    margin-bottom: 0;
-  }
-}
-
-/* Estilos para mensajes de estado para citas pendientes */
-.pending-status {
-  font-style: italic;
-  display: inline-block;
-  background-color: #f0f0f0;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #666;
-}
-
-/* Adaptaciones para vista de lista */
-.list-container {
-  padding: 16px;
-  
-  .date-time {
-    display: flex;
-    flex-direction: column;
-  }
-}
-
-/* Mejora para visualización en dispositivos móviles */
-@media (max-width: 576px) {
-  .unassigned-appointments-section {
-    padding: 0 12px;
-  }
-  
-  .appointment-card {
-    padding: 10px 14px;
-  }
-}
-
-/* Estilos para la información del paciente */
-.patient-info {
-  margin-top: 8px;
-  padding-top: 6px;
-  border-top: 1px solid #f0f0f0;
-  
-  .patient-name {
-    font-size: 13px;
-    color: #555;
-    margin-bottom: 2px;
-  }
-  
-  .patient-id {
-    font-size: 12px;
-    color: #777;
-  }
+  background: #a8a8a8;
 }

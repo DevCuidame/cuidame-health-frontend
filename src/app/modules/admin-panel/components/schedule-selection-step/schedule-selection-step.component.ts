@@ -33,9 +33,10 @@ import { ScheduleService } from 'src/app/core/services/schedule.service';
         [image_path]="patientData.photourl"
         [first_name]="patientData.nombre"
         [last_name]="patientData.apellido"
-        [firstTime]="appointmentFirstTime"
+        [appointmentType]="appointmentType"
         [cityName]="cityName"
         [ticketNumber]="ticketNumber"
+        [showBar]="false"
       ></app-patient-search-bar>
 
       <h2>Horario de atención</h2>
@@ -65,8 +66,13 @@ import { ScheduleService } from 'src/app/core/services/schedule.service';
                 (change)="onDepartmentChange()"
                 class="location-select"
               >
-                <option value="" disabled selected>Seleccione un departamento</option>
-                <option *ngFor="let department of departments" [value]="department.id">
+                <option value="" disabled selected>
+                  Seleccione un departamento
+                </option>
+                <option
+                  *ngFor="let department of departments"
+                  [value]="department.id"
+                >
                   {{ department.name }}
                 </option>
               </select>
@@ -81,7 +87,9 @@ import { ScheduleService } from 'src/app/core/services/schedule.service';
                 class="location-select"
                 [disabled]="!selectedDepartment || cities.length === 0"
               >
-                <option value="" disabled selected>Seleccione una ciudad</option>
+                <option value="" disabled selected>
+                  Seleccione una ciudad
+                </option>
                 <option *ngFor="let city of cities" [value]="city.id">
                   {{ city.name }}
                 </option>
@@ -155,8 +163,9 @@ export class ScheduleSelectionStepComponent implements OnInit {
   @Input() isAssigningToPendingAppointment: boolean = false;
 
   public patientData: any;
-  public appointmentFirstTime: boolean = false;
-  public availableSchedule: { day: string; date: string; hours: string[] }[] = [];
+  public appointmentType: string = '';
+  public availableSchedule: { day: string; date: string; hours: string[] }[] =
+    [];
   public isManualSchedule: boolean = true; // Ahora siempre es manual
   private injector = inject(Injector);
 
@@ -193,16 +202,23 @@ export class ScheduleSelectionStepComponent implements OnInit {
   ngOnInit(): void {
     const appointment = this.stateService.appointment();
     this.patientData = appointment.patient;
-    this.appointmentFirstTime = false;
+    this.appointmentType = appointment.appointmentType!.name;
     this.ticketNumber = '';
-    if (
-      appointment.location &&
-      Array.isArray(appointment.location) &&
-      appointment.location.length > 0
-    ) {
-      this.cityName = appointment.location[0].township_name;
+    if (appointment.location) {
+      this.cityName = appointment.location;
     } else {
       this.cityName = 'No especificada';
+    }
+
+    // Inicializar la fecha seleccionada con la fecha de hoy si no hay una fecha válida
+    if (!this.isValidDate(appointment.start_time)) {
+      this.selectedDate = this.scheduleService.getTodayFormatted();
+      console.log('Fecha inicializada a hoy:', this.selectedDate);
+    } else {
+      // Si hay una fecha válida, usarla
+      this.selectedDate = this.extractDateFromDateTime(appointment.start_time);
+      this.selectedTime = this.extractTimeFromDateTime(appointment.start_time);
+      console.log('Fecha existente válida:', this.selectedDate, 'Hora:', this.selectedTime);
     }
 
     // Extrae información del profesional para mostrar en el modo de asignación
@@ -239,34 +255,71 @@ export class ScheduleSelectionStepComponent implements OnInit {
           this.stateService.selectedProfessionalAvailability();
         this.availableSchedule = availability || [];
 
-        // Solo actualizamos la fecha y hora seleccionadas
+        // Solo actualizamos la fecha y hora seleccionadas si son válidas
         const appointment = this.stateService.appointment();
-        if (appointment.start_time) {
-          this.selectedDate = appointment.start_time;
+        if (appointment.start_time && this.isValidDate(appointment.start_time)) {
+          this.selectedDate = this.extractDateFromDateTime(appointment.start_time);
+          this.selectedTime = this.extractTimeFromDateTime(appointment.start_time);
+          console.log('Effect - Fecha actualizada:', this.selectedDate, 'Hora:', this.selectedTime);
         }
-        if (appointment.start_time) {
-          this.selectedTime = appointment.start_time;
-        }
-
-        // También actualizamos los datos del doctor si existen
-        // if (appointment.professionalData) {
-        //   if (appointment.professionalData.user) {
-        //     this.doctorName = `${
-        //       appointment.professionalData.user.first_name || ''
-        //     } ${appointment.professionalData.user.last_name || ''}`.trim();
-        //   }
-
-        //   if (appointment.professionalData.consultation_address) {
-        //     this.doctorAddress =
-        //       appointment.professionalData.consultation_address;
-        //   }
-
-        //   if (appointment.professionalData.attention_township_id) {
-        //     this.selectedCity = appointment.professionalData.attention_township_id;
-        //   }
-        // }
       });
     });
+  }
+
+  /**
+   * Verifica si una fecha es válida (no es una fecha del futuro lejano)
+   */
+  private isValidDate(dateString: string): boolean {
+    if (!dateString) return false;
+    
+    try {
+      const date = new Date(dateString);
+      const currentYear = new Date().getFullYear();
+      // Consideramos inválidas las fechas con año mayor a currentYear + 50
+      return date.getFullYear() <= currentYear + 50;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Extrae la parte de fecha de un datetime string
+   */
+  private extractDateFromDateTime(dateTimeString: string): string {
+    if (!dateTimeString) return '';
+    
+    try {
+      const date = new Date(dateTimeString);
+      if (isNaN(date.getTime())) return '';
+      
+      // Formato YYYY-MM-DD
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    } catch {
+      return '';
+    }
+  }
+
+  /**
+   * Extrae la parte de hora de un datetime string
+   */
+  private extractTimeFromDateTime(dateTimeString: string): string {
+    if (!dateTimeString) return '';
+    
+    try {
+      const date = new Date(dateTimeString);
+      if (isNaN(date.getTime())) return '';
+      
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${hours}:${minutes}`;
+    } catch {
+      return '';
+    }
   }
 
   loadDepartments() {
@@ -283,33 +336,34 @@ export class ScheduleSelectionStepComponent implements OnInit {
 
   findDepartmentForCity(cityId: string | number) {
     // Convertir el cityId a número si es string
-    const numericCityId = typeof cityId === 'string' ? parseInt(cityId) : cityId;
-    
+    const numericCityId =
+      typeof cityId === 'string' ? parseInt(cityId) : cityId;
+
     // Esta función busca el departamento correspondiente para una ciudad ya seleccionada
     // Iterar por cada departamento y comprobar si la ciudad pertenece a él
     let found = false;
-    
-    this.departments.forEach(department => {
+
+    this.departments.forEach((department) => {
       this.locationService.fetchCitiesByDepartment(department.id);
-      this.locationService.cities$.subscribe(cities => {
+      this.locationService.cities$.subscribe((cities) => {
         if (found) return; // Si ya se encontró, no continuar buscando
-        
-        const cityExists = cities.some(city => city.id === numericCityId);
+
+        const cityExists = cities.some((city) => city.id === numericCityId);
         if (cityExists) {
           found = true;
           this.selectedDepartment = department.id;
           this.selectedDepartmentName = department.name;
-          
+
           // Guardar las ciudades y actualizar la selección
           this.cities = cities;
           this.selectedCity = numericCityId;
-          
+
           // Buscar el nombre de la ciudad
-          const city = cities.find(c => c.id === numericCityId);
+          const city = cities.find((c) => c.id === numericCityId);
           if (city) {
             this.selectedCityName = city.name;
           }
-          
+
           this.updateDoctorInfo();
         }
       });
@@ -318,37 +372,36 @@ export class ScheduleSelectionStepComponent implements OnInit {
 
   loadCities(departmentId: any) {
     if (!departmentId) return;
-    
+
     this.locationService.fetchCitiesByDepartment(departmentId);
-    this.locationService.cities$.subscribe(cities => {
+    this.locationService.cities$.subscribe((cities) => {
       this.cities = cities;
     });
   }
 
   onDepartmentChange() {
     if (!this.selectedDepartment) return;
-    
-    
+
     this.selectedCity = '';
     this.selectedCityName = '';
-    
+
     this.loadCities(this.selectedDepartment);
-    
-    const department = this.departments.find(d => d.id == this.selectedDepartment);
+
+    const department = this.departments.find(
+      (d) => d.id == this.selectedDepartment
+    );
     if (department) {
       this.selectedDepartmentName = department.name;
     }
-    
   }
 
   onCityChange() {
-    
     if (this.selectedCity) {
-      const city = this.cities.find(c => c.id == this.selectedCity);
+      const city = this.cities.find((c) => c.id == this.selectedCity);
       if (city) {
         this.selectedCityName = city.name;
       }
-      
+
       this.updateDoctorInfo();
     }
   }
@@ -358,7 +411,7 @@ export class ScheduleSelectionStepComponent implements OnInit {
       message: message,
       duration: 2000,
       position: 'bottom',
-      color: 'primary'
+      color: 'primary',
     });
     toast.present();
   }
@@ -371,7 +424,7 @@ export class ScheduleSelectionStepComponent implements OnInit {
     const hours = [];
     for (let hour = 8; hour <= 18; hour++) {
       for (let minute of ['00', '30']) {
-        if (hour === 18 && minute === '30') continue; //
+        if (hour === 18 && minute === '30') continue;
         hours.push(`${hour.toString().padStart(2, '0')}:${minute}`);
       }
     }
@@ -380,16 +433,19 @@ export class ScheduleSelectionStepComponent implements OnInit {
 
   onCalendarDateSelected(date: string) {
     this.selectedDate = date;
+    console.log('Fecha seleccionada desde calendario:', date);
     this.updateAppointmentManual();
   }
 
   selectTimeSlot(time: string) {
     this.selectedTime = time;
+    console.log('Hora seleccionada:', time);
     this.updateAppointmentManual();
   }
 
   onDateChange(event: any) {
     this.selectedDate = event.target.value;
+    console.log('Fecha cambiada desde input:', this.selectedDate);
     this.updateAppointmentManual();
   }
 
@@ -400,25 +456,40 @@ export class ScheduleSelectionStepComponent implements OnInit {
   updateAppointmentManual() {
     // Validar datos antes de actualizar
     if (!this.validateScheduleData()) {
+      console.log('Datos de horario no válidos');
       return;
     }
 
     // Preparar datos del profesional de forma limpia
     const professionalData = this.prepareProfessionalData();
+
+    // Crear el datetime solo si tenemos fecha y hora válidas
+    const dateTime = this.formatDateTime(this.selectedDate, this.selectedTime);
     
+    console.log('Actualizando cita manual:', {
+      fecha: this.selectedDate,
+      hora: this.selectedTime,
+      dateTime: dateTime,
+      profesional: professionalData
+    });
+
     // Actualizar el appointment con los nuevos datos
     this.stateService.appointment.update((app) => ({
       ...app,
-      start_time: this.formatDateTime(this.selectedDate, this.selectedTime),
-      end_time: this.formatDateTime(this.selectedDate, this.selectedTime),
+      start_time: dateTime,
+      end_time: dateTime,
       status: this.isAssigningToPendingAppointment ? 'requested' : 'confirmed',
       professional: professionalData,
-      professional_id: professionalData?.id || null
+      professional_id: professionalData?.id || null,
     }));
 
     // Actualizar estado del servicio
-    this.stateService.selectHour(this.selectedTime);
-    this.stateService.manualDate.set(this.selectedDate);
+    if (this.selectedTime) {
+      this.stateService.selectHour(this.selectedTime);
+    }
+    if (this.selectedDate) {
+      this.stateService.manualDate.set(this.selectedDate);
+    }
   }
 
   /**
@@ -429,16 +500,18 @@ export class ScheduleSelectionStepComponent implements OnInit {
     if (!this.selectedDate && !this.selectedTime) {
       return true;
     }
-    
+
     // Si hay fecha, debe haber hora y viceversa
     if (this.selectedDate && !this.selectedTime) {
+      console.log('Fecha sin hora seleccionada');
       return false;
     }
-    
+
     if (this.selectedTime && !this.selectedDate) {
+      console.log('Hora sin fecha seleccionada');
       return false;
     }
-    
+
     return true;
   }
 
@@ -447,26 +520,28 @@ export class ScheduleSelectionStepComponent implements OnInit {
    */
   private prepareProfessionalData(): any {
     const currentProfessional = this.stateService.appointment().professional!;
-    
+
     // Si no hay nombre de doctor, mantener datos existentes
     if (!this.doctorName) {
       return currentProfessional;
     }
-    
+
     // Dividir nombre completo en nombre y apellido
     const nameParts = this.doctorName.trim().split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
-    
+
     return {
       ...currentProfessional,
       user: {
         ...currentProfessional.user,
         first_name: firstName,
-        last_name: lastName
+        last_name: lastName,
       },
       consultation_address: this.doctorAddress || '',
-      attention_township_id: this.selectedCity ? parseInt(this.selectedCity.toString()) : null
+      attention_township_id: this.selectedCity
+        ? parseInt(this.selectedCity.toString())
+        : null,
     };
   }
 
@@ -477,9 +552,26 @@ export class ScheduleSelectionStepComponent implements OnInit {
     if (!date || !time) {
       return '';
     }
-    
+
     try {
-      return `${date}T${time}:00`;
+      // Asegurarse de que la fecha esté en formato YYYY-MM-DD
+      const dateParts = date.split('-');
+      if (dateParts.length !== 3) {
+        console.error('Formato de fecha inválido:', date);
+        return '';
+      }
+
+      // Construir el datetime string
+      const dateTimeString = `${date}T${time}:00`;
+      
+      // Validar que sea una fecha válida
+      const testDate = new Date(dateTimeString);
+      if (isNaN(testDate.getTime())) {
+        console.error('DateTime inválido:', dateTimeString);
+        return '';
+      }
+
+      return dateTimeString;
     } catch (error) {
       console.error('Error formateando fecha y hora:', error);
       return '';

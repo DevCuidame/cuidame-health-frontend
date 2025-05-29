@@ -15,7 +15,8 @@ export class PatientSearchBarComponent implements OnInit {
   @Input() public last_name: string = '';
   @Input() public image_path: string = '';
   @Input() public bs64: string = '';
-  @Input() public firstTime: boolean = false;
+  @Input() public appointmentType: string = '';
+  @Input() public showBar: boolean = true;
   @Input() public cityName: string = '';
   @Input() public ticketNumber: string = '';
 

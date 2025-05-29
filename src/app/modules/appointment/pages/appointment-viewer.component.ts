@@ -1,5 +1,5 @@
 // patient-appointments-viewer.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, DatePipe } from '@angular/common';
 import { IonicModule, ModalController, NavController } from '@ionic/angular';
@@ -8,14 +8,24 @@ import { Appointment, AppointmentType } from 'src/app/core/interfaces/appointmen
 import { Professional } from 'src/app/core/interfaces/professional.interface';
 import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
 import { TabBarComponent } from 'src/app/shared/components/tab-bar/tab-bar.component';
-
-
+import { AppointmentMainComponent } from 'src/app/shared/components/appointment-main/appointment-main.component';
+import { DashboardSidebarComponent } from 'src/app/shared/components/dashboard-sidebar/dashboard-sidebar.component';
+import { User } from 'src/app/core/interfaces/auth.interface';
+import { UserService } from '../../auth/services/user.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-appointments-viewer',
   templateUrl: './appointment-viewer.component.html',
   styleUrls: ['./appointment-viewer.component.scss'],
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, TabBarComponent],
+  imports: [
+    IonicModule, 
+    CommonModule, 
+    ReactiveFormsModule, 
+    TabBarComponent,
+    DashboardSidebarComponent,
+    AppointmentMainComponent
+  ],
   providers: [DatePipe],
   standalone: true
 })
@@ -23,11 +33,14 @@ export class AppointmentViewerComponent implements OnInit {
   appointments: Appointment[] = [];
   filteredAppointments: Appointment[] = [];
   professionals: Professional[] = [];
+  public user: User | any = null;
+
   
   filterForm: FormGroup;
   loading = false;
   showCalendarView = true;
   selectedDate = new Date();
+  isDesktop = false;
   
   // Status colors
   statusColors = {
@@ -48,15 +61,18 @@ export class AppointmentViewerComponent implements OnInit {
   monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   
   // Simulating logged-in patient ID
-  currentPatientId = 1;
-  currentPatientName = 'Juan Pérez';
+  private subscriptions: Subscription[] = [];
+
   
   constructor(
     private formBuilder: FormBuilder,
     private datePipe: DatePipe,
     private modalController: ModalController,
     private navCtrl: NavController,
-    private appointmentService: AppointmentService
+    private appointmentService: AppointmentService,
+    private userService: UserService,
+    private cdRef: ChangeDetectorRef,
+
   ) {
     this.filterForm = this.formBuilder.group({
       professionalId: [''],
@@ -64,8 +80,30 @@ export class AppointmentViewerComponent implements OnInit {
     });
   }
   
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkScreenSize();
+  }
+
   ngOnInit(): void {
+    this.checkScreenSize();
     this.loadPatientAppointments();
+    this.loadUser();
+  }
+
+  checkScreenSize() {
+    this.isDesktop = window.innerWidth >= 992;
+  }
+
+  loadUser() {
+    const userSub = this.userService.user$.subscribe((user) => {
+      if (user) {
+        this.user = user;
+        this.cdRef.detectChanges();
+      }
+    });
+
+    this.subscriptions.push(userSub);
   }
 
   loadPatientAppointments(): void {
@@ -241,73 +279,94 @@ export class AppointmentViewerComponent implements OnInit {
 
   // Añadiendo método para manejar citas sin asignación en appointment-viewer.component.ts
 
-/**
- * Verifica si una cita está sin asignar (sin profesional o con fecha errónea)
- */
-isUnassignedAppointment(appointment: Appointment): boolean {
-  if (!appointment.professional) {
-    return true;
+  /**
+   * Verifica si una cita está sin asignar (sin profesional o con fecha errónea)
+   */
+  isUnassignedAppointment(appointment: Appointment): boolean {
+    if (!appointment.professional) {
+      return true;
+    }
+    
+    // Verificar si la fecha está más de 50 años en el futuro (lo que indicaría un error)
+    const appointmentDate = new Date(appointment.start_time);
+    const today = new Date();
+    const fiftyYearsFromNow = new Date();
+    fiftyYearsFromNow.setFullYear(today.getFullYear() + 50);
+    
+    return appointmentDate > fiftyYearsFromNow;
   }
-  
-  // Verificar si la fecha está más de 50 años en el futuro (lo que indicaría un error)
-  const appointmentDate = new Date(appointment.start_time);
-  const today = new Date();
-  const fiftyYearsFromNow = new Date();
-  fiftyYearsFromNow.setFullYear(today.getFullYear() + 50);
-  
-  return appointmentDate > fiftyYearsFromNow;
-}
 
-/**
- * Obtiene una representación adecuada de la fecha para citas sin asignar
- */
-getDisplayTimeForUnassignedAppointment(appointment: Appointment): string {
-  return 'Pendiente de asignación';
-}
-
-/**
- * Obtiene todas las citas solicitadas sin asignar
- */
-getUnassignedAppointments(): Appointment[] {
-  return this.filteredAppointments.filter(appointment => 
-    appointment.status === 'requested' && this.isUnassignedAppointment(appointment)
-  );
-}
-
-/**
- * Obtiene el nombre completo del paciente de la cita
- */
-getPatientName(appointment: any): string {
-  if (appointment.patient) {
-    return `${appointment.patient.nombre} ${appointment.patient.apellido}`;
+  /**
+   * Obtiene una representación adecuada de la fecha para citas sin asignar
+   */
+  getDisplayTimeForUnassignedAppointment(appointment: Appointment): string {
+    return 'Pendiente de asignación';
   }
-  return 'Paciente no especificado';
-}
 
-/**
- * Obtiene información adicional del paciente (documento)
- */
-getPatientInfo(appointment: any): string {
-  if (appointment.patient) {
-    const tipo = this.getDocumentTypeName(appointment.patient.tipoid);
-    return `${tipo}: ${appointment.patient.numeroid}`;
+  /**
+   * Obtiene todas las citas solicitadas sin asignar
+   */
+  getUnassignedAppointments(): Appointment[] {
+    return this.filteredAppointments.filter(appointment => 
+      appointment.status === 'requested' && this.isUnassignedAppointment(appointment)
+    );
   }
-  return '';
-}
 
-/**
- * Convierte el código de tipo de documento a nombre legible
- */
-getDocumentTypeName(tipoId: string): string {
-  const documentTypes: {[key: string]: string} = {
-    'cedula_ciudadania': 'CC',
-    'tarjeta_identidad': 'TI',
-    'registro_civil': 'RC',
-    'pasaporte': 'PA',
-    'cedula_extranjeria': 'CE'
-  };
-  
-  return documentTypes[tipoId] || tipoId;
-}
+  /**
+   * Obtiene el nombre completo del paciente de la cita
+   */
+  getPatientName(appointment: any): string {
+    if (appointment.patient) {
+      return `${appointment.patient.nombre} ${appointment.patient.apellido}`;
+    }
+    return 'Paciente no especificado';
+  }
 
+  /**
+   * Obtiene información adicional del paciente (documento)
+   */
+  getPatientInfo(appointment: any): string {
+    if (appointment.patient) {
+      const tipo = this.getDocumentTypeName(appointment.patient.tipoid);
+      return `${tipo}: ${appointment.patient.numeroid}`;
+    }
+    return '';
+  }
+
+  /**
+   * Convierte el código de tipo de documento a nombre legible
+   */
+  getDocumentTypeName(tipoId: string): string {
+    const documentTypes: {[key: string]: string} = {
+      'cedula_ciudadania': 'CC',
+      'tarjeta_identidad': 'TI',
+      'registro_civil': 'RC',
+      'pasaporte': 'PA',
+      'cedula_extranjeria': 'CE'
+    };
+    
+    return documentTypes[tipoId] || tipoId;
+  }
+
+  // Métodos para manejar eventos de los componentes de escritorio
+  handleViewToggled(showCalendarView: boolean) {
+    this.showCalendarView = showCalendarView;
+  }
+
+  handleDateSelected(date: Date) {
+    this.selectedDate = date;
+  }
+
+  handleAppointmentSelected(appointment: Appointment) {
+    this.selectAppointment(appointment);
+  }
+
+  handleNewAppointmentRequested() {
+    this.openNewAppointmentModal();
+  }
+
+  handleMonthChanged(event: {month: number, year: number}) {
+    this.currentMonth = event.month;
+    this.currentYear = event.year;
+  }
 }

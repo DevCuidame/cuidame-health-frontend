@@ -29,7 +29,7 @@ import { MedicalSpecialtyService } from 'src/app/core/services/medicalSpecialty.
         [bs64]="patientData.imagebs64"
         [first_name]="patientData.nombre"
         [last_name]="patientData.apellido"
-        [firstTime]="appointmentFirstTime"
+        [appointmentType]="appointmentType"
         [cityName]="cityName"
         [ticketNumber]="ticketNumber"
         (searchTermChanged)="updateSearchTerm($event)"
@@ -67,7 +67,7 @@ export class SpecialtySelectionStepComponent implements OnInit {
   carouselContent!: ElementRef<HTMLDivElement>;
 
   public patientData: any = {};
-  public appointmentFirstTime: boolean = false;
+  public appointmentType: string = '';
   public ticketNumber: string = '';
   public cityName: string = '';
 
@@ -92,6 +92,8 @@ export class SpecialtySelectionStepComponent implements OnInit {
     
     // Obtener nombre de la ciudad
     this.cityName = this.extractCityName(appointment.location);
+
+    this.appointmentType = appointment.appointmentType!.name;
   }
 
   /**

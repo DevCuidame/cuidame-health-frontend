@@ -1,4 +1,9 @@
-<div class="dash-header">
+<div class="dash-header" [ngStyle]="{'background': background, 'border-radius': border, 'box-shadow': boxshadow}">
+  @if (icon) {
+    <div class="logo">
+      <img src="assets/logo/logo_.png" alt="Cuídame" />
+    </div>
+  }
   <div class="basic-data">
     <p>Hola, {{ userName }}</p>
     <p>{{ greeting }}</p>
