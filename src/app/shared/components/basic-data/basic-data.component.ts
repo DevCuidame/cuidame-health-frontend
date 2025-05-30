@@ -13,7 +13,7 @@ import {
   faCross,
   faDroplet,
   faBriefcaseMedical,
-  faHospital
+  faHospital,
 } from '@fortawesome/free-solid-svg-icons';
 import { PrimaryCardComponent } from '../primary-card/primary-card.component';
 import { CommonModule } from '@angular/common';
@@ -52,5 +52,16 @@ export class BasicDataComponent implements OnInit {
 
   ngOnInit() {
     this.selectedEntity = this.beneficiary;
+  }
+
+  // En tu componente
+  getGenderDisplay(entity: any): string {
+    const gender = entity?.genero?.toLowerCase();
+    if (gender === 'f' || gender === 'femenino') {
+      return 'Femenino';
+    } else if (gender === 'm' || gender === 'masculino') {
+      return 'Masculino';
+    }
+    return 'Otro';
   }
 }

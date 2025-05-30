@@ -2,6 +2,8 @@
 <div class="desktop-layout" *ngIf="isDesktop">
   <app-dashboard-sidebar 
     [user]="user" 
+    [activeMenuItem]="activeMenuItem"
+    (logoutRequested)="logout()"
   ></app-dashboard-sidebar>
   
   <app-dashboard-main 

@@ -454,15 +454,9 @@ export class ScheduleSelectionStepComponent implements OnInit {
   }
 
   updateAppointmentManual() {
-    // Validar datos antes de actualizar
-    if (!this.validateScheduleData()) {
-      console.log('Datos de horario no válidos');
-      return;
-    }
-
     // Preparar datos del profesional de forma limpia
     const professionalData = this.prepareProfessionalData();
-
+  
     // Crear el datetime solo si tenemos fecha y hora válidas
     const dateTime = this.formatDateTime(this.selectedDate, this.selectedTime);
     
@@ -470,19 +464,28 @@ export class ScheduleSelectionStepComponent implements OnInit {
       fecha: this.selectedDate,
       hora: this.selectedTime,
       dateTime: dateTime,
-      profesional: professionalData
+      profesional: professionalData,
+      isAssigningToPendingAppointment: this.isAssigningToPendingAppointment
     });
-
+  
     // Actualizar el appointment con los nuevos datos
-    this.stateService.appointment.update((app) => ({
-      ...app,
-      start_time: dateTime,
-      end_time: dateTime,
-      status: this.isAssigningToPendingAppointment ? 'requested' : 'confirmed',
-      professional: professionalData,
-      professional_id: professionalData?.id || null,
-    }));
-
+    this.stateService.appointment.update((app) => {
+      const updateData: any = {
+        ...app,
+        start_time: dateTime,
+        end_time: dateTime,
+        status: this.determineStatus(),
+      };
+  
+      // Solo actualizar professional si hay datos
+      if (professionalData) {
+        updateData.professional = professionalData;
+        updateData.professional_id = professionalData.id || app.professional_id || null;
+      }
+  
+      return updateData;
+    });
+  
     // Actualizar estado del servicio
     if (this.selectedTime) {
       this.stateService.selectHour(this.selectedTime);
@@ -491,7 +494,16 @@ export class ScheduleSelectionStepComponent implements OnInit {
       this.stateService.manualDate.set(this.selectedDate);
     }
   }
-
+  
+  // Agregar este método para determinar el estado correcto
+  private determineStatus(): string {
+    if (this.isAssigningToPendingAppointment && this.selectedDate && this.selectedTime) {
+      return 'confirmed';
+    } else if (this.isAssigningToPendingAppointment) {
+      return 'requested';
+    }
+    return 'TO_BE_CONFIRMED';
+  }
   /**
    * Validar que los datos del horario sean válidos
    */
@@ -519,32 +531,49 @@ export class ScheduleSelectionStepComponent implements OnInit {
    * Preparar datos del profesional de forma estructurada
    */
   private prepareProfessionalData(): any {
-    const currentProfessional = this.stateService.appointment().professional!;
-
-    // Si no hay nombre de doctor, mantener datos existentes
+    const currentProfessional = this.stateService.appointment().professional;
+  
+    // Si no hay nombre de doctor, no crear objeto profesional
     if (!this.doctorName) {
-      return currentProfessional;
+      return currentProfessional || null;
     }
-
+  
     // Dividir nombre completo en nombre y apellido
     const nameParts = this.doctorName.trim().split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
-
+  
+    // Si no hay profesional actual, crear uno nuevo
+    if (!currentProfessional) {
+      return {
+        id: null,
+        user: {
+          first_name: firstName,
+          last_name: lastName,
+        },
+        consultation_address: this.doctorAddress || '',
+        attention_township_id: this.selectedCity
+          ? parseInt(this.selectedCity.toString())
+          : null,
+        attention_township_name: this.selectedCityName || '',
+      };
+    }
+  
+    // Si existe profesional, actualizar sus datos
     return {
       ...currentProfessional,
       user: {
-        ...currentProfessional.user,
+        ...(currentProfessional.user || {}),
         first_name: firstName,
         last_name: lastName,
       },
-      consultation_address: this.doctorAddress || '',
+      consultation_address: this.doctorAddress || currentProfessional.consultation_address || '',
       attention_township_id: this.selectedCity
         ? parseInt(this.selectedCity.toString())
-        : null,
+        : currentProfessional.attention_township_id || null,
+      attention_township_name: this.selectedCityName || currentProfessional.attention_township_name || '',
     };
   }
-
   /**
    * Formatear fecha y hora en formato ISO
    */

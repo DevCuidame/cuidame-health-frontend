@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, OnDestroy, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Observable, Subscription } from 'rxjs';
@@ -24,6 +24,11 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   
   private subscriptions: Subscription[] = [];
   private sessionInitialized = false;
+  
+  // Responsive properties
+  isDesktop = false;
+  isMobile = false;
+  screenWidth = 0;
 
   constructor(
     private chatService: ChatService,
@@ -32,6 +37,18 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
     this.chatForm = this.fb.group({
       message: ['', Validators.required]
     });
+    this.checkScreenSize();
+  }
+  
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkScreenSize();
+  }
+  
+  private checkScreenSize(): void {
+    this.screenWidth = window.innerWidth;
+    this.isDesktop = this.screenWidth >= 768;
+    this.isMobile = this.screenWidth < 768;
   }
   
   ngOnInit(): void {
@@ -115,7 +132,17 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
       'bot-message': message.sender === 'bot',
       'options-message': message.type === 'options',
       'validation-message': message.type === 'validation',
-      'confirmation-message': message.type === 'confirmation'
+      'confirmation-message': message.type === 'confirmation',
+      'is-desktop': this.isDesktop,
+      'is-mobile': this.isMobile
+    };
+  }
+  
+  getContainerClasses(): any {
+    return {
+      'desktop-layout': this.isDesktop,
+      'mobile-layout': this.isMobile,
+      'tablet-layout': this.screenWidth >= 481 && this.screenWidth < 768
     };
   }
   

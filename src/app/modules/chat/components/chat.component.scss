@@ -1,227 +1,583 @@
+
+// Breakpoints
+$breakpoint-mobile: 480px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1024px;
+$breakpoint-large: 1200px;
+
+// Chat container responsive layout
 .chat-container {
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    height: 100%;
-    overflow-y: auto;
-    background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  background-color: #f5f5f5;
+  
+  // Mobile layout (default)
+  padding: 12px;
+  
+  // Tablet layout
+  @media (min-width: ($breakpoint-mobile + 1)) and (max-width: ($breakpoint-tablet - 1)) {
+    padding: 16px 24px;
+  }
+  
+  // Desktop layout
+  @media (min-width: $breakpoint-tablet) {
+    padding: 20px;
+    margin: 0 auto;
+  }
+  
+  // Large desktop layout
+  @media (min-width: $breakpoint-large) {
+    padding: 24px 32px;
+  }
+}
+
+// Header responsive styles
+.custom-header {
+  ion-toolbar {
+    --background: var(--ion-color-dark); 
+    --color: white; 
+    --border-width: 0;
+    --min-height: 56px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      --min-height: 64px;
+    }
   }
 
-  .custom-header {
-    ion-toolbar {
-      --background: var(--ion-color-dark); 
-      --color: white; 
-      --border-width: 0;
-      --min-height: 60px;
+  .header-container {
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      padding-left: 20px;
+      justify-content: center;
     }
-  
-    .header-container {
-      display: flex;
-      align-items: center;
-      padding-left: 10px;
+  }
+
+  .app-title {
+    font-weight: 600;
+    font-size: 18px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      font-size: 20px;
     }
-  
-    .app-title {
-      font-weight: 600;
-      font-size: 18px;
+  }
+
+  ion-buttons {
+    ion-button {
+      --color: white;
     }
+  }
+}
+
+// Welcome message responsive
+.welcome-message {
+  text-align: center;
+  padding: 20px;
+  color: var(--ion-color-dark);
+  opacity: 0.7;
   
-    ion-buttons {
-      ion-button {
-        --color: white;
+  @media (min-width: $breakpoint-tablet) {
+    padding: 32px 24px;
+  }
+  
+  ion-spinner {
+    display: block;
+    margin: 0 auto 16px;
+  }
+  
+  p {
+    font-size: 14px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      font-size: 16px;
+    }
+  }
+}
+
+// Message list responsive
+.message-list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+  gap: 12px;
+  
+  @media (min-width: $breakpoint-tablet) {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+// Message items responsive
+.message-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0; // Using gap instead
+  
+  // Mobile: messages take more width
+  max-width: 85%;
+  
+  // Tablet: slightly less width
+  @media (min-width: ($breakpoint-mobile + 1)) and (max-width: ($breakpoint-tablet - 1)) {
+    max-width: 75%;
+  }
+  
+  // Desktop: even less width for better readability
+  @media (min-width: $breakpoint-tablet) {
+    max-width: 70%;
+  }
+  
+  // Large desktop: constrain further
+  @media (min-width: $breakpoint-large) {
+    max-width: 60%;
+  }
+  
+  &.user-message {
+    align-self: flex-end;
+    
+    .message-content {
+      background-color: var(--ion-color-primary);
+      color: white;
+      border-radius: 18px 18px 4px 18px;
+      
+      @media (min-width: $breakpoint-tablet) {
+        border-radius: 20px 20px 4px 20px;
       }
     }
+    
+    .message-time {
+      align-self: flex-end;
+    }
+  }
+  
+  &.bot-message {
+    align-self: flex-start;
+    
+    .message-content {
+      background-color: white;
+      color: var(--ion-color-dark);
+      border-radius: 18px 18px 18px 4px;
+      
+      @media (min-width: $breakpoint-tablet) {
+        border-radius: 20px 20px 20px 4px;
+      }
+    }
+    
+    .message-time {
+      align-self: flex-start;
+    }
+  }
+}
+
+// Message content responsive
+.message-content {
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  line-height: 1.4;
+  
+  @media (min-width: $breakpoint-tablet) {
+    padding: 14px 18px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+    line-height: 1.5;
+  }
+  
+  p {
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: 14px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      font-size: 15px;
+    }
+  }
+}
+
+// Message time responsive
+.message-time {
+  font-size: 11px;
+  color: var(--ion-color-medium);
+  margin-top: 4px;
+  padding: 0 4px;
+  
+  @media (min-width: $breakpoint-tablet) {
+    font-size: 12px;
+    margin-top: 6px;
+  }
+}
+
+// Options container responsive
+.options-container {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  @media (min-width: $breakpoint-tablet) {
+    margin-top: 16px;
+    gap: 10px;
+  }
+  
+  .option-button {
+    margin: 0;
+    font-size: 14px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      font-size: 15px;
+    }
+  }
+}
+
+// Validation status responsive
+.validation-status {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  
+  @media (min-width: $breakpoint-tablet) {
+    margin-top: 16px;
+  }
+  
+  ion-icon {
+    font-size: 20px;
+    margin-right: 8px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      font-size: 24px;
+      margin-right: 10px;
+    }
+    
+    &[name="checkmark-circle"] {
+      color: var(--ion-color-success);
+    }
+    
+    &[name="close-circle"] {
+      color: var(--ion-color-danger);
+    }
+  }
+  
+  span {
+    font-size: 14px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      font-size: 15px;
+    }
+  }
+}
+
+// Confirmation card responsive
+.confirmation-card {
+  background-color: rgba(var(--ion-color-light-rgb), 0.9);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.2);
+  
+  @media (min-width: $breakpoint-tablet) {
+    border-radius: 16px;
+    padding: 20px;
+  }
+  
+  h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--ion-color-primary);
+    font-weight: 600;
+    font-size: 16px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+  }
+  
+  .confirmation-details {
+    margin: 12px 0;
+    
+    @media (min-width: $breakpoint-tablet) {
+      margin: 16px 0;
+    }
+    
+    p {
+      margin: 6px 0;
+      font-size: 14px;
+      
+      @media (min-width: $breakpoint-tablet) {
+        margin: 8px 0;
+        font-size: 15px;
+      }
+    }
+  }
+  
+  .confirmation-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    // Stack buttons on mobile if needed
+    @media (max-width: $breakpoint-mobile) {
+      flex-direction: column;
+      gap: 8px;
+      
+      ion-button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Typing indicator responsive
+.typing-indicator {
+  align-self: flex-start;
+  background-color: white;
+  border-radius: 18px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  @media (min-width: $breakpoint-tablet) {
+    border-radius: 20px;
+    padding: 14px 18px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .typing-bubble {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--ion-color-medium);
+    margin-right: 4px;
+    animation: typing-animation 1.5s infinite ease-in-out;
+    
+    @media (min-width: $breakpoint-tablet) {
+      width: 8px;
+      height: 8px;
+      margin-right: 5px;
+    }
+    
+    &:nth-child(1) {
+      animation-delay: 0s;
+    }
+    
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+      margin-right: 0;
+    }
+  }
+}
+
+@keyframes typing-animation {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+    
+    @media (min-width: $breakpoint-tablet) {
+      transform: translateY(-6px);
+    }
+  }
+}
+
+// Footer responsive
+ion-footer {
+  order: 0 !important; 
+  --order: 0 !important;
+  
+  ion-toolbar {
+    --padding-top: 0;
+    --padding-bottom: 0;
+    --min-height: 56px;
+    --background: #fff;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-width: 1px 0 0 0;
+    
+    @media (min-width: $breakpoint-tablet) {
+      --min-height: 64px;
+    }
+  }
+  
+  ion-item {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --inner-padding-end: 0;
+    --background: #fff;
+    
+    @media (min-width: $breakpoint-tablet) {
+      --padding-start: 16px;
+      --padding-end: 16px;
+    }
+  }
+  
+  ion-input {
+    --padding-start: 12px;
+    color: var(--ion-color-dark);
+    font-size: 14px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      --padding-start: 16px;
+      font-size: 15px;
+    }
+  }
+  
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    
+    @media (min-width: $breakpoint-tablet) {
+      --padding-start: 12px;
+      --padding-end: 12px;
+    }
+    
+    ion-icon {
+      font-size: 18px;
+      
+      @media (min-width: $breakpoint-tablet) {
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+// Tab bar responsive adjustments
+app-tab-bar {
+  @media (min-width: $breakpoint-tablet) {
+    // On desktop, you might want to hide or modify the tab bar
+    // Uncomment the line below if you want to hide it on desktop
+    // display: none;
+  }
+}
+
+// Utility classes for responsive behavior
+.desktop-layout {
+  // Additional desktop-specific styles
+}
+
+.tablet-layout {
+  // Additional tablet-specific styles
+}
+
+.mobile-layout {
+  // Additional mobile-specific styles
+}
+
+// High DPI displays
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .message-content {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    
+    @media (min-width: $breakpoint-tablet) {
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
+    }
+  }
+}
+
+// Dark mode support - COMENTADO para solo usar tema light
+/*
+@media (prefers-color-scheme: dark) {
+  .chat-container {
+    background-color: #121212;
+  }
+  
+  .message-item.bot-message .message-content {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #333333;
+  }
+  
+  .message-item.user-message .message-content {
+    background-color: var(--ion-color-primary-shade);
+    color: #ffffff;
   }
   
   .welcome-message {
-    text-align: center;
-    padding: 24px;
-    color: var(--ion-color-dark);
-    opacity: 0.7;
-    
-    ion-spinner {
-      display: block;
-      margin: 0 auto 16px;
-    }
+    color: #e0e0e0;
   }
   
-  .message-list {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 8px;
-  }
-  
-  .message-item {
-    display: flex;
-    flex-direction: column;
-    max-width: 80%;
-    margin-bottom: 16px;
+  .typing-indicator {
+    background-color: #1e1e1e;
+    border: 1px solid #333333;
     
-    &.user-message {
-      align-self: flex-end;
-      
-      .message-content {
-        background-color: var(--ion-color-primary);
-        color: white;
-        border-radius: 16px 16px 0 16px;
-      }
-      
-      .message-time {
-        align-self: flex-end;
-      }
-    }
-    
-    &.bot-message {
-      align-self: flex-start;
-      
-      .message-content {
-        background-color: white;
-        color: var(--ion-color-dark);
-        border-radius: 16px 16px 16px 0;
-      }
-      
-      .message-time {
-        align-self: flex-start;
-      }
-    }
-  }
-  
-  .message-content {
-    padding: 12px 16px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    
-    p {
-      margin: 0;
-      white-space: pre-wrap;
-    }
-  }
-  
-  .message-time {
-    font-size: 12px;
-    color: var(--ion-color-medium);
-    margin-top: 4px;
-    padding: 0 4px;
-  }
-  
-  .options-container {
-    margin-top: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    
-    .option-button {
-      margin: 0;
-    }
-  }
-  
-  .validation-status {
-    display: flex;
-    align-items: center;
-    margin-top: 8px;
-    
-    ion-icon {
-      font-size: 24px;
-      margin-right: 8px;
-      
-      &[name="checkmark-circle"] {
-        color: var(--ion-color-success);
-      }
-      
-      &[name="close-circle"] {
-        color: var(--ion-color-danger);
-      }
+    .typing-bubble {
+      background-color: #666666;
     }
   }
   
   .confirmation-card {
-    background-color: rgba(var(--ion-color-light-rgb), 0.8);
-    border-radius: 8px;
-    padding: 16px;
+    background-color: rgba(30, 30, 30, 0.95);
+    border-color: rgba(var(--ion-color-primary-rgb), 0.4);
+    color: #e0e0e0;
     
     h4 {
-      margin-top: 0;
-      color: var(--ion-color-primary);
-      font-weight: 600;
-    }
-    
-    .confirmation-details {
-      margin: 12px 0;
-      
-      p {
-        margin: 8px 0;
-      }
-    }
-    
-    .confirmation-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 16px;
+      color: var(--ion-color-primary-tint);
     }
   }
   
-  .typing-indicator {
-    align-self: flex-start;
-    background-color: white;
-    border-radius: 16px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    
-    .typing-bubble {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: var(--ion-color-medium);
-      margin-right: 4px;
-      animation: typing-animation 1.5s infinite ease-in-out;
-      
-      &:nth-child(1) {
-        animation-delay: 0s;
-      }
-      
-      &:nth-child(2) {
-        animation-delay: 0.2s;
-      }
-      
-      &:nth-child(3) {
-        animation-delay: 0.4s;
-        margin-right: 0;
-      }
-    }
+  .message-time {
+    color: #888888;
   }
   
-  @keyframes typing-animation {
-    0%, 60%, 100% {
-      transform: translateY(0);
-    }
-    30% {
-      transform: translateY(-6px);
-    }
+  .custom-header ion-toolbar {
+    --background: #1a1a1a;
+    --color: #ffffff;
   }
   
-  ion-footer {
-    order: 0 !important; 
-    --order: 0 !important; 
-    ion-toolbar {
-      --padding-top: 0;
-      --padding-bottom: 0;
-      --min-height: 56px;
-      --background: #fff;
-    }
-    
-    ion-item {
-      --padding-start: 8px;
-      --padding-end: 8px;
-      --inner-padding-end: 0;
-      --background: #fff;
-    }
-    
-    ion-input {
-      --padding-start: 12px;
-      color: var(--ion-color-dark);
-    }
+  ion-footer ion-toolbar {
+    --background: #1a1a1a;
+    --border-color: #333333;
   }
+  
+  ion-footer ion-item {
+    --background: #1a1a1a;
+    --color: #e0e0e0;
+  }
+  
+  ion-footer ion-input {
+    --color: #e0e0e0;
+    --placeholder-color: #888888;
+  }
+}
+*/
 
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+  .typing-bubble {
+    animation: none;
+  }
   
+  .message-item {
+    transition: none;
+  }
+}
+
+// Print styles
+@media print {
+  .custom-header,
+  ion-footer,
+  app-tab-bar {
+    display: none;
+  }
+  
+  .chat-container {
+    height: auto;
+    overflow: visible;
+    background: white;
+  }
+  
+  .message-content {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}

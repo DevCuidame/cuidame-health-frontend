@@ -28,17 +28,17 @@ import { catchError, EMPTY } from 'rxjs';
           }
         </div>
         
-        @if(isManual) {
+        @if(isPending) {
           <p>
             La cita con el profesional <strong>{{professionalName || 'seleccionado'}}</strong> 
-            queda pendiente por asignación. 
+            ha sido asignada. 
             @if (professionalPhone) {
               Por favor comuníquese con el profesional mediante WhatsApp para coordinar la cita.
             } @else {
               El equipo de atención se comunicará con usted para coordinar la fecha y hora exacta.
             }
           </p>
-          @if (professionalPhone) {
+          <!-- @if (professionalPhone) {
             <div class="actions-container">
               <button class="whatsapp-button" (click)="openWhatsApp()">
                 Contactar por WhatsApp
@@ -53,15 +53,15 @@ import { catchError, EMPTY } from 'rxjs';
                 Guardar cita pendiente
               </button>
             </div>
-          }
-        } @else if(isPending) {
+          } -->
+        } @else if(isManual) {
           <p>
             La cita con <strong>{{professionalName || 'el profesional seleccionado'}}</strong> 
-            para la especialidad de <strong>{{specialty}}</strong> queda pendiente por asignación 
+            para la solicitud de <strong>{{specialty.name}}</strong> queda pendiente por asignación 
             y será confirmada máximo en 72 horas.
           </p>
           <p class="additional-info">
-            ¿Necesitas indicaciones para llegar a la clínica?
+            ¿Necesita indicaciones para llegar al lugar de la cita?
             <a href="https://maps.google.com" target="_blank">Mira nuestro mapa en Google Maps.</a>
           </p>
         } @else {
@@ -143,7 +143,7 @@ export class AppointmentAssignedComponent implements OnInit {
   }
   
   getAppointmentTitle(): string {
-    if (this.isManual) return 'CITA PENDIENTE POR ASIGNACIÓN';
+    if (this.isManual) return 'CITA ASIGNADA';
     if (this.isPending) return 'CITA PENDIENTE';
     return 'CITA ASIGNADA';
   }
@@ -188,8 +188,9 @@ export class AppointmentAssignedComponent implements OnInit {
 
     const appointmentToSave: Appointment = {
       ...(this.appointment as Appointment),
-      status: 'TO_BE_CONFIRMED'
+      status: 'confirmed'
     };
+    console.log("🚀 ~ AppointmentAssignedComponent ~ savePendingAppointment ~ appointmentToSave:", appointmentToSave)
 
     this.appointmentService.createAppointment(appointmentToSave)
       .pipe(

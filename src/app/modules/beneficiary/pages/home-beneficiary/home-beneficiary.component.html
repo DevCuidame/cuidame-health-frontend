@@ -1,63 +1,160 @@
 <ion-content scrollY="false">
+  <!-- Header del Familiar -->
   <app-beneficiary-header></app-beneficiary-header>
 
   <!-- Indicador de carga general -->
   <div *ngIf="isLoading" class="loading-container">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
-    <p>Cargando información del beneficiario...</p>
+    <p>Cargando información del Familiar...</p>
   </div>
 
   <div class="container" *ngIf="!isLoading">
-    <!-- Menú de categorías con animaciones -->
-    <div 
-      class="options-container" 
+    <!-- Menú de categorías con animaciones mejoradas -->
+    <div
+      class="options-container"
       [ngClass]="{
-        'visible': showCategoriesMenu && !isMenuAnimating,
-        'hidden': !showCategoriesMenu && !isMenuAnimating,
+        visible: showCategoriesMenu && !isMenuAnimating,
+        hidden: !showCategoriesMenu && !isMenuAnimating,
         'fade-in': showCategoriesMenu && isMenuAnimating,
         'fade-out': !showCategoriesMenu && isMenuAnimating
       }"
     >
       <div class="options">
-        <div *ngFor="let option of categories"
+        <div
+          *ngFor="let option of categories"
           [ngClass]="{ selected: isSelected(option.label) }"
           (click)="selectOption(option.route)"
+          [attr.data-category]="option.route"
         >
-          {{ option.label }}
+          <span>{{ option.label }}</span>
         </div>
       </div>
     </div>
 
-    <!-- Contenedor para el router-outlet con scroll -->
+    <!-- Contenedor principal con scroll mejorado -->
     <div class="scrollable-content">
-      <router-outlet></router-outlet>
+      <!-- Router outlet para las diferentes vistas -->
+      <div class="main-content">
+        <router-outlet></router-outlet>
 
-      <!-- Información básica en la pantalla principal -->
-      <ng-container *ngIf="showBasicData">
-        <app-basic-data
-          fontColor="var(--ion-color-dark)"
-          iconColor="var(--ion-color-tertiary)"
-          opacity="46%"
-          maxHeight="340px"
-          [beneficiary]="activeBeneficiary"
-        >
-        </app-basic-data>
-        
-        <!-- Botones de acción -->
-        <div class="action-buttons">
-          <app-edit-button route="/beneficiary/add" top="-30px"></app-edit-button>
-          <!-- <button class="refresh-button" (click)="refreshBeneficiary()">
-            <ion-icon name="refresh-outline"></ion-icon>
-            <span>Actualizar datos</span>
-          </button> -->
+        <!-- Información básica en la pantalla principal -->
+        <ng-container *ngIf="showBasicData">
+          <!-- Tarjeta de información básica -->
+          <div class="basic-info-card web-card">
+            <div style="display: flex; justify-content: space-between">
+              <h2 class="web-section-title">Información del Familiar</h2>
+              <app-edit-button
+                route="/beneficiary/add"
+                top="0px"
+                class="primary-action-btn"
+                background="transparent"
+              ></app-edit-button>
+            </div>
+            <app-basic-data
+              fontColor="var(--ion-color-dark)"
+              iconColor="var(--ion-color-tertiary)"
+              opacity="46%"
+              maxHeight="340px"
+              [beneficiary]="activeBeneficiary"
+            >
+            </app-basic-data>
+          </div>
+
+          <!-- Estadísticas rápidas (solo en web) -->
+          <div class="quick-stats web-only" *ngIf="activeBeneficiary">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <ion-icon name="person-outline"></ion-icon>
+                </div>
+                <div class="stat-info">
+                  <h4>Edad</h4>
+                  <p>
+                    {{ calculateAge(activeBeneficiary.fecha_nacimiento) }} años
+                  </p>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <ion-icon name="location-outline"></ion-icon>
+                </div>
+                <div class="stat-info">
+                  <h4>Ubicación</h4>
+                  <p>{{ activeBeneficiary.ciudad }}</p>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <ion-icon name="medical-outline"></ion-icon>
+                </div>
+                <div class="stat-info">
+                  <h4>Tipo de Sangre</h4>
+                  <p>{{ activeBeneficiary.rh || "No especificado" }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Sidebar con opciones (solo en pantallas grandes) -->
+      <div class="sidebar web-only">
+        <div class="sidebar-content">
+          <h3 class="sidebar-title">Acceso Rápido</h3>
+
+          <!-- Enlaces rápidos -->
+          <div class="quick-links">
+
+            <a class="quick-link" routerLink="/beneficiary/home">
+              <ion-icon name="id-card-outline"></ion-icon>
+              <span>Información Básica</span>
+            </a>
+
+            <a class="quick-link" routerLink="/beneficiary/home/conditions">
+              <ion-icon name="fitness-outline"></ion-icon>
+              <span>Condiciones Médicas</span>
+            </a>
+
+            <a
+              class="quick-link"
+              routerLink="/beneficiary/home/medical-history"
+            >
+              <ion-icon name="library-outline"></ion-icon>
+              <span>Historial Médico</span>
+            </a>
+
+            <a
+              class="quick-link"
+              routerLink="/beneficiary/home/medicaments-allergies"
+            >
+              <ion-icon name="warning-outline"></ion-icon>
+              <span>Alergias</span>
+            </a>
+
+            <a class="quick-link" routerLink="/beneficiary/home/vacinations">
+              <ion-icon name="shield-checkmark-outline"></ion-icon>
+              <span>Vacunas</span>
+            </a>
+          </div>
+
+          <!-- Información de contacto de emergencia -->
+          <div class="emergency-info" *ngIf="activeBeneficiary">
+            <h4>Contacto de Emergencia</h4>
+            <div class="contact-item">
+              <ion-icon name="call-outline"></ion-icon>
+              <span>{{ activeBeneficiary.telefono }}</span>
+            </div>
+          </div>
         </div>
-      </ng-container>
+      </div>
     </div>
-  </div>
 
-  <!-- Componente de opciones inferiores -->
-  <div class="bottom">
-    <app-home-options></app-home-options>
+    <!-- Componente de opciones inferiores -->
+    <!-- <div class="bottom">
+      <app-home-options></app-home-options>
+    </div> -->
   </div>
 </ion-content>
 

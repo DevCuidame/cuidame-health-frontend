@@ -13,8 +13,18 @@
           ></fa-icon>
         </div>
         <div class="item-info">
-          <p>{{ selectedEntity?.tipoid || selectedEntity?.typeid || "No aplica" }}</p>
-          <p>{{ selectedEntity?.numberid || selectedEntity?.numeroid || "No aplica" }}</p>
+          <p>
+            {{
+              selectedEntity?.tipoid || selectedEntity?.typeid || "No aplica"
+            }}
+          </p>
+          <p>
+            {{
+              selectedEntity?.numberid ||
+                selectedEntity?.numeroid ||
+                "No aplica"
+            }}
+          </p>
         </div>
       </div>
       <!-- Happy Birthday -->
@@ -71,7 +81,7 @@
           ></fa-icon>
         </div>
         <div class="item-info">
-          <p>{{ beneficiary.arl || 'No aplica' }}</p>
+          <p>{{ beneficiary.arl || "No aplica" }}</p>
           <p>ARL</p>
         </div>
       </div>
@@ -85,7 +95,7 @@
           ></fa-icon>
         </div>
         <div class="item-info">
-          <p>{{ beneficiary.seguro_funerario || 'No aplica' }}</p>
+          <p>{{ beneficiary.seguro_funerario || "No aplica" }}</p>
           <p>Seguro Funerario</p>
         </div>
       </div>
@@ -101,10 +111,7 @@
           ></fa-icon>
         </div>
         <div class="item-info">
-          <p>
-            @if (selectedEntity?.gender === 'F'){ Femenino }@else if
-            (selectedEntity?.gender === 'M') {Masculino}@else {Otro}
-          </p>
+          <p>{{ getGenderDisplay(selectedEntity) }}</p>
           <p>Género</p>
         </div>
       </div>
@@ -146,7 +153,7 @@
           ></fa-icon>
         </div>
         <div class="item-info">
-          <p>{{ beneficiary.prepagada || 'No aplica'}}</p>
+          <p>{{ beneficiary.prepagada || "No aplica" }}</p>
           <p>EPS</p>
         </div>
       </div>

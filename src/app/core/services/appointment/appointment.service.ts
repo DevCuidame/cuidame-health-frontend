@@ -87,6 +87,7 @@ cancelAppointment(id: number): Observable<any> {
     id: number,
     appointment: Partial<Appointment>
   ): Observable<any> {
+    console.log("🚀 ~ AppointmentService ~ appointment:", appointment)
 
     return this.http
       .put<AppointmentResponse>(

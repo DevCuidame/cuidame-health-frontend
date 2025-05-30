@@ -54,7 +54,7 @@ import { Subscription } from 'rxjs';
     }
     
     .beneficiary-name {
-      color: var(--ion-color-light);
+      color: var(--ion-color-dark);
       font-size: 3.5vw;
       font-weight: bold;
     }

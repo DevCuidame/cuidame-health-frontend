@@ -1,21 +1,28 @@
 <ion-header class="custom-header">
-    <ion-toolbar>
-      <div class="header-container">
-        <!-- <ion-img class="logo" src="assets/logo/logo.png"></ion-img> -->
-        <ion-title class="app-title">Doc Eli</ion-title>
-      </div>
-    </ion-toolbar>
-  </ion-header>
+  <ion-toolbar>
+    <div class="header-container">
+      <!-- <ion-img class="logo" src="assets/logo/logo.png"></ion-img> -->
+      <ion-title class="app-title">Doc Eli</ion-title>
+   
+    </div>
+  </ion-toolbar>
+</ion-header>
 
-<ion-content>
+<ion-content [ngClass]="getContainerClasses()">
   <div class="chat-container" #chatContainer>
     <div class="welcome-message" *ngIf="(messages$ | async)?.length === 0">
       <ion-spinner name="dots" *ngIf="isTyping$ | async"></ion-spinner>
-      <p>Welcome to the Medical Appointment System. Please wait while we initialize your session...</p>
+      <p *ngIf="isMobile">Welcome to the Medical Appointment System. Please wait while we initialize your session...</p>
+      <p *ngIf="isDesktop">Welcome to the Medical Appointment System</p>
+      <p *ngIf="isDesktop" class="desktop-subtitle">Your secure healthcare assistant is ready to help you schedule appointments</p>
     </div>
     
     <div class="message-list">
-      <div class="message-item" *ngFor="let message of messages$ | async; trackBy: trackByFn" [ngClass]="getMessageClasses(message)">
+      <div 
+        class="message-item" 
+        *ngFor="let message of messages$ | async; trackBy: trackByFn" 
+        [ngClass]="getMessageClasses(message)">
+        
         <!-- Regular text message -->
         <div class="message-content" *ngIf="!message.type || message.type === 'text'">
           <p [innerHTML]="message.content"></p>
@@ -30,7 +37,7 @@
               (click)="selectOption(option)"
               fill="outline"
               expand="block"
-              size="small"
+              [size]="isDesktop ? 'default' : 'small'"
               class="option-button">
               {{ option.text }}
             </ion-button>
@@ -50,7 +57,10 @@
         <!-- Confirmation message -->
         <div class="message-content" *ngIf="message.type === 'confirmation'">
           <div class="confirmation-card">
-            <h4>Appointment Confirmation</h4>
+            <h4>
+              <ion-icon name="calendar-outline"></ion-icon>
+              Appointment Confirmation
+            </h4>
             <div class="confirmation-details" [innerHTML]="message.content"></div>
             <div class="confirmation-actions" *ngIf="message.options">
               <ion-button 
@@ -58,7 +68,11 @@
                 (click)="selectOption(option)"
                 [color]="option.value === 'confirm' ? 'success' : 'danger'"
                 fill="solid"
-                size="small">
+                [size]="isDesktop ? 'default' : 'small'">
+                <ion-icon 
+                  [name]="option.value === 'confirm' ? 'checkmark' : 'close'" 
+                  slot="start">
+                </ion-icon>
                 {{ option.text }}
               </ion-button>
             </div>
@@ -66,7 +80,7 @@
         </div>
         
         <div class="message-time">
-          {{ message.timestamp | date:'shortTime' }}
+          {{ message.timestamp | date:(isDesktop ? 'medium' : 'shortTime') }}
         </div>
       </div>
       
@@ -75,6 +89,7 @@
         <div class="typing-bubble"></div>
         <div class="typing-bubble"></div>
         <div class="typing-bubble"></div>
+        <span *ngIf="isDesktop" class="typing-text">Assistant is typing...</span>
       </div>
     </div>
   </div>
@@ -86,22 +101,45 @@
       <ion-item lines="none">
         <ion-input 
           formControlName="message" 
-          placeholder="Type a message..." 
-          [disabled]="(isTyping$ | async) ?? false">
+          [placeholder]="isDesktop ? 'Type your message here...' : 'Type a message...'" 
+          [disabled]="(isTyping$ | async) ?? false"
+          maxlength="500">
         </ion-input>
+        
+        <!-- Desktop: Show character count -->
+        <ion-note 
+          *ngIf="isDesktop && chatForm.get('message')?.value" 
+          slot="helper"
+          color="medium">
+          {{ chatForm.get('message')?.value?.length || 0 }}/500
+        </ion-note>
+        
+        <!-- Desktop: Show additional controls -->
+        <!-- <ion-button 
+          *ngIf="isDesktop"
+          slot="end"
+          fill="clear"
+          (click)="resetChat()"
+          [disabled]="(isTyping$ | async) ?? false">
+          <ion-icon name="refresh-outline"></ion-icon>
+        </ion-button> -->
+        
         <ion-button 
           slot="end" 
           type="submit" 
-          [disabled]="!chatForm.valid || (isTyping$ | async)">
+          [disabled]="!chatForm.valid || (isTyping$ | async)"
+          [fill]="isDesktop ? 'solid' : 'clear'">
           <ion-icon name="send"></ion-icon>
+          <ion-label *ngIf="isDesktop">Send</ion-label>
         </ion-button>
       </ion-item>
     </form>
   </ion-toolbar>
 </ion-footer>
 
+<!-- Tab bar - Show/hide based on screen size -->
 <app-tab-bar
-  [isVisible]="true"
+  [isVisible]="isMobile"
   [buttons]="[
     { icon: 'arrow-back-outline', route: '/appointment/viewer', visible: true },
     { icon: 'menu-outline', route: '/', visible: true },

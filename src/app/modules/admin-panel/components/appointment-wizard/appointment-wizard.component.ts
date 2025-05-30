@@ -198,16 +198,47 @@ export class AppointmentWizardComponent implements OnInit, OnDestroy {
   private validateScheduleData(): boolean {
     const appointment = this.stateService.appointment();
     
-    // Validar que tenga información básica del doctor
+    // Para el modo de asignación de horario, validamos diferente
+    if (this.isScheduleAssignment) {
+      // Debe tener al menos el nombre del doctor
+      const hasDoctorName = appointment.professional?.user?.first_name || 
+                           appointment.professional?.user?.last_name;
+      
+      if (!hasDoctorName) {
+        console.log('Validación falló: No hay nombre de doctor');
+        return false;
+      }
+      
+      // Si se está intentando asignar fecha/hora, ambas deben estar presentes
+      const hasDate = !!appointment.start_time;
+      const hasTime = !!appointment.end_time;
+      
+      // Es válido si:
+      // 1. No tiene ni fecha ni hora (quedará pendiente)
+      // 2. Tiene ambas fecha y hora
+      const isValid = (!hasDate && !hasTime) || (hasDate && hasTime);
+      
+      console.log('Validación de horario:', {
+        hasDoctorName,
+        hasDate,
+        hasTime,
+        isValid,
+        start_time: appointment.start_time,
+        end_time: appointment.end_time
+      });
+      
+      return isValid;
+    }
+    
+    // Validación normal para otros modos
     if (!appointment.professional || !appointment.professional.user) {
       return false;
     }
-
-    // Si tiene fecha/hora, ambas deben estar presentes
+  
     if (appointment.start_time || appointment.end_time) {
       return !!(appointment.start_time && appointment.end_time);
     }
-
+  
     return true;
   }
 

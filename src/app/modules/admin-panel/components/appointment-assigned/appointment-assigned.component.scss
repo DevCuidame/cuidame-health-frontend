@@ -10,7 +10,7 @@
     font-size: 2.875rem;
     font-weight: bold;
     margin-bottom: 1rem;
-    color: var(--ion-color-dark);
+    color: var(--ion-color-secondary);
     text-transform: uppercase;
     margin: 0 !important;
     text-align: center;
@@ -89,7 +89,7 @@
     font-size: 2.875rem;
     font-weight: bold;
     margin-bottom: 1rem;
-    color: var(--ion-color-dark);
+    color: var(--ion-color-secondary);
     text-transform: uppercase;
     margin: 0 !important;
     text-align: center;
@@ -98,8 +98,7 @@
   .assigned-card {
     position: relative;
     width: 100%;
-    // background: url("../../../../../assets/background/background_assigned-card.svg")
-    //   no-repeat center center / cover;
+    background: var(--ion-color-light);
     border-radius: 8px;
     padding: 7rem;
     color: var(--ion-color-dark);

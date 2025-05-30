@@ -71,6 +71,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   checkScreenSize() {
     this.isDesktop = window.innerWidth >= 992;
+        
   }
 
   loadUser() {

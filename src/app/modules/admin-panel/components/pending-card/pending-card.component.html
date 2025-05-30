@@ -8,13 +8,18 @@
         <div class="status-dropdown">
           <span
             [ngClass]="getStatusBadgeClass()"
-            (click)="appointment.status !== 'cancelled' && toggleStatusMenu($event)"
+            (click)="
+              appointment.status !== 'cancelled' && toggleStatusMenu($event)
+            "
             [style.background-color]="getPatientStatusColor()"
           >
             {{ getStatusLabel() }}
             <fa-icon [icon]="faEllipsisV" class="dropdown-icon"></fa-icon>
           </span>
-          <div class="status-menu"  *ngIf="showStatusMenu && appointment.status !== 'cancelled'">
+          <div
+            class="status-menu"
+            *ngIf="showStatusMenu && appointment.status !== 'cancelled'"
+          >
             <div
               class="menu-item"
               [class.active]="appointment.status === 'requested'"
@@ -43,7 +48,6 @@
               class="menu-item"
               [class.active]="appointment.status === 'cancelled'"
               data-status="cancelled"
-              
             >
               <span class="status-dot cancelled"></span>Cancelada
             </div>
@@ -63,13 +67,19 @@
   <div class="appointment-body">
     <div class="patient-info">
       <img
-      [src]="appointment.patient.imagebs64 ? (environment + appointment.patient.photourl) : 'assets/images/default_user.png'"
-      alt="Foto de perfil"
-    />
+        [src]="
+          appointment.patient.imagebs64
+            ? environment + appointment.patient.photourl
+            : 'assets/images/default_user.png'
+        "
+        alt="Foto de perfil"
+        (error)="onImageError($event)"
+      />
+
       <div>
         <p class="patient-name">
-          {{ appointment.patient.nombre || 'Sin nombre registrado'}}
-          {{ appointment.patient.apellido || 'Sin apellido registrado' }}
+          {{ appointment.patient.nombre || "Sin nombre registrado" }}
+          {{ appointment.patient.apellido || "Sin apellido registrado" }}
         </p>
         <p class="patient-specialty">
           {{ appointment.specialty.name || "Sin especialidad solicitada" }}
@@ -88,25 +98,20 @@
       <p class="date-time-info">
         <fa-icon [icon]="faCalendar"></fa-icon>
         @if (!isUnassignedAppointment()){
-          {{ appointment.start_time || 'Sin hora asignada'}}
-        }@else {
-          Pendiente de asignación
-        }
+        {{ appointment.start_time || "Sin hora asignada" }}
+        }@else { Pendiente de asignación }
         <fa-icon [icon]="faClock" class="time-icon"></fa-icon>
 
         @if (!isUnassignedAppointment()){
-          {{ appointment.start_time || 'Sin hora asignada'}}
-        }@else {
-          Pendiente de asignación
-        }
-
+        {{ appointment.start_time || "Sin hora asignada" }}
+        }@else { Pendiente de asignación }
       </p>
     </div>
     }
 
     <div class="appointment-footer">
       <p class="request-date">
-        {{ appointment.created_at || 'Sin fecha de solicitud' }}
+        {{ appointment.created_at || "Sin fecha de solicitud" }}
       </p>
 
       <!-- Botón para citas PENDING -->
@@ -120,8 +125,7 @@
         [backgroundImage]="buttonBackground"
         (click)="goToAppointment(appointment)"
       ></app-custom-button>
-      } @if (appointment.status === 'requested' &&
-      !needsScheduleAssignment()) {
+      } @if (appointment.status === 'requested' && !needsScheduleAssignment()) {
       <app-custom-button
         label="Confirmar"
         fontSize="1.5rem"

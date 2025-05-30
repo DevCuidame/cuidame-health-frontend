@@ -24,7 +24,7 @@ import { HealthDataService } from 'src/app/core/services/healthData.service';
     BasicDataComponent,
     RouterModule,
     EditButtonComponent,
-    HomeOptionsComponent,
+    // HomeOptionsComponent,
   ],
   templateUrl: './home-beneficiary.component.html',
   styleUrls: ['./home-beneficiary.component.scss'],
@@ -248,5 +248,20 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
 
     // Forzar recarga desde el servidor (forceRefresh = true)
     this.fetchHealthData(this.activeBeneficiary.id, true, true);
+  }
+
+  calculateAge(birthDate: string): number {
+    if (!birthDate) return 0;
+    
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
   }
 }

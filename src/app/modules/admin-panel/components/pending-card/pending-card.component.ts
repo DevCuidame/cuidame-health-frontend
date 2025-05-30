@@ -73,7 +73,6 @@ export class PendingCardComponent implements OnInit {
     }
 
     if (!this.isValidAppointmentData(this.appointment)) {
-      console.warn(`Advertencia: La cita (ID: ${this.appointment.id}) tiene datos incompletos o inválidos.`);
       // Aún así, intentamos mostrar lo que se pueda
     }
 
@@ -130,7 +129,6 @@ export class PendingCardComponent implements OnInit {
     try {
       const date = new Date(startTime);
       if (isNaN(date.getTime())) {
-        console.warn('Fecha de inicio inválida proporcionada:', startTime);
         this.formattedDate = 'Fecha inválida';
         this.formattedTime = 'Hora inválida';
         return false;
@@ -140,7 +138,6 @@ export class PendingCardComponent implements OnInit {
       const fiveYearsFromNow = new Date();
       fiveYearsFromNow.setFullYear(fiveYearsFromNow.getFullYear() + 5);
       if (date > fiveYearsFromNow) {
-        console.warn('Fecha de inicio demasiado lejana en el futuro:', startTime);
         this.formattedDate = 'Fecha muy lejana';
         this.formattedTime = '';
         return false;
@@ -179,6 +176,11 @@ export class PendingCardComponent implements OnInit {
   public canConfirm(): boolean {
     return this.appointment.status === 'requested' && this.hasValidSchedule;
   }
+
+  onImageError(event: Event) {
+    (event.target as HTMLImageElement).src = 'assets/images/default_user.png';
+  }
+  
 
   toggleStatusMenu(event: Event): void {
     event.stopPropagation();
