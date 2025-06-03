@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
   faClock,
@@ -23,6 +23,7 @@ import { environment } from 'src/environments/environment';
     FontAwesomeModule,
     IonicModule,
     FormsModule,
+    DatePipe
   ],
   templateUrl: './pending-card.component.html',
   styleUrls: ['./pending-card.component.scss'],
@@ -352,8 +353,27 @@ export class PendingCardComponent implements OnInit {
   /**
    * Verificar si la cita necesita asignación de profesional
    */
-  isUnassignedAppointment(): boolean {
-    return !this.appointment?.professional || !this.hasValidSchedule;
+  isUnassignedAppointment(data: any): boolean {
+    if (!data) {
+      return true; 
+    }
+  
+    try {
+      const appointmentDate = new Date(data);
+      
+      // Verificar si la fecha es válida
+      if (isNaN(appointmentDate.getTime())) {
+        return true;
+      }
+      
+      const currentDate = new Date();
+      const yearsDifference = appointmentDate.getFullYear() - currentDate.getFullYear();
+      
+      return yearsDifference > 90;
+    } catch (error) {
+      console.warn('Error parsing appointment date:', error);
+      return true;
+    }
   }
 
   /**

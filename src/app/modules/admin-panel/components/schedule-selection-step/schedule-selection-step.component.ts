@@ -31,6 +31,7 @@ import { ScheduleService } from 'src/app/core/services/schedule.service';
       <!-- Barra de búsqueda del paciente para mostrar resumen -->
       <app-patient-search-bar
         [image_path]="patientData.photourl"
+        [bs64]="patientData.imagebs64"
         [first_name]="patientData.nombre"
         [last_name]="patientData.apellido"
         [appointmentType]="appointmentType"

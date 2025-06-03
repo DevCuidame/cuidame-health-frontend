@@ -79,7 +79,6 @@ export class ConditionsListComponent implements OnInit, OnDestroy {
    */
   loadHealthData(id: number) {
     this.isLoading = true;
-    this.presentLoading();
     
     // Usar el método getHealthData que está disponible en el servicio
     this.healthDataService.getHealthData(id)
@@ -122,8 +121,6 @@ export class ConditionsListComponent implements OnInit, OnDestroy {
     }
     
     this.isLoading = true;
-    this.presentLoading();
-    
     // Forzar recarga desde el servidor con forceRefresh=true
     this.healthDataService.getHealthData(this.activeBeneficiary.id, true)
       .pipe(takeUntil(this.destroy$))
@@ -148,18 +145,6 @@ export class ConditionsListComponent implements OnInit, OnDestroy {
           this.dismissLoading();
         }
       );
-  }
-
-  /**
-   * Muestra un indicador de carga
-   */
-  async presentLoading() {
-    const loading = await this.loadingController.create({
-      message: 'Cargando información de salud...',
-      spinner: 'circular',
-      backdropDismiss: false
-    });
-    await loading.present();
   }
 
   /**

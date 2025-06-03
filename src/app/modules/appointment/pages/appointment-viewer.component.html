@@ -6,6 +6,7 @@
     <app-appointment-main
       style="width: 100%"
       [appointments]="appointments"
+      [filteredAppointments]="appointments" 
       [professionals]="professionals"
       [loading]="loading"
       [showCalendarView]="showCalendarView"
@@ -63,7 +64,14 @@
           [class.today]="isToday(day)"
           [class.other-month]="!isSelectedMonth(day)"
           [class.has-appointments]="getAppointmentsForDate(day).length > 0"
+          [class.has-completed]="hasCompletedAppointments(day)"
+          [class.has-confirmed]="hasConfirmedAppointments(day)"
+          [class.has-requested]="hasRequestedAppointments(day)"
           (click)="selectedDate = day"
+          [class.selected]="
+                  formatDateToCompare(selectedDate) ===
+                  formatDateToCompare(day)
+                "
         >
           <div class="day-number">{{ day.getDate() }}</div>
           <div class="appointment-indicators">
@@ -222,15 +230,14 @@
       </ion-fab-button>
     </ion-fab>
   </div>
-
 </ion-content>
 
 <app-tab-bar
-[isVisible]="true"
-[buttons]="[
-  { icon: 'arrow-back-outline', route: '/home/dashboard', visible: true },
-  { icon: 'menu-outline', route: '/', visible: true },
-  { icon: 'exit-outline', route: '/', visible: true }
-]"
-[background]="'var(--ion-color-light)'"
+  [isVisible]="true"
+  [buttons]="[
+    { icon: 'arrow-back-outline', route: '/home/dashboard', visible: true },
+    { icon: 'menu-outline', route: '/', visible: true },
+    { icon: 'exit-outline', route: '/', visible: true }
+  ]"
+  [background]="'var(--ion-color-light)'"
 ></app-tab-bar>

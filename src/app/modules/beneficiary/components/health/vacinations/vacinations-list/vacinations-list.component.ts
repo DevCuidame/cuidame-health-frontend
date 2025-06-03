@@ -84,7 +84,7 @@ export class VacinationsListComponent implements OnInit, OnDestroy {
    */
   loadHealthData(id: number) {
     this.isLoading = true;
-    this.presentLoading();
+    // this.presentLoading();
     
     // Usar el método getHealthData para cargar los datos
     this.healthDataService.getHealthData(id)
@@ -128,7 +128,7 @@ export class VacinationsListComponent implements OnInit, OnDestroy {
     }
     
     this.isLoading = true;
-    this.presentLoading();
+    // this.presentLoading();
     
     // Forzar recarga desde el servidor
     this.healthDataService.getHealthData(this.activeBeneficiary.id, true)
@@ -156,17 +156,17 @@ export class VacinationsListComponent implements OnInit, OnDestroy {
       );
   }
 
-  /**
-   * Muestra un indicador de carga
-   */
-  async presentLoading() {
-    const loading = await this.loadingController.create({
-      message: 'Cargando vacunas...',
-      spinner: 'circular',
-      backdropDismiss: false
-    });
-    await loading.present();
-  }
+  // /**
+  //  * Muestra un indicador de carga
+  //  */
+  // async presentLoading() {
+  //   const loading = await this.loadingController.create({
+  //     message: 'Cargando vacunas...',
+  //     spinner: 'circular',
+  //     backdropDismiss: false
+  //   });
+  //   await loading.present();
+  // }
 
   /**
    * Cierra el indicador de carga

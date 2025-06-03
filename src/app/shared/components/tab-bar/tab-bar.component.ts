@@ -32,7 +32,7 @@ export class TabBarComponent {
       { 
         icon: 'trash-outline', 
         label: 'Eliminar Cuenta', 
-        action: () => true
+        action: () => this.navigate('/user/delete-account')
       },
       { 
         icon: 'logo-whatsapp', 
@@ -46,7 +46,7 @@ export class TabBarComponent {
       },
       { 
         icon: 'person-outline', 
-        label: 'Modificar Datos del Propietario', 
+        label: 'Modificar Perfil', 
         action: () => true
       },
       { 
@@ -77,7 +77,6 @@ export class TabBarComponent {
     this.showMenu = !this.showMenu;
   }
 
-  // Oculta el menú si se hace clic fuera de él
   hideMenu() {
     setTimeout(() => {
       this.showMenu = false;

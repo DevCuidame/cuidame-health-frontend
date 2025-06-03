@@ -1,23 +1,236 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, finalize, tap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { EmergencyContactsService } from 'src/app/core/services/emergency-contacts.service';
 import { UserService } from '../../../auth/services/user.service';
 
 @Component({
   selector: 'app-emergency-contacts',
-  templateUrl: './emergency-contacts.component.html',
+  template: `
+    <div class="contacts-container" [class.desktop-mode]="isDesktop">
+      <div class="header-section" *ngIf="!hideHeaderInDesktop">
+        <h2>Contactos de Emergencia</h2>
+        <p class="description">Registra hasta 3 contactos de emergencia para que puedan ser notificados en caso necesario.</p>
+      </div>
+    
+      <div *ngIf="isLoading" class="loader">
+        <ion-spinner name="circular"></ion-spinner>
+        <p>Cargando contactos...</p>
+      </div>
+    
+      <div *ngIf="!isLoading" class="contacts-form">
+        <form [formGroup]="contactsForm" (ngSubmit)="saveContacts()">
+          <!-- Contacto 1 -->
+          <div class="contact-card" [class.filled]="hasContact(1)">
+            <div class="contact-header">
+              <div class="header-content">
+                <ion-icon name="person-circle-outline" class="contact-icon primary"></ion-icon>
+                <div class="header-text">
+                  <h3>Contacto Principal</h3>
+                  <span class="contact-priority">Prioritario</span>
+                </div>
+              </div>
+              <ion-icon 
+                *ngIf="hasContact(1)"
+                name="trash-outline" 
+                class="delete-icon" 
+                (click)="deleteContact(1)"
+                title="Eliminar contacto">
+              </ion-icon>
+            </div>
+            <div class="contact-fields">
+              <div class="form-group">
+                <label for="nombre1">
+                  <ion-icon name="person-outline"></ion-icon>
+                  Nombre completo
+                </label>
+                <input 
+                  type="text" 
+                  id="nombre1" 
+                  formControlName="nombre1" 
+                  placeholder="Ej: María García López"
+                  [class.error]="formErrors.nombre1">
+                <small *ngIf="formErrors.nombre1" class="error-message">
+                  <ion-icon name="alert-circle-outline"></ion-icon>
+                  {{formErrors.nombre1}}
+                </small>
+              </div>
+              <div class="form-group">
+                <label for="telefono1">
+                  <ion-icon name="call-outline"></ion-icon>
+                  Teléfono
+                </label>
+                <input 
+                  type="tel" 
+                  id="telefono1" 
+                  formControlName="telefono1" 
+                  placeholder="Ej: 3001234567"
+                  [class.error]="formErrors.telefono1">
+                <small *ngIf="formErrors.telefono1" class="error-message">
+                  <ion-icon name="alert-circle-outline"></ion-icon>
+                  {{formErrors.telefono1}}
+                </small>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Contacto 2 -->
+          <div class="contact-card" [class.filled]="hasContact(2)">
+            <div class="contact-header">
+              <div class="header-content">
+                <ion-icon name="person-circle-outline" class="contact-icon secondary"></ion-icon>
+                <div class="header-text">
+                  <h3>Contacto Secundario</h3>
+                  <span class="contact-priority">Alternativo</span>
+                </div>
+              </div>
+              <ion-icon 
+                *ngIf="hasContact(2)"
+                name="trash-outline" 
+                class="delete-icon" 
+                (click)="deleteContact(2)"
+                title="Eliminar contacto">
+              </ion-icon>
+            </div>
+            <div class="contact-fields">
+              <div class="form-group">
+                <label for="nombre2">
+                  <ion-icon name="person-outline"></ion-icon>
+                  Nombre completo
+                </label>
+                <input 
+                  type="text" 
+                  id="nombre2" 
+                  formControlName="nombre2" 
+                  placeholder="Ej: Carlos Rodríguez Pérez"
+                  [class.error]="formErrors.nombre2">
+                <small *ngIf="formErrors.nombre2" class="error-message">
+                  <ion-icon name="alert-circle-outline"></ion-icon>
+                  {{formErrors.nombre2}}
+                </small>
+              </div>
+              <div class="form-group">
+                <label for="telefono2">
+                  <ion-icon name="call-outline"></ion-icon>
+                  Teléfono
+                </label>
+                <input 
+                  type="tel" 
+                  id="telefono2" 
+                  formControlName="telefono2" 
+                  placeholder="Ej: 3009876543"
+                  [class.error]="formErrors.telefono2">
+                <small *ngIf="formErrors.telefono2" class="error-message">
+                  <ion-icon name="alert-circle-outline"></ion-icon>
+                  {{formErrors.telefono2}}
+                </small>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Contacto 3 -->
+          <div class="contact-card" [class.filled]="hasContact(3)">
+            <div class="contact-header">
+              <div class="header-content">
+                <ion-icon name="person-circle-outline" class="contact-icon additional"></ion-icon>
+                <div class="header-text">
+                  <h3>Contacto Adicional</h3>
+                  <span class="contact-priority">Opcional</span>
+                </div>
+              </div>
+              <ion-icon 
+                *ngIf="hasContact(3)"
+                name="trash-outline" 
+                class="delete-icon" 
+                (click)="deleteContact(3)"
+                title="Eliminar contacto">
+              </ion-icon>
+            </div>
+            <div class="contact-fields">
+              <div class="form-group">
+                <label for="nombre3">
+                  <ion-icon name="person-outline"></ion-icon>
+                  Nombre completo
+                </label>
+                <input 
+                  type="text" 
+                  id="nombre3" 
+                  formControlName="nombre3" 
+                  placeholder="Ej: Ana Martínez Sánchez"
+                  [class.error]="formErrors.nombre3">
+                <small *ngIf="formErrors.nombre3" class="error-message">
+                  <ion-icon name="alert-circle-outline"></ion-icon>
+                  {{formErrors.nombre3}}
+                </small>
+              </div>
+              <div class="form-group">
+                <label for="telefono3">
+                  <ion-icon name="call-outline"></ion-icon>
+                  Teléfono
+                </label>
+                <input 
+                  type="tel" 
+                  id="telefono3" 
+                  formControlName="telefono3" 
+                  placeholder="Ej: 3155647382"
+                  [class.error]="formErrors.telefono3">
+                <small *ngIf="formErrors.telefono3" class="error-message">
+                  <ion-icon name="alert-circle-outline"></ion-icon>
+                  {{formErrors.telefono3}}
+                </small>
+              </div>
+            </div>
+          </div>
+    
+          <div class="contact-validation-error" *ngIf="formErrors.general">
+            <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+            <div class="error-content">
+              <strong>Error de validación</strong>
+              <span>{{formErrors.general}}</span>
+            </div>
+          </div>
+
+          <!-- Información útil -->
+          <div class="info-section" *ngIf="isDesktop">
+            <div class="info-card">
+              <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
+              <div class="info-content">
+                <h4>¿Por qué es importante?</h4>
+                <p>Los contactos de emergencia serán notificados automáticamente en caso de situaciones críticas o emergencias médicas.</p>
+              </div>
+            </div>
+          </div>
+    
+          <div class="buttons-container">
+            <button 
+              type="submit" 
+              [disabled]="isSaving || !isFormValid()" 
+              class="save-button">
+              <ion-icon name="save-outline" *ngIf="!isSaving"></ion-icon>
+              <ion-spinner *ngIf="isSaving" name="circular" class="spinner-button"></ion-spinner>
+              <span *ngIf="!isSaving">Guardar Contactos</span>
+              <span *ngIf="isSaving">Guardando...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `,
   styleUrls: ['./emergency-contacts.component.scss'],
   standalone: true,
   imports: [CommonModule, IonicModule, ReactiveFormsModule]
 })
-export class EmergencyContactsComponent implements OnInit {
+export class EmergencyContactsComponent implements OnInit, OnDestroy {
   contactsForm: FormGroup;
   isLoading: boolean = true;
   isSaving: boolean = false;
+  isDesktop: boolean = false;
+  hideHeaderInDesktop: boolean = false;
+  private subscriptions: Subscription = new Subscription();
+  
   formErrors: {
     nombre1?: string;
     telefono1?: string;
@@ -42,11 +255,36 @@ export class EmergencyContactsComponent implements OnInit {
       nombre3: ['', []],
       telefono3: ['', []]
     });
+    
+    this.checkScreenSize();
+    this.checkIfDesktopShouldHideHeader();
   }
 
   ngOnInit() {
     this.loadContacts();
     this.setupFormValidation();
+    this.setupResizeListener();
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
+
+  private checkScreenSize() {
+    this.isDesktop = window.innerWidth > 768;
+  }
+
+  private checkIfDesktopShouldHideHeader() {
+    // En desktop, si viene de un layout que ya tiene header, ocultarlo
+    this.hideHeaderInDesktop = this.isDesktop;
+  }
+
+  private setupResizeListener() {
+    const resizeSubscription = new Subscription();
+    window.addEventListener('resize', () => {
+      this.checkScreenSize();
+    });
+    this.subscriptions.add(resizeSubscription);
   }
 
   /**
@@ -56,7 +294,7 @@ export class EmergencyContactsComponent implements OnInit {
     const phoneRegex = /^\d{7,15}$/;
     
     // Validar nombre1 cuando telefono1 tiene contenido
-    this.contactsForm.get('telefono1')?.valueChanges.subscribe(value => {
+    const telefono1Sub = this.contactsForm.get('telefono1')?.valueChanges.subscribe(value => {
       const nombre1Control = this.contactsForm.get('nombre1');
       if (value && value.trim()) {
         nombre1Control?.setValidators([Validators.required]);
@@ -67,7 +305,7 @@ export class EmergencyContactsComponent implements OnInit {
     });
 
     // Validar telefono1 cuando nombre1 tiene contenido
-    this.contactsForm.get('nombre1')?.valueChanges.subscribe(value => {
+    const nombre1Sub = this.contactsForm.get('nombre1')?.valueChanges.subscribe(value => {
       const telefono1Control = this.contactsForm.get('telefono1');
       if (value && value.trim()) {
         telefono1Control?.setValidators([Validators.required, Validators.pattern(phoneRegex)]);
@@ -78,7 +316,7 @@ export class EmergencyContactsComponent implements OnInit {
     });
 
     // Validar nombre2 cuando telefono2 tiene contenido
-    this.contactsForm.get('telefono2')?.valueChanges.subscribe(value => {
+    const telefono2Sub = this.contactsForm.get('telefono2')?.valueChanges.subscribe(value => {
       const nombre2Control = this.contactsForm.get('nombre2');
       if (value && value.trim()) {
         nombre2Control?.setValidators([Validators.required]);
@@ -89,7 +327,7 @@ export class EmergencyContactsComponent implements OnInit {
     });
 
     // Validar telefono2 cuando nombre2 tiene contenido
-    this.contactsForm.get('nombre2')?.valueChanges.subscribe(value => {
+    const nombre2Sub = this.contactsForm.get('nombre2')?.valueChanges.subscribe(value => {
       const telefono2Control = this.contactsForm.get('telefono2');
       if (value && value.trim()) {
         telefono2Control?.setValidators([Validators.required, Validators.pattern(phoneRegex)]);
@@ -100,7 +338,7 @@ export class EmergencyContactsComponent implements OnInit {
     });
 
     // Validar nombre3 cuando telefono3 tiene contenido
-    this.contactsForm.get('telefono3')?.valueChanges.subscribe(value => {
+    const telefono3Sub = this.contactsForm.get('telefono3')?.valueChanges.subscribe(value => {
       const nombre3Control = this.contactsForm.get('nombre3');
       if (value && value.trim()) {
         nombre3Control?.setValidators([Validators.required]);
@@ -111,7 +349,7 @@ export class EmergencyContactsComponent implements OnInit {
     });
 
     // Validar telefono3 cuando nombre3 tiene contenido
-    this.contactsForm.get('nombre3')?.valueChanges.subscribe(value => {
+    const nombre3Sub = this.contactsForm.get('nombre3')?.valueChanges.subscribe(value => {
       const telefono3Control = this.contactsForm.get('telefono3');
       if (value && value.trim()) {
         telefono3Control?.setValidators([Validators.required, Validators.pattern(phoneRegex)]);
@@ -122,9 +360,18 @@ export class EmergencyContactsComponent implements OnInit {
     });
 
     // Actualizar errores cuando cambian los valores
-    this.contactsForm.valueChanges.subscribe(() => {
+    const formSub = this.contactsForm.valueChanges.subscribe(() => {
       this.updateFormErrors();
     });
+
+    // Agregar todas las suscripciones
+    if (telefono1Sub) this.subscriptions.add(telefono1Sub);
+    if (nombre1Sub) this.subscriptions.add(nombre1Sub);
+    if (telefono2Sub) this.subscriptions.add(telefono2Sub);
+    if (nombre2Sub) this.subscriptions.add(nombre2Sub);
+    if (telefono3Sub) this.subscriptions.add(telefono3Sub);
+    if (nombre3Sub) this.subscriptions.add(nombre3Sub);
+    if (formSub) this.subscriptions.add(formSub);
   }
 
   /**
@@ -238,6 +485,21 @@ export class EmergencyContactsComponent implements OnInit {
     } else {
       this.formErrors.general = '';
     }
+  }
+
+  /**
+   * Limpia todos los contactos
+   */
+  clearAllContacts() {
+    this.contactsForm.patchValue({
+      nombre1: '',
+      telefono1: '',
+      nombre2: '',
+      telefono2: '',
+      nombre3: '',
+      telefono3: ''
+    });
+    this.formErrors = {};
   }
 
   /**

@@ -57,11 +57,9 @@ cancelAppointment(id: number): Observable<any> {
 }
 
   createAppointment(appointment: Appointment): Observable<any> {
-    const isManualPending = appointment.status === 'TO_BE_CONFIRMED';
-
-    const endpoint = isManualPending
-      ? `${this.api}api/medical-appointment/create-pending`
-      : `${this.api}api/medical-appointment/create-new`;
+    console.log("🚀 ~ AppointmentService ~ createAppointment ~ appointment:", appointment)
+    appointment.status = 'confirmed';
+    const endpoint = `${this.api}api/appointments/`;
 
     return this.http.post<AppointmentResponse>(endpoint, appointment).pipe(
       tap((response) => {
@@ -87,11 +85,10 @@ cancelAppointment(id: number): Observable<any> {
     id: number,
     appointment: Partial<Appointment>
   ): Observable<any> {
-    console.log("🚀 ~ AppointmentService ~ appointment:", appointment)
 
     return this.http
       .put<AppointmentResponse>(
-        `${this.api}api/medical-appointment/update/${id}`,
+        `${this.api}api/appointments/${id}`,
         appointment
       )
       .pipe(
@@ -104,7 +101,6 @@ cancelAppointment(id: number): Observable<any> {
           }
         }),
         catchError((error) => {
-          console.log("🚀 ~ AppointmentService ~ catchError ~ error:", error)
           return of({
             message: 'Error al actualizar la cita',
             data: appointment as Appointment,

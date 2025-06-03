@@ -1,5 +1,5 @@
 // patient-appointments-viewer.component.ts
-import { Component, OnInit, HostListener, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, HostListener, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, DatePipe } from '@angular/common';
 import { IonicModule, ModalController, NavController } from '@ionic/angular';
@@ -34,6 +34,8 @@ export class AppointmentViewerComponent implements OnInit {
   filteredAppointments: Appointment[] = [];
   professionals: Professional[] = [];
   public user: User | any = null;
+  // Eventos para la comunicación entre componentes
+  @Output() dateSelected = new EventEmitter<Date>();
 
   
   filterForm: FormGroup;
@@ -157,6 +159,33 @@ export class AppointmentViewerComponent implements OnInit {
       filtered = filtered.filter(a => a.status === filters.status);
     }
     
+    // ORDENAR POR PRIORIDAD DE STATUS Y FECHA
+    filtered.sort((a, b) => {
+      // Definir prioridades de status (menor número = mayor prioridad)
+      const statusPriority: { [key: string]: number } = {
+        'confirmed': 1,    // Confirmadas primero
+        'requested': 2,    // Solicitadas segundo
+        'completed': 3,    // Completadas tercero
+        'rescheduled': 4,  // Reprogramadas cuarto
+        'cancelled': 5,    // Canceladas quinto
+        'no-show': 6       // No asistió último
+      };
+      
+      const priorityA = statusPriority[a.status] || 999;
+      const priorityB = statusPriority[b.status] || 999;
+      
+      // Si tienen diferente prioridad, ordenar por prioridad
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+      
+      // Si tienen la misma prioridad, ordenar por fecha (más próximas primero)
+      const dateA = new Date(a.start_time).getTime();
+      const dateB = new Date(b.start_time).getTime();
+      
+      return dateA - dateB;
+    });
+    
     this.filteredAppointments = filtered;
   }
   
@@ -189,7 +218,6 @@ export class AppointmentViewerComponent implements OnInit {
   getAppointmentsForDate(date: Date): Appointment[] {
     const dateStr = this.formatDateToCompare(date);
     return this.filteredAppointments.filter(appointment => {
-      // Si es una cita sin asignar, no la incluimos en ninguna fecha específica del calendario
       if (this.isUnassignedAppointment(appointment)) {
         return false;
       }
@@ -259,6 +287,11 @@ export class AppointmentViewerComponent implements OnInit {
   
   isSelectedMonth(date: Date): boolean {
     return date.getMonth() === this.currentMonth;
+  }
+
+  selectDate(date: Date) {
+    this.selectedDate = date;
+    this.dateSelected.emit(date);
   }
   
   getStatusText(status: string): string {
@@ -369,4 +402,22 @@ export class AppointmentViewerComponent implements OnInit {
     this.currentMonth = event.month;
     this.currentYear = event.year;
   }
+
+hasCompletedAppointments(date: Date): boolean {
+  return this.getAppointmentsForDate(date).some(appointment => 
+    appointment.status === 'completed'
+  );
+}
+
+hasConfirmedAppointments(date: Date): boolean {
+  return this.getAppointmentsForDate(date).some(appointment => 
+    appointment.status === 'confirmed'
+  );
+}
+
+hasRequestedAppointments(date: Date): boolean {
+  return this.getAppointmentsForDate(date).some(appointment => 
+    appointment.status === 'requested'
+  );
+}
 }

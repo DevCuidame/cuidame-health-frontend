@@ -16,7 +16,7 @@
   h1 {
     font-size: 24px;
     font-weight: 600;
-    color: #fff;
+    color: var(--ion-color-dark);
     margin: 0;
   }
 
@@ -373,3 +373,4 @@
     }
   }
 }
+

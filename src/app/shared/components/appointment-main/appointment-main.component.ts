@@ -15,7 +15,9 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
         <h1>Citas Médicas</h1>
         <div class="header-actions">
           <button class="view-toggle" (click)="toggleView()">
-            <ion-icon [name]="showCalendarView ? 'list' : 'calendar'"></ion-icon>
+            <ion-icon
+              [name]="showCalendarView ? 'list' : 'calendar'"
+            ></ion-icon>
             {{ showCalendarView ? 'Vista de Lista' : 'Vista de Calendario' }}
           </button>
           <button class="new-appointment" (click)="createNewAppointment()">
@@ -50,10 +52,16 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
                 class="day-cell"
                 [class.today]="isToday(date)"
                 [class.other-month]="!isSelectedMonth(date)"
-                [class.has-appointments]="getAppointmentsForDate(date).length > 0"
+                [class.has-appointments]="
+                  getAppointmentsForDate(date).length > 0
+                "
+                [class.has-completed]="hasCompletedAppointments(date)"
+                [class.has-confirmed]="hasConfirmedAppointments(date)"
+                [class.has-requested]="hasRequestedAppointments(date)"
                 (click)="selectDate(date)"
                 [class.selected]="
-                  formatDateToCompare(selectedDate) === formatDateToCompare(date)
+                  formatDateToCompare(selectedDate) ===
+                  formatDateToCompare(date)
                 "
               >
                 <span class="day-number">{{ date.getDate() }}</span>
@@ -64,7 +72,9 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
                   <div
                     *ngFor="let appointment of getAppointmentsForDate(date)"
                     class="appointment-dot"
-                    [style.background-color]="getStatusColor(appointment.status)"
+                    [style.background-color]="
+                      getStatusColor(appointment.status)
+                    "
                   ></div>
                 </div>
               </div>
@@ -76,8 +86,11 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
         <div class="details-panel">
           <!-- Citas del día seleccionado -->
           <div class="selected-date-appointments" *ngIf="showCalendarView">
-            <h3>{{ selectedDate | date : "EEEE, d MMMM" }}</h3>
-            <div class="appointments-list" *ngIf="getAppointmentsForDate(selectedDate).length > 0">
+            <h3>{{ selectedDate | date : 'EEEE, d MMMM' }}</h3>
+            <div
+              class="appointments-list"
+              *ngIf="getAppointmentsForDate(selectedDate).length > 0"
+            >
               <div
                 *ngFor="let appointment of getAppointmentsForDate(selectedDate)"
                 class="appointment-card"
@@ -85,25 +98,35 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
               >
                 <div class="appointment-header">
                   <div class="time">
-                    {{ appointment.start_time | date : "h:mm a" }}
+                    {{ appointment.start_time | date : 'h:mm a' }}
                   </div>
                   <div
                     class="status-badge"
-                    [style.background-color]="getStatusColor(appointment.status)"
+                    [style.background-color]="
+                      getStatusColor(appointment.status)
+                    "
                   >
                     {{ getStatusText(appointment.status) }}
                   </div>
                 </div>
                 <div class="appointment-info">
-                  <p class="professional-name" *ngIf="!isUnassignedAppointment(appointment)">
+                  <p
+                    class="professional-name"
+                    *ngIf="!isUnassignedAppointment(appointment)"
+                  >
                     Dr. {{ appointment?.professional?.user?.name }}
                     {{ appointment?.professional?.user?.lastname }}
                   </p>
-                  <p class="professional-name" *ngIf="isUnassignedAppointment(appointment)">
+                  <p
+                    class="professional-name"
+                    *ngIf="isUnassignedAppointment(appointment)"
+                  >
                     Pendiente de asignación
                   </p>
                   <p class="appointment-details">
-                    {{ appointment?.appointmentType?.name || "Consulta general" }}
+                    {{
+                      appointment?.appointmentType?.name || 'Consulta general'
+                    }}
                     <ng-container *ngIf="!isUnassignedAppointment(appointment)">
                       - {{ appointment?.professional?.specialty }}
                     </ng-container>
@@ -117,13 +140,19 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
                 </div>
               </div>
             </div>
-            <div class="no-appointments" *ngIf="getAppointmentsForDate(selectedDate).length === 0">
+            <div
+              class="no-appointments"
+              *ngIf="getAppointmentsForDate(selectedDate).length === 0"
+            >
               <p>No hay citas programadas para este día</p>
             </div>
           </div>
 
           <!-- Citas sin asignar -->
-          <div class="unassigned-appointments-section" *ngIf="getUnassignedAppointments().length > 0">
+          <div
+            class="unassigned-appointments-section"
+            *ngIf="getUnassignedAppointments().length > 0"
+          >
             <h3>Citas pendientes de asignación</h3>
             <div class="appointments-list">
               <div
@@ -137,7 +166,9 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
                   </div>
                   <div
                     class="status-badge"
-                    [style.background-color]="getStatusColor(appointment.status)"
+                    [style.background-color]="
+                      getStatusColor(appointment.status)
+                    "
                   >
                     {{ getStatusText(appointment.status) }}
                   </div>
@@ -145,7 +176,9 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
                 <div class="appointment-info">
                   <p class="professional-name">Pendiente de asignación</p>
                   <p class="appointment-details">
-                    {{ appointment?.appointmentType?.name || "Consulta general" }}
+                    {{
+                      appointment?.appointmentType?.name || 'Consulta general'
+                    }}
                   </p>
                   <div class="patient-info">
                     <p class="patient-name">
@@ -163,39 +196,58 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
             <h3>Todas las citas</h3>
             <div class="appointments-list">
               <div
-                *ngFor="let appointment of appointments"
+                *ngFor="let appointment of sortedAppointments"
                 class="appointment-card"
                 (click)="selectAppointment(appointment)"
               >
                 <div class="appointment-header">
                   <div class="date-time">
-                    <div class="date" *ngIf="!isUnassignedAppointment(appointment)">
-                      {{ appointment.start_time | date : "EEEE, MMM d" }}
+                    <div
+                      class="date"
+                      *ngIf="!isUnassignedAppointment(appointment)"
+                    >
+                      {{ appointment.start_time | date : 'EEEE, MMM d' }}
                     </div>
-                    <div class="date" *ngIf="isUnassignedAppointment(appointment)">
+                    <div
+                      class="date"
+                      *ngIf="isUnassignedAppointment(appointment)"
+                    >
                       Pendiente de asignación
                     </div>
-                    <div class="time" *ngIf="!isUnassignedAppointment(appointment)">
-                      {{ appointment.start_time | date : "h:mm a" }}
+                    <div
+                      class="time"
+                      *ngIf="!isUnassignedAppointment(appointment)"
+                    >
+                      {{ appointment.start_time | date : 'h:mm a' }}
                     </div>
                   </div>
                   <div
                     class="status-badge"
-                    [style.background-color]="getStatusColor(appointment.status)"
+                    [style.background-color]="
+                      getStatusColor(appointment.status)
+                    "
                   >
                     {{ getStatusText(appointment.status) }}
                   </div>
                 </div>
                 <div class="appointment-info">
-                  <p class="professional-name" *ngIf="!isUnassignedAppointment(appointment)">
+                  <p
+                    class="professional-name"
+                    *ngIf="!isUnassignedAppointment(appointment)"
+                  >
                     Dr. {{ appointment?.professional?.user?.name }}
                     {{ appointment?.professional?.user?.lastname }}
                   </p>
-                  <p class="professional-name" *ngIf="isUnassignedAppointment(appointment)">
+                  <p
+                    class="professional-name"
+                    *ngIf="isUnassignedAppointment(appointment)"
+                  >
                     Pendiente de asignación
                   </p>
                   <p class="appointment-details">
-                    {{ appointment?.appointmentType?.name || "Consulta general" }}
+                    {{
+                      appointment?.appointmentType?.name || 'Consulta general'
+                    }}
                     <ng-container *ngIf="!isUnassignedAppointment(appointment)">
                       - {{ appointment?.professional?.specialty }}
                     </ng-container>
@@ -214,26 +266,25 @@ import { Professional } from 'src/app/core/interfaces/professional.interface';
       </div>
     </div>
   `,
-  styleUrls: ['./appointment-main.component.scss']
+  styleUrls: ['./appointment-main.component.scss'],
 })
 export class AppointmentMainComponent {
   @Input() appointments: Appointment[] = [];
   @Input() filteredAppointments: Appointment[] = [];
   @Input() professionals: Professional[] = [];
-  @Input() statusColors: {[key: string]: string} = {};
+  @Input() statusColors: { [key: string]: string } = {};
   @Input() weekDays: string[] = [];
   @Input() monthNames: string[] = [];
-  @Input() loading: boolean = false
-  @Input() showCalendarView: any
+  @Input() loading: boolean = false;
+  @Input() showCalendarView: any;
   @Input() currentMonth: number = new Date().getMonth();
   @Input() currentYear: number = new Date().getFullYear();
 
-  
   @Output() viewToggled = new EventEmitter<boolean>();
   @Output() dateSelected = new EventEmitter<Date>();
   @Output() appointmentSelected = new EventEmitter<Appointment>();
   @Output() newAppointmentRequested = new EventEmitter<void>();
-  @Output() monthChanged = new EventEmitter<{month: number, year: number}>();
+  @Output() monthChanged = new EventEmitter<{ month: number; year: number }>();
 
   @Input() selectedDate = new Date();
 
@@ -262,7 +313,10 @@ export class AppointmentMainComponent {
     } else {
       this.currentMonth--;
     }
-    this.monthChanged.emit({month: this.currentMonth, year: this.currentYear});
+    this.monthChanged.emit({
+      month: this.currentMonth,
+      year: this.currentYear,
+    });
   }
 
   nextMonth() {
@@ -272,7 +326,10 @@ export class AppointmentMainComponent {
     } else {
       this.currentMonth++;
     }
-    this.monthChanged.emit({month: this.currentMonth, year: this.currentYear});
+    this.monthChanged.emit({
+      month: this.currentMonth,
+      year: this.currentYear,
+    });
   }
 
   getDaysInMonth(): Date[] {
@@ -282,23 +339,23 @@ export class AppointmentMainComponent {
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDay = firstDay.getDay();
-    
+
     const days: Date[] = [];
-    
+
     // Add empty days for the start of the month
     for (let i = 0; i < startingDay; i++) {
       days.push(new Date(year, month, -i));
     }
-    
+
     // Add all days of the month
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(new Date(year, month, i));
     }
-    
+
     // Reverse the first part to get correct order
     const previousMonthDays = days.slice(0, startingDay).reverse();
     const currentMonthDays = days.slice(startingDay);
-    
+
     return [...previousMonthDays, ...currentMonthDays];
   }
 
@@ -317,26 +374,35 @@ export class AppointmentMainComponent {
 
   getAppointmentsForDate(date: Date): Appointment[] {
     const dateStr = this.formatDateToCompare(date);
-    return this.filteredAppointments.filter(appointment => {
+    return this.filteredAppointments.filter((appointment) => {
       // Si es una cita sin asignar, no la incluimos en ninguna fecha específica del calendario
       if (this.isUnassignedAppointment(appointment)) {
         return false;
       }
-      
-      const appointmentDateStr = this.formatDateToCompare(new Date(appointment.start_time));
+
+      const appointmentDateStr = this.formatDateToCompare(
+        new Date(appointment.start_time)
+      );
       return appointmentDateStr === dateStr;
     });
   }
 
   getStatusText(status: string): string {
     switch (status) {
-      case 'requested': return 'Solicitada';
-      case 'confirmed': return 'Confirmada';
-      case 'completed': return 'Completada';
-      case 'cancelled': return 'Cancelada';
-      case 'rescheduled': return 'Reprogramada';
-      case 'no-show': return 'No asistió';
-      default: return status;
+      case 'requested':
+        return 'Solicitada';
+      case 'confirmed':
+        return 'Confirmada';
+      case 'completed':
+        return 'Completada';
+      case 'cancelled':
+        return 'Cancelada';
+      case 'rescheduled':
+        return 'Reprogramada';
+      case 'no-show':
+        return 'No asistió';
+      default:
+        return status;
     }
   }
 
@@ -348,14 +414,31 @@ export class AppointmentMainComponent {
     if (!appointment.professional) {
       return true;
     }
-    
-    // Verificar si la fecha está más de 50 años en el futuro (lo que indicaría un error)
+
     const appointmentDate = new Date(appointment.start_time);
     const today = new Date();
     const fiftyYearsFromNow = new Date();
     fiftyYearsFromNow.setFullYear(today.getFullYear() + 50);
-    
+
     return appointmentDate > fiftyYearsFromNow;
+  }
+
+  hasCompletedAppointments(date: Date): boolean {
+    return this.getAppointmentsForDate(date).some(
+      (appointment) => appointment.status === 'completed'
+    );
+  }
+
+  hasConfirmedAppointments(date: Date): boolean {
+    return this.getAppointmentsForDate(date).some(
+      (appointment) => appointment.status === 'confirmed'
+    );
+  }
+
+  hasRequestedAppointments(date: Date): boolean {
+    return this.getAppointmentsForDate(date).some(
+      (appointment) => appointment.status === 'requested'
+    );
   }
 
   getDisplayTimeForUnassignedAppointment(appointment: Appointment): string {
@@ -363,9 +446,34 @@ export class AppointmentMainComponent {
   }
 
   getUnassignedAppointments(): Appointment[] {
-    return this.filteredAppointments.filter(appointment => 
-      appointment.status === 'requested' && this.isUnassignedAppointment(appointment)
+    const unassigned = this.sortedAppointments.filter(
+      (appointment) =>
+        appointment.status === 'requested' &&
+        this.isUnassignedAppointment(appointment)
     );
+
+    // Aplicar el mismo ordenamiento por prioridad
+    return unassigned.sort((a, b) => {
+      const statusPriority: { [key: string]: number } = {
+        confirmed: 1,
+        requested: 2,
+        completed: 3,
+        rescheduled: 4,
+        cancelled: 5,
+        'no-show': 6,
+      };
+
+      const priorityA = statusPriority[a.status] || 999;
+      const priorityB = statusPriority[b.status] || 999;
+
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      const dateA = new Date(a.start_time).getTime();
+      const dateB = new Date(b.start_time).getTime();
+      return dateA - dateB;
+    });
   }
 
   getPatientName(appointment: any): string {
@@ -384,14 +492,42 @@ export class AppointmentMainComponent {
   }
 
   getDocumentTypeName(tipoId: string): string {
-    const documentTypes: {[key: string]: string} = {
-      'cedula_ciudadania': 'CC',
-      'tarjeta_identidad': 'TI',
-      'registro_civil': 'RC',
-      'pasaporte': 'PA',
-      'cedula_extranjeria': 'CE'
+    const documentTypes: { [key: string]: string } = {
+      cedula_ciudadania: 'CC',
+      tarjeta_identidad: 'TI',
+      registro_civil: 'RC',
+      pasaporte: 'PA',
+      cedula_extranjeria: 'CE',
     };
-    
+
     return documentTypes[tipoId] || tipoId;
+  }
+
+  get sortedAppointments(): Appointment[] {
+    return [...this.appointments].sort((a, b) => {
+      // Definir prioridades de status (menor número = mayor prioridad)
+      const statusPriority: { [key: string]: number } = {
+        confirmed: 1, // Confirmadas primero
+        requested: 2, // Solicitadas segundo
+        completed: 3, // Completadas tercero
+        rescheduled: 4, // Reprogramadas cuarto
+        cancelled: 5, // Canceladas quinto
+        'no-show': 6, // No asistió último
+      };
+
+      const priorityA = statusPriority[a.status] || 999;
+      const priorityB = statusPriority[b.status] || 999;
+
+      // Si tienen diferente prioridad, ordenar por prioridad
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      // Si tienen la misma prioridad, ordenar por fecha (más próximas primero)
+      const dateA = new Date(a.start_time).getTime();
+      const dateB = new Date(b.start_time).getTime();
+
+      return dateA - dateB;
+    });
   }
 }

@@ -97,14 +97,26 @@
     <div class="appointment-datetime">
       <p class="date-time-info">
         <fa-icon [icon]="faCalendar"></fa-icon>
-        @if (!isUnassignedAppointment()){
-        {{ appointment.start_time || "Sin hora asignada" }}
-        }@else { Pendiente de asignación }
-        <fa-icon [icon]="faClock" class="time-icon"></fa-icon>
+        @if (!isUnassignedAppointment(appointment.start_time)) {
+        {{
+          (appointment.start_time | date : "EEEE, dd MMMM yyyy" : "es-ES") ??
+            "Sin fecha asignada"
+        }}
+        } @else { Pendiente de asignación }
 
-        @if (!isUnassignedAppointment()){
-        {{ appointment.start_time || "Sin hora asignada" }}
-        }@else { Pendiente de asignación }
+        <fa-icon [icon]="faClock" class="time-icon"></fa-icon>
+        @if (!isUnassignedAppointment(appointment.start_time)) {
+        {{ appointment.end_time | date : "HH:mm" }}
+        } @else { Hora por definir }
+      </p>
+    </div>
+    } @else {
+    <div class="appointment-datetime">
+      <p class="date-time-info no-appointment">
+        <fa-icon [icon]="faCalendar"></fa-icon>
+        Sin cita programada
+        <fa-icon [icon]="faClock" class="time-icon"></fa-icon>
+        No disponible
       </p>
     </div>
     }

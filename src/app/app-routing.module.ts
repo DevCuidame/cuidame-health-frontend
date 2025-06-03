@@ -23,9 +23,16 @@ const routes: Routes = [
   },
 
   {
+    path: 'user/delete-account',
+    loadComponent: () => 
+      import('./modules/user/pages/delete-account/delete-account.component').then(m => m.DeleteAccountComponent),
+    canActivate: [AuthGuard]
+  },
+
+  {
     path: 'code',
     loadChildren: () =>
-      import('./pages/components/initial-layout.module').then(
+      import('./pages/components/initial-layout/initial-layout.module').then(
         (m) => m.InitialLayoutModule
       ),
   },

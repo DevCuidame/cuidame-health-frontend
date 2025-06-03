@@ -125,6 +125,10 @@
         &.other-month {
           opacity: 0.5;
         }
+       &.selected {
+          background-color: rgba(var(--ion-color-primary-rgb), 0.2);
+          border: 1px solid var(--ion-color-primary);
+        }
 
         &.has-appointments {
           .day-number {
@@ -300,11 +304,6 @@
   }
 }
 
-// Estilos para el botón flotante
-ion-fab {
-  // margin-bottom: 70px;
-}
-
 // Media queries para ajustes responsivos
 @media (max-width: 991px) {
   .desktop-layout {
@@ -340,3 +339,5 @@ ion-fab {
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+

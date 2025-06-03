@@ -500,4 +500,38 @@ logout(): Observable<void> {
   verifyEmail(code: string): Observable<any> {
     return this.http.post(`${environment.url}api/v1/email/verify`, { code });
   }
+
+  /**
+   * Elimina la cuenta del usuario actual
+   * @param data Datos necesarios para la eliminación (contraseña, razón, etc.)
+   * @returns Observable con la respuesta del servidor
+   */
+  deleteAccount(data: {
+    password: string;
+    reason?: string;
+    otherReason?: string;
+    confirmation: string;
+  }): Observable<any> {
+    const endpoint = `${environment.url}api/auth/delete-account`;
+    
+    return this.http.delete(endpoint, {
+      body: {
+        password: data.password,
+        reason: data.reason,
+        otherReason: data.otherReason,
+        confirmation: data.confirmation,
+      }
+    });
+  }
+
+  getAccountDeletionInfo(): Observable<any> {
+    const endpoint = `${environment.url}api/auth/account-deletion-info`;
+    return this.http.get(endpoint);
+  }
+
+  verifyPasswordForDeletion(password: string): Observable<any> {
+    const endpoint = `${environment.url}api/auth/verify-password`;
+    return this.http.post(endpoint, { password });
+  }
+
 }

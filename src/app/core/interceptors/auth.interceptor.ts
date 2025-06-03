@@ -27,7 +27,10 @@ export class AuthInterceptor implements HttpInterceptor {
     'api/auth/login',
     'api/auth/register',
     'api/auth/refresh-token',
-    'api/email/resend'
+    'api/email/resend',
+    '/api/auth/delete-account',
+    'api/auth/account-deletion-info',
+    'api/auth/verify-password'
   ];
 
   constructor(

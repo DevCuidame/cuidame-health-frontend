@@ -91,8 +91,6 @@ export class MedicamentsAllergiesListComponent implements OnInit, OnDestroy {
    */
   loadHealthData(id: number) {
     this.isLoading = true;
-    this.presentLoading();
-    
     // Usar el método getHealthData para cargar los datos
     this.healthDataService.getHealthData(id)
       .pipe(takeUntil(this.destroy$))
@@ -135,8 +133,6 @@ export class MedicamentsAllergiesListComponent implements OnInit, OnDestroy {
     }
     
     this.isLoading = true;
-    this.presentLoading();
-    
     // Forzar recarga desde el servidor
     this.healthDataService.getHealthData(this.activeBeneficiary.id, true)
       .pipe(takeUntil(this.destroy$))
@@ -162,18 +158,6 @@ export class MedicamentsAllergiesListComponent implements OnInit, OnDestroy {
           this.dismissLoading();
         }
       );
-  }
-
-  /**
-   * Muestra un indicador de carga
-   */
-  async presentLoading() {
-    const loading = await this.loadingController.create({
-      message: 'Cargando alergias...',
-      spinner: 'circular',
-      backdropDismiss: false
-    });
-    await loading.present();
   }
 
   /**
