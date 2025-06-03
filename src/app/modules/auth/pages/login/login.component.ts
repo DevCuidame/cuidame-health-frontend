@@ -207,7 +207,7 @@ export class LoginComponent {
 
 
   goToResetPassword(){
-
+    this.navCtrl.navigateForward('/auth/reset-password');
   }
 
   loginWithGoogle() {
