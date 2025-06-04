@@ -1,6 +1,8 @@
-import { NgModule } from '@angular/core';
+import { NgModule, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
@@ -12,6 +14,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { NavigationFixService } from './core/services/navigation-fix.service';
+
+// Registrar el locale español
+registerLocaleData(localeEs);
 
 @NgModule({
   declarations: [AppComponent],
@@ -26,6 +31,7 @@ import { NavigationFixService } from './core/services/navigation-fix.service';
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    { provide: LOCALE_ID, useValue: 'es-ES' },
     NavigationFixService
     // { provide: LocationStrategy, useClass: HashLocationStrategy },
   ],

@@ -20,7 +20,16 @@ import { AppointmentService } from 'src/app/core/services/appointment/appointmen
 
       <div class="main-content">
         <div class="cards-section">
-          @if(todayCitas.length > 0) {
+          @if(isLoading) {
+            <div class="loading">
+              <p>Cargando citas del día...</p>
+            </div>
+          } @else if(error) {
+            <div class="error">
+              <p>{{ error }}</p>
+              <button (click)="loadTodayAppointments()" class="retry-btn">Reintentar</button>
+            </div>
+          } @else if(todayCitas.length > 0) {
             @for (appointment of todayCitas; track appointment.id) {
               <app-pending-card
                 [appointment]="appointment"
@@ -43,50 +52,27 @@ export class DailyAppointmentsComponent implements OnInit, OnDestroy {
   public todayCitas: Appointment[] = [];
   public todayFormatted: string = '';
   public todayCitasCount: number = 0;
+  public isLoading: boolean = false;
+  public error: string = '';
   
-  private wsSubscription!: Subscription;
+  private appointmentsSubscription!: Subscription;
 
   constructor(
-    private appointmentService: AppointmentService,
-    // private websocketService: WebsocketService
+    private appointmentService: AppointmentService
   ) {}
 
   ngOnInit() {
     // Formatear la fecha de hoy
     this.todayFormatted = this.formatTodayDate();
     
-    // Suscribirse a los cambios de citas desde el WebSocket
-    // this.wsSubscription = this.websocketService.connect().subscribe({
-    //   next: (data: any) => {
-    //     if (data.event === 'all_appointments' && data.appointments) {
-    //       if (data.appointments.data) {
-    //         this.processAppointments(data.appointments.data);
-    //       } else if (Array.isArray(data.appointments)) {
-    //         this.processAppointments(data.appointments);
-    //       }
-    //     } else if (data.event === 'new_appointment' && data.appointment) {
-    //       // Si llega una nueva cita, actualizar la lista si es para hoy
-    //       const newAppointment = data.appointment as Appointment;
-    //       if (this.isAppointmentToday(newAppointment)) {
-    //         this.todayCitas = [...this.todayCitas, newAppointment];
-    //         this.todayCitasCount = this.todayCitas.length;
-    //       }
-    //     }
-    //   },
-    //   error: (error: any) => {
-    //     console.error('Error en WebSocket:', error);
-    //   }
-    // });
-    
-    // Solicitar todas las citas al conectarse
-    this.requestAppointments();
+    // Cargar las citas del día
+    this.loadTodayAppointments();
   }
   
   ngOnDestroy(): void {
-    if (this.wsSubscription) {
-      this.wsSubscription.unsubscribe();
+    if (this.appointmentsSubscription) {
+      this.appointmentsSubscription.unsubscribe();
     }
-    // this.websocketService.disconnect();
   }
   
   processAppointments(appointments: Appointment[]): void {
@@ -101,13 +87,13 @@ export class DailyAppointmentsComponent implements OnInit, OnDestroy {
   }
   
   isAppointmentToday(appointment: Appointment): boolean {
-    if (!appointment.start_time) return false;
+    if (!appointment.created_at) return false;
     
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const appointmentDate = new Date(appointment.start_time);
+      const appointmentDate = new Date(appointment.created_at);
       appointmentDate.setHours(0, 0, 0, 0);
       
       return appointmentDate.getTime() === today.getTime();
@@ -127,11 +113,25 @@ export class DailyAppointmentsComponent implements OnInit, OnDestroy {
     });
   }
   
-  requestAppointments(): void {
-    // setTimeout(() => {
-    //   this.websocketService.send({
-    //     event: 'all_appointments'
-    //   });
-    // }, 500);
+  loadTodayAppointments(): void {
+    this.isLoading = true;
+    this.error = '';
+    
+    this.appointmentsSubscription = this.appointmentService.getAllAppointments().subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.success && response.data) {
+          this.processAppointments(response.data);
+        } else {
+          this.error = 'Error al cargar las citas';
+          console.error('Error en la respuesta:', response);
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.error = 'Error al conectar con el servidor';
+        console.error('Error cargando citas:', error);
+      }
+    });
   }
 }

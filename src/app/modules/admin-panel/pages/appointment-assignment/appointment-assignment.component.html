@@ -1,12 +1,16 @@
 <div class="pending-appointments">
-  <app-search-bar [highlighted]="requests"></app-search-bar>
+  <app-search-bar 
+    [highlighted]="requests"
+    (searchChange)="onSearchChange($event)"
+    (filterChange)="onFilterChange($event)"
+  ></app-search-bar>
 
   <div class="main-content">
     <div class="cards-section">
-      @if (isLoading) {
+      @if (isLoading || isSearching) {
         <div class="loading-container">
           <div class="loading-spinner"></div>
-          <p>Cargando citas...</p>
+          <p>{{ isSearching ? 'Buscando citas...' : 'Cargando citas...' }}</p>
         </div>
       } @else if (connectionError) {
         <div class="error-container">

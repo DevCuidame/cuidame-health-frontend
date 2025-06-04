@@ -73,20 +73,16 @@ export class AppointmentWebSocketService {
   connect(): void {
     // Remover la verificación redundante del inicio
     if (this.socket$ && !this.socket$.closed && this.connectionStatusSubject.value) {
-      console.log('🔄 WebSocket ya está conectado y activo');
       return;
     }
   
     if (this.isConnecting) {
-      console.log('🔄 WebSocket ya está intentando conectar');
       return;
     }
   
     this.isConnecting = true;
     this.shouldReconnect = true;
     this.reconnectTimer$.next(); // Cancel any pending reconnection
-  
-    console.log('🔗 Conectando a WebSocket de appointments:', this.wsUrl);
   
     // Cerrar conexión existente si existe
     this.closeSocket();
@@ -96,7 +92,6 @@ export class AppointmentWebSocketService {
         url: this.wsUrl,
         openObserver: {
           next: () => {
-            console.log('✅ WebSocket de appointments conectado');
             this.connectionStatusSubject.next(true);
             this.reconnectionAttempts = 0;
             this.isConnecting = false;
@@ -110,11 +105,6 @@ export class AppointmentWebSocketService {
         },
         closeObserver: {
           next: (event) => {
-            console.log(
-              '❌ WebSocket de appointments cerrado:',
-              event.code,
-              event.reason
-            );
             this.connectionStatusSubject.next(false);
             this.isConnecting = false;
             this.stopHeartbeat();
@@ -145,7 +135,6 @@ export class AppointmentWebSocketService {
             return EMPTY;
           }),
           finalize(() => {
-            console.log('🔌 WebSocket stream finalizado');
             this.isConnecting = false;
             this.stopHeartbeat();
           })
@@ -163,7 +152,6 @@ export class AppointmentWebSocketService {
    * Desconectar WebSocket
    */
   disconnect(): void {
-    console.log('🔌 Desconectando WebSocket...');
     this.shouldReconnect = false;
     this.reconnectTimer$.next(); // Cancel any pending reconnection
     this.stopHeartbeat(); // ✅ NUEVO: Parar heartbeat
@@ -211,9 +199,7 @@ export class AppointmentWebSocketService {
     this.reconnectionAttempts++;
     const delay = Math.min(Math.pow(2, this.reconnectionAttempts) * 1000, 30000);
 
-    console.log(
-      `🔄 Programando reconexión (${this.reconnectionAttempts}/${this.maxReconnectionAttempts}) en ${delay}ms...`
-    );
+
 
     // ✅ SOLUCIÓN: Cancelar timer anterior antes de crear uno nuevo
     this.reconnectTimer$.next(); // Cancela timer anterior
@@ -225,7 +211,6 @@ export class AppointmentWebSocketService {
       )
       .subscribe(() => {
         if (this.shouldReconnect && !this.isConnecting && !this.connectionStatusSubject.value) {
-          console.log('🔄 Intentando reconectar...');
           this.connect();
         }
       });
@@ -242,12 +227,10 @@ export class AppointmentWebSocketService {
     
     // ✅ SOLUCIÓN: Throttling de requests
     if (now - this.lastRequestTime < this.REQUEST_THROTTLE_MS) {
-      console.log('⚠️ Request throttled - demasiado frecuente');
       return;
     }
 
     if (this.socket$ && !this.socket$.closed && this.connectionStatusSubject.value) {
-      console.log('📤 Solicitando todas las appointments');
       try {
         this.socket$.next({
           type: 'fetchAllAppointments'
@@ -258,7 +241,6 @@ export class AppointmentWebSocketService {
         this.handleSocketError(error);
       }
     } else {
-      console.warn('⚠️ No se puede solicitar appointments - WebSocket no conectado');
       if (this.shouldReconnect) {
         this.connect();
       }
@@ -269,12 +251,9 @@ export class AppointmentWebSocketService {
    * Manejar mensajes del WebSocket
    */
   private handleMessage(message: AppointmentWebSocketMessage): void {
-    console.log('📥 Mensaje recibido:', message);
-
     try {
       switch (message.type) {
         case 'connection':
-          console.log('Conexión confirmada:', message.message);
           break;
 
         case 'appointmentsList':
@@ -302,7 +281,6 @@ export class AppointmentWebSocketService {
 
         case 'pong':
           // Respuesta al ping - conexión activa
-          console.debug('📡 Pong recibido - conexión activa');
           break;
 
         default:
@@ -319,7 +297,6 @@ export class AppointmentWebSocketService {
   private updateAppointments(appointments: Appointment[]): void {
     this.appointmentsSubject.next(appointments);
     this.updateCounts(appointments);
-    console.log(`📊 ${appointments.length} appointments actualizadas`);
   }
 
   /**
@@ -330,7 +307,6 @@ export class AppointmentWebSocketService {
     const updatedAppointments = [...currentAppointments, appointment];
     this.appointmentsSubject.next(updatedAppointments);
     this.updateCounts(updatedAppointments);
-    console.log('➕ Nueva appointment agregada:', appointment.id);
   }
 
   /**
@@ -345,7 +321,6 @@ export class AppointmentWebSocketService {
     );
     this.appointmentsSubject.next(updatedAppointments);
     this.updateCounts(updatedAppointments);
-    console.log('🔄 Appointment actualizada:', updatedAppointment.id);
   }
 
   /**
@@ -442,7 +417,6 @@ export class AppointmentWebSocketService {
   }
 
   destroy(): void {
-    console.log('🧹 Destruyendo AppointmentWebSocketService');
     this.stopHeartbeat();
     this.destroy$.next();
     this.destroy$.complete();
@@ -453,7 +427,6 @@ export class AppointmentWebSocketService {
    * Limpiar recursos al destruir el servicio
    */
   ngOnDestroy(): void {
-    console.log('🧹 Destruyendo AppointmentWebSocketService');
     this.destroy$.next();
     this.destroy$.complete();
     this.disconnect();

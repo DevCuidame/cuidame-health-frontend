@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonicModule, NavController, LoadingController } from '@ionic/angular';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { IonicModule, NavController, LoadingController, AlertController } from '@ionic/angular';
 import { Beneficiary } from 'src/app/core/interfaces/beneficiary.interface';
 import { BeneficiaryHeaderComponent } from 'src/app/shared/components/beneficiary-header/beneficiary-header.component';
 import { TabBarComponent } from 'src/app/shared/components/tab-bar/tab-bar.component';
@@ -7,7 +7,7 @@ import { BasicDataComponent } from 'src/app/shared/components/basic-data/basic-d
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd, Event } from '@angular/router';
 import { BeneficiaryService } from '../../../../core/services/beneficiary.service';
-import { EditButtonComponent } from 'src/app/shared/components/edit-button/edit-button.component';
+
 import { HomeOptionsComponent } from 'src/app/shared/components/home-options/home-options.component';
 import { Subscription, filter, of, switchMap } from 'rxjs';
 import { ToastService } from 'src/app/core/services/toast.service';
@@ -23,7 +23,7 @@ import { HealthDataService } from 'src/app/core/services/healthData.service';
     TabBarComponent,
     BasicDataComponent,
     RouterModule,
-    EditButtonComponent,
+
     // HomeOptionsComponent,
   ],
   templateUrl: './home-beneficiary.component.html',
@@ -38,6 +38,7 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
   // Variables para controlar animaciones y visibilidad
   public showCategoriesMenu: boolean = true;
   public isMenuAnimating: boolean = false;
+  public showOptionsMenu: boolean = false;
 
   // URLs donde las categorías no deben mostrarse
   private hideMenuOnUrls: string[] = [
@@ -61,7 +62,8 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
     private router: Router,
     private loadingController: LoadingController,
     private toastService: ToastService,
-    private healthDataService: HealthDataService
+    private healthDataService: HealthDataService,
+    private alertController: AlertController
   ) {}
 
   ngOnInit() {
@@ -263,5 +265,101 @@ export class HomeBeneficiaryComponent implements OnInit, OnDestroy {
     }
     
     return age;
+  }
+
+  /**
+   * Muestra un diálogo de confirmación para eliminar el familiar
+   */
+  async confirmDeleteBeneficiary() {
+    if (!this.activeBeneficiary) {
+      this.toastService.presentToast('No hay familiar seleccionado', 'warning');
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Confirmar eliminación',
+      message: `¿Estás seguro de que deseas eliminar a ${this.activeBeneficiary.nombre} ${this.activeBeneficiary.apellido}? Esta acción no se puede deshacer.`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary',
+        },
+        {
+          text: 'Eliminar',
+          cssClass: 'danger',
+          handler: () => {
+            this.deleteBeneficiary();
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Elimina el familiar activo
+   */
+  private deleteBeneficiary() {
+    if (!this.activeBeneficiary?.id) {
+      this.toastService.presentToast('Error: No se puede eliminar el familiar', 'danger');
+      return;
+    }
+
+    const beneficiaryName = `${this.activeBeneficiary.nombre} ${this.activeBeneficiary.apellido}`;
+
+    this.beneficiaryService.deleteBeneficiary(this.activeBeneficiary.id).subscribe({
+      next: (response) => {
+        this.toastService.presentToast(
+          `${beneficiaryName} ha sido eliminado exitosamente`,
+          'success'
+        );
+        
+        // Navegar de vuelta al dashboard después de eliminar
+        this.navCtrl.navigateRoot(['/home/dashboard']);
+      },
+      error: (error) => {
+        console.error('Error al eliminar familiar:', error);
+        this.toastService.presentToast(
+          'Error al eliminar el familiar. Inténtalo de nuevo.',
+          'danger'
+        );
+      },
+    });
+  }
+
+  editBeneficiary() {
+    this.router.navigate(['/beneficiary/add']);
+  }
+
+  /**
+   * Alterna la visibilidad del menú de opciones
+   */
+  toggleOptionsMenu(event: MouseEvent) {
+    event.stopPropagation();
+    this.showOptionsMenu = !this.showOptionsMenu;
+  }
+
+  /**
+   * Oculta el menú de opciones
+   */
+  hideOptionsMenu() {
+    this.showOptionsMenu = false;
+  }
+
+  /**
+   * Maneja clics fuera del menú para cerrarlo
+   */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.showOptionsMenu) return;
+    
+    const target = event.target as HTMLElement;
+    const menuContainer = target.closest('.options-menu-container');
+    
+    if (!menuContainer) {
+      this.hideOptionsMenu();
+    }
   }
 }

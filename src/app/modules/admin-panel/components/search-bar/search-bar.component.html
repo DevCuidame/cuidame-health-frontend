@@ -8,7 +8,12 @@
   </div>  
   <div class="filter-section">
     <div class="input-wrapper">
-      <input type="text" placeholder="Buscar..." />
+      <input 
+        type="text" 
+        placeholder="Buscar por nombre, documento, especialidad..." 
+        [(ngModel)]="searchTerm"
+        (input)="onSearchInput($event)"
+      />
       <fa-icon class="search-icon" [icon]="faSearch"></fa-icon>
     </div>
     <div class="dropdown">
@@ -23,9 +28,23 @@
       </button>
       @if (showDropdown){
       <div class="dropdown-content">
-        <a href="#">Opción 1</a>
-        <a href="#">Opción 2</a>
-        <a href="#">Opción 3</a>
+        <div class="filter-group">
+          <h4>Estado</h4>
+          <button (click)="applyFilter('status', 'requested')">Solicitadas</button>
+          <button (click)="applyFilter('status', 'confirmed')">Confirmadas</button>
+          <button (click)="applyFilter('status', 'rescheduled')">Reprogramadas</button>
+          <button (click)="applyFilter('status', 'cancelled')">Canceladas</button>
+        </div>
+        <div class="filter-group">
+          <h4>Especialidad</h4>
+          <button (click)="applyFilter('specialty', 'Medicina General')">Medicina General</button>
+          <button (click)="applyFilter('specialty', 'Acompañamiento de Citas Médicas')">Acompañamiento de Citas Médicas</button>
+          <button (click)="applyFilter('specialty', 'Cuidador')">Dermatología</button>
+          <button (click)="applyFilter('specialty', 'Recoger Medicamentos')">Recoger Medicamentos</button>
+        </div>
+        <div class="filter-actions">
+          <button class="clear-btn" (click)="clearFilters()">Limpiar filtros</button>
+        </div>
       </div>
       }
     </div>

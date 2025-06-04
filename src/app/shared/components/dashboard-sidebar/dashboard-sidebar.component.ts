@@ -6,6 +6,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from 'src/app/modules/auth/services/auth.service';
 import { finalize } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-dashboard-sidebar',
@@ -17,7 +18,7 @@ import { Subscription } from 'rxjs';
         <div class="avatar-container">
           <img
             [src]="
-              user?.photourl
+              user?.path
                 ? formatImageUrl(user.path)
                 : user?.imagebs64 || '/assets/images/default_user.png'
             "
@@ -199,11 +200,10 @@ export class DashboardSidebarComponent implements OnInit, OnDestroy {
 
   formatImageUrl(path: string): string {
     if (!path) return '/assets/images/default_user.png';
-    return path;
+    return environment.url + path;
   }
 
   navigateTo(route: string): void {
-    // Emitir el evento para comunicar al componente padre
     this.menuItemSelected.emit(route);
 
     switch (route) {
@@ -217,15 +217,13 @@ export class DashboardSidebarComponent implements OnInit, OnDestroy {
         this.router.navigate(['/user/contacts']);
         break;
       case 'profile':
-        // TODO: Implementar navegación al perfil
-        this.router.navigate(['/user/profile']);
+        this.router.navigate(['/home/profile']);
         break;
       case 'password':
         // TODO: Implementar navegación a cambiar contraseña
         this.router.navigate(['/user/change-password']);
         break;
       case 'settings':
-        // TODO: Implementar navegación a configuración
         this.router.navigate(['/user/settings']);
         break;
       default:

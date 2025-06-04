@@ -17,7 +17,7 @@ export class ResetPasswordService {
    * @param email Email del usuario
    */
   requestPasswordReset(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}api/v1/password/request-reset`, { email });
+    return this.http.post(`${this.apiUrl}api/auth/forgot-password`, { email });
   }
 
   /**
@@ -26,18 +26,11 @@ export class ResetPasswordService {
    * @param newPassword Nueva contraseña
    */
   resetPassword(token: string, newPassword: string, confirmPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}api/v1/password/reset`, { 
+    return this.http.post(`${this.apiUrl}api/auth/reset-password`, { 
       token, 
-      newPassword: newPassword ,
+      password: newPassword ,
       confirmPassword: confirmPassword
     });
   }
 
-  /**
-   * Verifica si un token de restablecimiento es válido
-   * @param token Token de restablecimiento
-   */
-  verifyResetToken(token: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}api/v1/password/verify-token/${token}`);
-  }
 }

@@ -36,3 +36,44 @@
   color: var(--ion-color-medium);
   font-style: italic;
 }
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 200px;
+  background-color: #f0f8ff;
+  border-radius: 12px;
+  color: var(--ion-color-primary);
+  font-weight: 500;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 200px;
+  background-color: #fff5f5;
+  border-radius: 12px;
+  color: var(--ion-color-danger);
+  text-align: center;
+  gap: 1rem;
+
+  .retry-btn {
+    background-color: var(--ion-color-primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: var(--ion-color-primary-shade);
+    }
+  }
+}

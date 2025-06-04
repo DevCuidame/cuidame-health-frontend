@@ -103,7 +103,7 @@ import { TabBarComponent } from 'src/app/shared/components/tab-bar/tab-bar.compo
       [isVisible]="true"
       [buttons]="[
         { icon: 'arrow-back-outline', route: '/auth/login', visible: true },
-        { icon: 'menu-outline', route: '/', visible: false },
+        { icon: 'ellipsis-horizontal', route: '/', visible: false },
         { icon: 'exit-outline', route: '/', visible: true }
       ]"
       [background]="'var(--ion-color-light)'"

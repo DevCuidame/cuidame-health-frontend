@@ -17,7 +17,6 @@ ion-content {
   max-height: calc(100vh - 300px);
   padding-bottom: 80px;
   scrollbar-width: none;
-
 }
 
 .options-container {
@@ -60,7 +59,7 @@ ion-content {
   position: relative;
   top: -5px;
   width: 100%;
-  
+
   div {
     display: flex;
     align-items: center;
@@ -83,13 +82,13 @@ ion-content {
     &:active {
       transform: translateY(1px);
     }
-    
-    &:nth-child(1), 
+
+    &:nth-child(1),
     &:nth-child(3) {
       background-color: var(--ion-color-primary) !important;
     }
-    
-    &:nth-child(2), 
+
+    &:nth-child(2),
     &:nth-child(4) {
       background-color: var(--ion-color-secondary) !important;
     }
@@ -98,8 +97,152 @@ ion-content {
 
 .selected {
   color: white;
+}
+
+// Estilos para el menú de opciones personalizado
+.options-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.options-button {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #fff;
+
+  ion-icon {
+    font-size: 24px;
+    color: var(--ion-color-dark);
+  }
+
+}
+
+.ellipsis-icon {
+  font-size: 20px;
   font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  color: var(--ion-color-dark);
+  transform: rotate(90deg);
+  line-height: 1;
+}
+
+.options-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-15px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    right: 16px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+    filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.1));
+  }
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  font-size: 15px;
+
+  &:first-child {
+    border-radius: 12px 12px 0 0;
+  }
+
+  &:last-child {
+    border-radius: 0 0 12px 12px;
+  }
+
+  &:only-child {
+    border-radius: 12px;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, #f8f9fa, #f1f3f4);
+    transform: translateX(2px);
+  }
+
+  &.danger {
+    color: var(--ion-color-danger);
+
+    &:hover {
+      background: linear-gradient(
+        135deg,
+        rgba(var(--ion-color-danger-rgb), 0.08),
+        rgba(var(--ion-color-danger-rgb), 0.12)
+      );
+      color: #dc3545;
+    }
+  }
+}
+
+.option-icon {
+  margin-right: 14px;
+  font-size: 18px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  .option-item.danger & {
+    background: rgba(var(--ion-color-danger-rgb), 0.1);
+  }
+
+  .option-item:hover & {
+    background: rgba(var(--ion-color-primary-rgb), 0.15);
+    transform: scale(1.1);
+  }
+
+  .option-item.danger:hover & {
+    background: rgba(var(--ion-color-danger-rgb), 0.15);
+  }
+}
+
+.option-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ion-color-dark);
+  transition: color 0.2s ease;
+
+  .option-item.danger & {
+    color: var(--ion-color-danger);
+  }
 }
 
 .bottom {
@@ -116,14 +259,14 @@ ion-content {
   justify-content: center;
   height: 60vh;
   width: 100%;
-  
+
   ion-spinner {
     width: 60px;
     height: 60px;
     color: var(--ion-color-primary);
     margin-bottom: 20px;
   }
-  
+
   p {
     color: var(--ion-color-medium);
     font-size: 16px;
@@ -133,8 +276,7 @@ ion-content {
 
 // ===== ESTILOS PARA WEB (768px en adelante) =====
 @media (min-width: 768px) {
-
-  .web-card{
+  .web-card {
     padding: 30px;
   }
 
@@ -159,7 +301,11 @@ ion-content {
   // Header del beneficiario mejorado para web
   ::ng-deep app-beneficiary-header {
     .beneficiary-header {
-      background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-tertiary) 100%);
+      background: linear-gradient(
+        135deg,
+        var(--ion-color-primary) 0%,
+        var(--ion-color-tertiary) 100%
+      );
       border-radius: 20px;
       padding: 40px;
       margin-bottom: 0;
@@ -172,13 +318,13 @@ ion-content {
 
     .beneficiary-name {
       font-size: 2rem !important;
-      
+
       .bold {
         font-size: 2.5rem;
         display: block;
         margin-bottom: 8px;
       }
-      
+
       .normal {
         font-size: 1.2rem;
         opacity: 0.9;
@@ -205,7 +351,7 @@ ion-content {
     max-width: 800px;
     margin: 0 auto;
     top: 0;
-    
+
     div {
       padding: 24px 16px;
       border-radius: 16px;
@@ -216,41 +362,62 @@ ion-content {
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       position: relative;
       overflow: hidden;
-      
+
       &::before {
-        content: '';
+        content: "";
         position: absolute;
         top: 0;
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
         transition: left 0.5s;
       }
-      
+
       &:hover {
         transform: translateY(-8px) scale(1.05);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-        
+
         &::before {
           left: 100%;
         }
       }
-      
+
       &:nth-child(1) {
-        background: linear-gradient(135deg, var(--ion-color-primary), #4db8d4) !important;
+        background: linear-gradient(
+          135deg,
+          var(--ion-color-primary),
+          #4db8d4
+        ) !important;
       }
-      
+
       &:nth-child(2) {
-        background: linear-gradient(135deg, var(--ion-color-secondary), #f69042) !important;
+        background: linear-gradient(
+          135deg,
+          var(--ion-color-secondary),
+          #f69042
+        ) !important;
       }
-      
+
       &:nth-child(3) {
-        background: linear-gradient(135deg, var(--ion-color-primary), #4db8d4) !important;
+        background: linear-gradient(
+          135deg,
+          var(--ion-color-primary),
+          #4db8d4
+        ) !important;
       }
-      
+
       &:nth-child(4) {
-        background: linear-gradient(135deg, var(--ion-color-secondary), #f69042) !important;
+        background: linear-gradient(
+          135deg,
+          var(--ion-color-secondary),
+          #f69042
+        ) !important;
       }
     }
   }
@@ -267,14 +434,14 @@ ion-content {
     padding: 0;
     display: grid;
     gap: 30px;
-    
+
     // Mejorar el componente básico de datos
     ::ng-deep app-basic-data {
       background: white;
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
       transition: all 0.3s ease;
-      
+
       &:hover {
         transform: translateY(-5px);
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
@@ -288,7 +455,7 @@ ion-content {
     justify-content: center;
     gap: 20px;
     margin-top: 30px;
-    
+
     ::ng-deep app-edit-button {
       button {
         padding: 16px 32px;
@@ -297,7 +464,7 @@ ion-content {
         font-weight: 600;
         box-shadow: 0 8px 25px rgba(53, 182, 217, 0.3);
         transition: all 0.3s ease;
-        
+
         &:hover {
           transform: translateY(-3px);
           box-shadow: 0 12px 35px rgba(53, 182, 217, 0.4);
@@ -317,17 +484,57 @@ ion-content {
     cursor: pointer;
     box-shadow: 0 8px 25px rgba(78, 170, 3, 0.3);
     transition: all 0.3s ease;
-    
+
     &:hover {
       transform: translateY(-3px);
       box-shadow: 0 12px 35px rgba(78, 170, 3, 0.4);
     }
   }
 
+  // Estilos para los botones de acción
+  .action-buttons {
+    .delete-btn {
+      --color: var(--ion-color-danger);
+      --border-radius: 8px;
+      --padding-start: 8px;
+      --padding-end: 8px;
+      --padding-top: 8px;
+      --padding-bottom: 8px;
+
+      ion-icon {
+        font-size: 18px;
+      }
+
+      &:hover {
+        --background: var(--ion-color-danger-tint);
+        --color: white;
+      }
+
+      // Estilos responsivos
+      @media (max-width: 768px) {
+        --padding-start: 6px;
+        --padding-end: 6px;
+        --padding-top: 6px;
+        --padding-bottom: 6px;
+
+        ion-icon {
+          font-size: 16px;
+        }
+      }
+    }
+
+    // Asegurar que los botones estén alineados
+    app-edit-button,
+    .delete-btn {
+      display: flex;
+      align-items: center;
+    }
+  }
+
   // Opciones inferiores mejoradas
   .bottom {
     position: relative;
-    
+
     ::ng-deep app-home-options {
       .bottom-options {
         background: white;
@@ -335,25 +542,25 @@ ion-content {
         padding: 30px 20px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         gap: 15px;
-        
+
         .o-button {
           border-radius: 16px;
           padding: 20px 15px;
           min-height: 120px;
           transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           border: 2px solid #e9ecef;
-          
+
           &:hover {
             transform: translateY(-8px) scale(1.05);
             box-shadow: 0 15px 40px rgba(53, 182, 217, 0.15);
             border-color: var(--ion-color-primary);
           }
-          
+
           fa-icon {
             font-size: 2.5rem;
             margin-bottom: 12px;
           }
-          
+
           p {
             font-size: 0.95rem;
             font-weight: 600;
@@ -367,12 +574,12 @@ ion-content {
   // Loading mejorado
   .loading-container {
     height: 50vh;
-    
+
     ion-spinner {
       width: 80px;
       height: 80px;
     }
-    
+
     p {
       font-size: 1.2rem;
       color: var(--ion-color-tertiary);
@@ -391,11 +598,11 @@ ion-content {
   ::ng-deep app-beneficiary-header {
     .beneficiary-header {
       padding: 60px;
-      
+
       .beneficiary-name .bold {
         font-size: 3rem;
       }
-      
+
       .circle {
         width: 180px;
         height: 180px;
@@ -408,7 +615,7 @@ ion-content {
   .options {
     max-width: 1000px;
     gap: 30px;
-    
+
     div {
       padding: 30px 20px;
       min-height: 100px;
@@ -427,18 +634,18 @@ ion-content {
     .bottom-options {
       grid-template-columns: 1fr;
       max-width: 400px;
-      
+
       .o-button {
         min-height: 100px;
         flex-direction: row;
         text-align: left;
         gap: 20px;
-        
+
         fa-icon {
           font-size: 2rem;
           margin-bottom: 0;
         }
-        
+
         p {
           margin: 0;
         }
@@ -455,7 +662,7 @@ ion-content {
 
   .options {
     grid-template-columns: repeat(2, 1fr);
-    
+
     div {
       min-height: 100px;
       padding: 20px;
@@ -466,7 +673,7 @@ ion-content {
     .bottom-options {
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
-      
+
       .o-button:nth-child(4),
       .o-button:nth-child(5) {
         grid-column: span 1;
@@ -515,11 +722,6 @@ ion-content {
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-  }
 }
 
 .web-section-title {
@@ -530,9 +732,9 @@ ion-content {
   align-items: center;
   gap: 12px;
   margin: 0;
-  
+
   &::before {
-    content: '';
+    content: "";
     width: 4px;
     height: 30px;
     background: var(--ion-color-primary);
@@ -550,23 +752,27 @@ ion-content {
   .web-only {
     display: block;
   }
-  
+
   .basic-info-card {
     margin-bottom: 30px;
   }
-  
+
   .quick-stats {
     margin: 30px 0;
   }
-  
+
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
   }
-  
+
   .stat-card {
-    background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-tertiary));
+    background: linear-gradient(
+      135deg,
+      var(--ion-color-primary),
+      var(--ion-color-tertiary)
+    );
     color: white;
     padding: 24px;
     border-radius: 16px;
@@ -576,35 +782,35 @@ ion-content {
     box-shadow: 0 8px 25px rgba(53, 182, 217, 0.2);
     transition: all 0.3s ease;
   }
-  
+
   .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 15px 40px rgba(53, 182, 217, 0.3);
   }
-  
+
   .stat-icon {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 12px;
-    
+
     ion-icon {
       font-size: 24px;
     }
   }
-  
+
   .stat-info h4 {
     margin: 0 0 4px 0;
     font-size: 0.9rem;
     opacity: 0.9;
     font-weight: 500;
   }
-  
+
   .stat-info p {
     margin: 0;
     font-size: 1.2rem;
     font-weight: 700;
   }
-  
+
   .sidebar {
     background: white;
     border-radius: 20px;
@@ -613,7 +819,7 @@ ion-content {
     height: fit-content;
     position: sticky;
   }
-  
+
   .sidebar-title {
     color: var(--ion-color-tertiary);
     font-size: 1.3rem;
@@ -622,14 +828,14 @@ ion-content {
     padding-bottom: 12px;
     border-bottom: 2px solid var(--ion-color-medium);
   }
-  
+
   .quick-links {
     display: flex;
     flex-direction: column;
     gap: 12px;
     margin-bottom: 30px;
   }
-  
+
   .quick-link {
     display: flex;
     align-items: center;
@@ -640,44 +846,44 @@ ion-content {
     color: var(--ion-color-dark);
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    
+
     &:hover {
       background: var(--ion-color-medium);
       border-color: var(--ion-color-primary);
       transform: translateX(8px);
     }
-    
+
     ion-icon {
       font-size: 20px;
       color: var(--ion-color-primary);
     }
-    
+
     span {
       font-weight: 500;
     }
   }
-  
+
   .emergency-info {
     background: linear-gradient(135deg, var(--ion-color-danger), #e53e5a);
     color: white;
     padding: 20px;
     border-radius: 16px;
-    
+
     h4 {
       margin: 0 0 12px 0;
       font-size: 1rem;
       font-weight: 600;
     }
-    
+
     .contact-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      
+
       ion-icon {
         font-size: 18px;
       }
-      
+
       span {
         font-weight: 500;
       }
@@ -692,7 +898,7 @@ ion-content {
     gap: 40px;
     align-items: start;
   }
-  
+
   .main-content {
     min-width: 0;
     padding: 0 30px;
@@ -710,24 +916,24 @@ ion-content {
   }
 
   .main-content {
-    overflow-y: auto; 
-    max-height: calc(100vh - 200px); 
-    padding-right: 10px; 
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+    padding-right: 10px;
     scrollbar-width: none;
-    
+
     &::-webkit-scrollbar {
       width: 6px;
     }
-    
+
     &::-webkit-scrollbar-track {
       background: #f1f1f1;
       border-radius: 3px;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: var(--ion-color-primary);
       border-radius: 3px;
-      
+
       &:hover {
         background: var(--ion-color-primary-shade);
       }
@@ -744,7 +950,7 @@ ion-content {
     align-items: start;
     overflow: hidden; // Mantener sin scroll
   }
-  
+
   .main-content {
     min-width: 0;
     padding: 0 10px 30px 10px;

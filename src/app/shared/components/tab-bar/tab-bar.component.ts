@@ -47,7 +47,7 @@ export class TabBarComponent {
       { 
         icon: 'person-outline', 
         label: 'Modificar Perfil', 
-        action: () => true
+        action: () => this.navigate('/home/profile')
       },
       { 
         icon: 'people-outline', 
@@ -57,7 +57,7 @@ export class TabBarComponent {
       { 
         icon: 'key-outline', 
         label: 'Cambiar Contraseña', 
-        action: () => true
+        action: () => this.navigate('/user/change-password')
       },
       { 
         icon: 'log-out-outline', 

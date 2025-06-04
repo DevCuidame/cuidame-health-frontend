@@ -5,8 +5,8 @@ import { AuthGuard } from 'src/app/core/guards/auth.guard';
 // Pages
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { AppointmentsComponent } from './pages/appointments/appointments.component';
-import { ProfileComponent } from './pages/profile/profile.component';
 import { SettingsComponent } from './pages/settings/settings.component';
+import { UpdateProfileComponent } from './pages/profile/update-profile.component';
 
 const routes: Routes = [
   {
@@ -26,7 +26,7 @@ const routes: Routes = [
   },
   {
     path: 'profile',
-    component: ProfileComponent,
+    component: UpdateProfileComponent,
     canActivate: [AuthGuard], 
   },
   {

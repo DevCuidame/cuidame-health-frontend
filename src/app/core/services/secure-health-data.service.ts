@@ -75,6 +75,16 @@ export class SecureHealthDataService {
   }
 
   /**
+   * Clears health data from cache for a specific beneficiary
+   */
+  clearHealthData(beneficiaryId: number | string): void {
+    const id = typeof beneficiaryId === 'string' ? parseInt(beneficiaryId, 10) : beneficiaryId;
+    if (this.healthDataCache.has(id)) {
+      this.healthDataCache.delete(id);
+    }
+  }
+
+  /**
    * Updates a beneficiary ensuring health data integrity
    */
   enrichBeneficiary(beneficiary: Beneficiary): Beneficiary {

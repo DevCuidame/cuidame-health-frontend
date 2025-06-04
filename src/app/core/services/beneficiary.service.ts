@@ -712,10 +712,73 @@ fixHealthDataStructure(): void {
 
 // Función para exponer globalmente cuando sea necesaria reparar datos manualmente
 exposeFixFunction(): void {
-  (window as any).fixHealthData = () => {
-    this.fixHealthDataStructure();
-    return 'Intento de corrección completado.';
-  };
-}
+    (window as any).fixHealthData = () => {
+      this.fixHealthDataStructure();
+      return 'Intento de corrección completado.';
+    };
+  }
+
+  /**
+   * Elimina un beneficiario
+   * @param beneficiaryId ID del beneficiario a eliminar
+   * @returns Observable con el resultado de la operación
+   */
+  deleteBeneficiary(beneficiaryId: number | string): Observable<any> {
+    return this.getUserInfoAsync().pipe(
+      switchMap((user) => {
+        if (!user || !user.id) {
+          return throwError(() => new Error('Usuario no autenticado.'));
+        }
+
+        // Mostrar loading
+        this.isLoadingSubject.next(true);
+        this.loadingService.showLoading('Eliminando familiar...');
+
+        return this.http.delete<any>(`${apiUrl}api/patients/${beneficiaryId}`).pipe(
+          map((response: any) => {
+            if (response.success || response.statusCode === 200) {
+              // Actualizar la lista local de beneficiarios
+              const currentBeneficiaries = this.beneficiariesSubject.value;
+              const updatedBeneficiaries = currentBeneficiaries.filter(
+                (b) => b.id !== beneficiaryId
+              );
+
+              // Actualizar estado
+              this.beneficiariesSubject.next(updatedBeneficiaries);
+              this.updateBeneficiaryCount(updatedBeneficiaries.length);
+
+              // Actualizar almacenamiento
+              this.storageService
+                .setItem(BENEFICIARIES_STORAGE_KEY, updatedBeneficiaries)
+                .subscribe();
+
+              // Si el beneficiario eliminado era el activo, limpiar
+              const activeBeneficiary = this.activeBeneficiarySubject.value;
+              if (activeBeneficiary && activeBeneficiary.id === beneficiaryId) {
+                this.activeBeneficiarySubject.next(null);
+                this.storageService.removeItem(ACTIVE_BENEFICIARY_KEY).subscribe();
+              }
+
+              // Limpiar datos de salud del beneficiario eliminado
+              this.secureHealthDataService.clearHealthData(beneficiaryId);
+
+              return response;
+            } else {
+              throw new Error(response.message || 'Error al eliminar familiar');
+            }
+          }),
+          catchError((error) => {
+            console.error('Error al eliminar beneficiario:', error);
+            return this.errorHandlerService.handleError(error, 'Error al eliminar familiar');
+          }),
+          finalize(() => {
+            // Ocultar loading
+            this.isLoadingSubject.next(false);
+            this.loadingService.hideLoading();
+          })
+        );
+      })
+    );
+  }
 
 }

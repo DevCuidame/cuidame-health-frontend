@@ -41,14 +41,21 @@
         <ng-container *ngIf="showBasicData">
           <!-- Tarjeta de información básica -->
           <div class="basic-info-card web-card">
-            <div style="display: flex; justify-content: space-between">
+            <div style="display: flex; justify-content: space-between; align-items: center">
               <h2 class="web-section-title">Información del Familiar</h2>
-              <app-edit-button
-                route="/beneficiary/add"
-                top="0px"
-                class="primary-action-btn"
-                background="transparent"
-              ></app-edit-button>
+              <div class="options-menu-container">
+                <button class="options-button" (click)="toggleOptionsMenu($event)">
+                  <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+                </button>
+                <div class="options-dropdown" [class.show]="showOptionsMenu">
+                  <div class="option-item" (click)="editBeneficiary(); hideOptionsMenu()">
+                    <span class="option-label">Editar</span>
+                  </div>
+                  <div class="option-item danger" (click)="confirmDeleteBeneficiary(); hideOptionsMenu()">
+                    <span class="option-label">Eliminar Familiar</span>
+                  </div>
+                </div>
+              </div>
             </div>
             <app-basic-data
               fontColor="var(--ion-color-dark)"
@@ -163,7 +170,7 @@
   [isVisible]="true"
   [buttons]="[
     { icon: 'arrow-back-outline', route: '/home/dashboard', visible: true },
-    { icon: 'menu-outline', route: '/', visible: true },
+    { icon: 'ellipsis-horizontal', route: '/', visible: true },
     { icon: 'exit-outline', route: '/', visible: true }
   ]"
   [background]="'var(--ion-color-light)'"

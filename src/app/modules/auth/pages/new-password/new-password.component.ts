@@ -5,11 +5,14 @@ import {
   FormsModule,
   ReactiveFormsModule,
   Validators,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
 import {
   LoadingController,
   IonicModule,
   ToastController,
+  AlertController,
 } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { CustomButtonComponent } from 'src/app/shared/components/custom-button/custom-button.component';
@@ -34,11 +37,14 @@ import { ResetPasswordService } from 'src/app/core/services/reset-password.servi
 })
 export class NewPasswordComponent implements OnInit {
   // Propiedades públicas
-  public buttonBackground: string = 'assets/background/primary_button_bg.svg';
+  public buttonBackground: string = 'assets/background/button_primary_bg.png';
   public newPasswordForm!: FormGroup;
   public isTokenInvalid: boolean = false;
   public showPassword: boolean = false;
   public showConfirmPassword: boolean = false;
+  public router: Router;
+  public isPasswordFocused: boolean = false;
+  public isConfirmPasswordFocused: boolean = false;
   @Output() newPwdSuccess = new EventEmitter<void>();
 
   
@@ -51,9 +57,11 @@ export class NewPasswordComponent implements OnInit {
     private loadingCtrl: LoadingController,
     private resetPasswordService: ResetPasswordService,
     private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
     private route: ActivatedRoute,
-    private router: Router
+    router: Router
   ) {
+    this.router = router;
     this.initForm();
   }
 
@@ -82,7 +90,18 @@ export class NewPasswordComponent implements OnInit {
         }),
         catchError(error => {
           console.error('Error al restablecer contraseña:', error);
-          this.showToast('Ha ocurrido un error. Por favor, intente de nuevo más tarde.', 'danger');
+          let errorMessage = 'Ha ocurrido un error inesperado. Por favor, intente de nuevo más tarde.';
+          
+          if (error.status === 400) {
+            errorMessage = 'Los datos proporcionados no son válidos.';
+          } else if (error.status === 401) {
+            errorMessage = 'El token ha expirado o no es válido. Solicita un nuevo enlace de restablecimiento.';
+            this.isTokenInvalid = true;
+          } else if (error.status === 422) {
+            errorMessage = 'La contraseña no cumple con los requisitos de seguridad.';
+          }
+          
+          this.showToast(errorMessage, 'danger');
           return of(null);
         })
       )
@@ -114,14 +133,28 @@ export class NewPasswordComponent implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
+  /**
+   * Maneja el foco en el campo de contraseña
+   */
+  onPasswordFocus(isFocused: boolean): void {
+    this.isPasswordFocused = isFocused;
+  }
+
+  /**
+   * Maneja el foco en el campo de confirmación
+   */
+  onConfirmPasswordFocus(isFocused: boolean): void {
+    this.isConfirmPasswordFocused = isFocused;
+  }
+
   // Métodos privados
   
   /**
-   * Inicializa el formulario con validaciones
+   * Inicializa el formulario con validaciones básicas
    */
   private initForm(): void {
     this.newPasswordForm = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.checkPasswords });
   }
@@ -144,7 +177,6 @@ export class NewPasswordComponent implements OnInit {
      this.route.queryParams.subscribe(params => {
       if (params['token']) {
         this.token = params['token'];
-        this.verifyToken();
         return;
       }
       
@@ -152,7 +184,6 @@ export class NewPasswordComponent implements OnInit {
       this.route.params.subscribe(routeParams => {
         if (routeParams['token']) {
           this.token = routeParams['token'];
-          this.verifyToken();
           return;
         }
         
@@ -161,31 +192,6 @@ export class NewPasswordComponent implements OnInit {
         this.isTokenInvalid = true;
       });
     });
-  }
-
-  /**
-   * Verifica la validez del token
-   */
-  private async verifyToken(): Promise<void> {
-    const loading = await this.createLoadingIndicator('Verificando...');
-    await loading.present();
-
-    this.resetPasswordService.verifyResetToken(this.token)
-      .pipe(
-        finalize(() => {
-          loading.dismiss();
-        }),
-        catchError(error => {
-          console.error('Error al verificar token:', error);
-          this.isTokenInvalid = true;
-          return of(null);
-        })
-      )
-      .subscribe(response => {
-        if (!response || !response.data || !response.data.valid) {
-          this.isTokenInvalid = true;
-        }
-      });
   }
 
   /**
@@ -198,11 +204,26 @@ export class NewPasswordComponent implements OnInit {
   /**
    * Maneja el flujo después de un restablecimiento exitoso
    */
-  private handleSuccessfulReset(): void {
-    this.showToast('Contraseña restablecida con éxito.', 'success');
+  private async handleSuccessfulReset(): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: '¡Éxito!',
+      message: 'Tu contraseña ha sido restablecida correctamente. Serás redirigido al inicio de sesión.',
+      buttons: [{
+        text: 'Continuar',
+        handler: () => {
+          this.router.navigate(['/auth/login'], { replaceUrl: true });
+        }
+      }],
+      backdropDismiss: false
+    });
+    
+    await alert.present();
+    
+    // Fallback automático después de 3 segundos
     setTimeout(() => {
-      this.router.navigate(['/auth/login']);
-    }, 1500);
+      alert.dismiss();
+      this.router.navigate(['/auth/login'], { replaceUrl: true });
+    }, 3000);
   }
 
   /**

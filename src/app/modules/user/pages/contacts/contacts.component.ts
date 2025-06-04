@@ -56,7 +56,7 @@ import { UserService } from 'src/app/modules/auth/services/user.service';
             route: '/home/dashboard',
             visible: true
           },
-          { icon: 'menu-outline', route: '/', visible: true },
+          { icon: 'ellipsis-horizontal', route: '/', visible: true },
           { icon: 'exit-outline', route: '/', visible: true }
         ]"
         [background]="'var(--ion-color-light)'"

@@ -25,7 +25,10 @@ export interface User {
   numberid?: string;       // Antes numberid
   address?: string;
   city_id?: number;        // ID de la ciudad (numérico)
+  department?: number;        
   phone: string;
+  gender?: string;
+  birth_date?: Date;
   email: string;
   parentesco?: string;     // Relación de parentesco
   notificationid?: string; // ID para notificaciones

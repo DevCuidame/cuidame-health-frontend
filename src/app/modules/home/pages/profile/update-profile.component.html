@@ -1,0 +1,156 @@
+<ion-content scrollY="false">
+  <div class="card">
+    <!-- Sección de perfil (izquierda en web) -->
+    <div class="user-profile">
+      <div class="image-circle" (click)="selectImage()">
+        <img *ngIf="selectedImage && newImage" [src]="selectedImage" />
+        <img *ngIf="!newImage && imageLoaded" [src]="imageLoaded" />
+        <div *ngIf="!selectedImage && !imageLoaded" class="upload-icon"></div>
+        <div class="small-circle">
+          <ion-icon class="camera-icon" name="camera"></ion-icon>
+        </div>
+      </div>
+      <input type="file" id="imageInput" (change)="onImageSelected($event)" hidden />
+      
+      <!-- Información adicional visible solo en web -->
+      <div class="profile-info" [style.display]="'none'">
+        <h2>Actualizar perfil</h2>
+        <p>Complete la información requerida</p>
+      </div>
+      <div class="logo">
+        <img src="assets/logo/logo_.png" alt="Cuídame" />
+      </div>
+    </div>
+
+    <!-- Sección del formulario (derecha en web) -->
+    <div class="form-section">
+      <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+        <h3 class="mobile-title">Actualizar información de perfil:</h3>
+
+        <div class="form-container">
+          <!-- Datos Personales -->
+          <div class="form-section-group form-section-personal">
+            <div class="separator">
+              <h4>Datos Personales</h4>
+            </div>
+            
+            <div class="form-grid">
+              <ion-item [class.ion-invalid]="hasError('name')">
+                <ion-input label="Nombres" labelPlacement="floating" type="text" formControlName="name" required></ion-input>
+                <ion-note slot="error" *ngIf="getErrorMessage('name')">{{ getErrorMessage('name') }}</ion-note>
+              </ion-item>
+
+              <ion-item [class.ion-invalid]="hasError('lastname')">
+                <ion-input label="Apellidos" labelPlacement="floating" type="text" formControlName="lastname" required></ion-input>
+                <ion-note slot="error" *ngIf="getErrorMessage('lastname')">{{ getErrorMessage('lastname') }}</ion-note>
+              </ion-item>
+
+              <ion-item [class.ion-invalid]="hasError('typeid')">
+                <ion-select label="Tipo de Identificación" interface="popover" labelPlacement="floating" formControlName="typeid" required>
+                  <ion-select-option value="CC">Cédula</ion-select-option>
+                  <ion-select-option value="TI">Tarjeta de Identidad</ion-select-option>
+                  <ion-select-option value="PASSPORT">Pasaporte</ion-select-option>
+                  <ion-select-option value="OTHER">Otro</ion-select-option>
+                </ion-select>
+                <ion-note slot="error" *ngIf="getErrorMessage('typeid')">{{ getErrorMessage('typeid') }}</ion-note>
+              </ion-item>
+
+              <ion-item [class.ion-invalid]="hasError('numberid')">
+                <ion-input label="Número de Identificación" labelPlacement="floating" type="text" formControlName="numberid" required></ion-input>
+                <ion-note slot="error" *ngIf="getErrorMessage('numberid')">{{ getErrorMessage('numberid') }}</ion-note>
+              </ion-item>
+
+              <ion-item [class.ion-invalid]="hasError('birth_date')">
+                <ion-input label="Fecha de Nacimiento" labelPlacement="floating" type="date" formControlName="birth_date" required></ion-input>
+                <ion-note slot="error" *ngIf="getErrorMessage('birth_date')">{{ getErrorMessage('birth_date') }}</ion-note>
+              </ion-item>
+
+              <ion-item [class.ion-invalid]="hasError('gender')">
+                <ion-select label="Género" interface="popover" labelPlacement="floating" formControlName="gender" required>
+                  <ion-select-option value="M">Masculino</ion-select-option>
+                  <ion-select-option value="F">Femenino</ion-select-option>
+                  <ion-select-option value="Other">Otro</ion-select-option>
+                </ion-select>
+                <ion-note slot="error" *ngIf="getErrorMessage('gender')">{{ getErrorMessage('gender') }}</ion-note>
+              </ion-item>
+            </div>
+          </div>
+
+          <!-- Datos de Contacto -->
+          <div class="form-section-group form-section-contact">
+            <div class="separator">
+              <h4>Datos de contacto</h4>
+            </div>
+            
+            <div class="form-grid">
+              <ion-item [class.ion-invalid]="hasError('address')" class="form-grid-full">
+                <ion-input label="Dirección" labelPlacement="floating" type="text" formControlName="address" required></ion-input>
+                <ion-note slot="error" *ngIf="getErrorMessage('address')">{{ getErrorMessage('address') }}</ion-note>
+              </ion-item>
+
+              <ion-item [class.ion-invalid]="hasError('department')">
+                <ion-select label="Departamento" labelPlacement="floating" interface="popover" formControlName="department" required>
+                  <ion-select-option *ngFor="let department of departments" [value]="department.id">
+                    {{ department.name }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-note slot="error" *ngIf="getErrorMessage('departamento')">{{ getErrorMessage('departamento') }}</ion-note>
+              </ion-item>
+              
+              <ion-item [class.ion-invalid]="hasError('city_id')">
+                <ion-select label="Ciudad" labelPlacement="floating" interface="popover" formControlName="city_id" required>
+                  <ion-select-option *ngFor="let city of cities" [value]="city.id">
+                    {{ city.name }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-note slot="error" *ngIf="getErrorMessage('city_id')">{{ getErrorMessage('city_id') }}</ion-note>
+              </ion-item>
+              
+              <ion-item [class.ion-invalid]="hasError('phone')" class="form-grid-full">
+                <ion-input label="Teléfono" labelPlacement="floating" type="number" formControlName="phone" required></ion-input>
+                <ion-note slot="error" *ngIf="getErrorMessage('phone')">{{ getErrorMessage('phone') }}</ion-note>
+              </ion-item>
+            </div>
+          </div>
+
+          <app-custom-button
+            [label]="isEditing ? 'Actualizar' : 'Guardar'"
+            type="submit"
+            [textColor]="'var(--ion-color-light)'"
+            [backgroundImage]="buttonBackground"
+          ></app-custom-button>
+        </div>
+      </form>
+    </div>
+  </div>
+</ion-content>
+
+<app-tab-bar
+  [isVisible]="true"
+  [buttons]="[
+    { icon: 'arrow-back-outline', route: '/', visible: true },
+    { icon: 'ellipsis-horizontal', route: '/', visible: true },
+    { icon: 'exit-outline', route: '/', visible: true }
+  ]"
+  [background]="'var(--ion-color-light)'"
+></app-tab-bar>
+
+<style>
+  /* Ocultar título móvil en escritorio */
+  @media (min-width: 768px) {
+    .mobile-title {
+      display: none;
+    }
+    
+    .profile-info {
+      display: block !important;
+    }
+  }
+  
+  /* Mostrar título móvil solo en móvil */
+  @media (max-width: 767px) {
+    .profile-info {
+      display: none !important;
+    }
+  }
+</style>

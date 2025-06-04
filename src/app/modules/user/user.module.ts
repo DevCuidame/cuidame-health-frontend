@@ -11,6 +11,12 @@ const routes: Routes = [
     path: 'contacts',
     component: ContactsPage,
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'change-password',
+    loadComponent: () => 
+      import('./pages/change-password/change-password.component').then(m => m.ChangePasswordComponent),
+    canActivate: [AuthGuard]
   }
 ];
 

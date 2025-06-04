@@ -1,5 +1,3 @@
-// ===== MEDICAL HISTORY FORM - RESPONSIVE STYLES =====
-// Archivo: medical-history-form.component.scss
 @import url('../../../../../../shared/styles/shared.styles.scss');
 
 // ===== ESTILOS WEB (768px en adelante) =====
@@ -232,9 +230,6 @@
   flex-direction: column;
   gap: 5px;
   align-items: flex-start;
-}
-
-.h-card {
 }
 
 .h-card p:nth-child(1) {
@@ -655,30 +650,31 @@ fa-icon {
     background: white;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  }
 
-  > div:first-child {
-    background: linear-gradient(135deg, var(--ion-color-success), #5bb616);
-    color: white;
-    padding: 32px;
-    border-radius: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
-    box-shadow: 0 10px 30px rgba(78, 170, 3, 0.3);
-    
-    h2 {
+    // ✅ CORREGIDO: Agregado selector padre
+    > div:first-child {
+      background: linear-gradient(135deg, var(--ion-color-success), #5bb616);
       color: white;
-      font-size: 2rem;
-      margin: 0;
+      padding: 32px;
+      border-radius: 20px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      margin-bottom: 40px;
+      box-shadow: 0 10px 30px rgba(78, 170, 3, 0.3);
       
-      &::before {
-        content: '💉';
-        font-size: 2.2rem;
+      h2 {
+        color: white;
+        font-size: 2rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        
+        &::before {
+          content: '💉';
+          font-size: 2.2rem;
+        }
       }
     }
   }

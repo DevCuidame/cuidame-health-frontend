@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription, Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import { filter, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
   Appointment,
@@ -9,6 +9,7 @@ import {
 import { PendingCardComponent } from '../../components/pending-card/pending-card.component';
 import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
 import { AppointmentWebSocketService } from 'src/app/core/services/appointment/appointment-websocket.service';
+import { AppointmentService } from 'src/app/core/services/appointment/appointment.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -37,6 +38,9 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
   public filteredAppointments: Appointment[] = [];
   public connectionError: string | null = null;
   public isLoading: boolean = true;
+  public isSearching: boolean = false;
+  public currentSearchTerm: string = '';
+  public currentFilters: any = {};
   private checkConnectionTimeout?: any;
 
   private destroy$ = new Subject<void>();
@@ -44,7 +48,8 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
   private readonly MANAGEABLE_STATUSES = ['requested', 'confirmed', 'rescheduled'];
 
   constructor(
-    private appointmentWebSocketService: AppointmentWebSocketService
+    private appointmentWebSocketService: AppointmentWebSocketService,
+    private appointmentService: AppointmentService
   ) {}
 
   ngOnInit(): void {
@@ -126,6 +131,11 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
   }
 
   private filterAppointments(): void {
+    // Si hay búsqueda activa, no filtrar localmente
+    if (this.currentSearchTerm || Object.keys(this.currentFilters).some(key => this.currentFilters[key])) {
+      return;
+    }
+    
     // Filtrar solo citas con estados válidos para gestión y datos completos
     this.filteredAppointments = this.appointments.filter(
       (appointment) => this.isValidAppointmentForManagement(appointment)
@@ -194,6 +204,70 @@ export class AppointmentAssignmentComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.appointmentWebSocketService.disconnect();
+  }
+
+  /**
+   * Maneja los cambios en el término de búsqueda
+   */
+  onSearchChange(searchTerm: string): void {
+    this.currentSearchTerm = searchTerm;
+    this.performSearch();
+  }
+
+  /**
+   * Maneja los cambios en los filtros
+   */
+  onFilterChange(filters: any): void {
+    this.currentFilters = filters;
+    this.performSearch();
+  }
+
+  /**
+   * Realiza la búsqueda en el backend
+   */
+  private performSearch(): void {
+    // Si no hay término de búsqueda ni filtros, mostrar todas las citas locales
+    if (!this.currentSearchTerm && !Object.keys(this.currentFilters).some(key => this.currentFilters[key])) {
+      this.filterAppointments();
+      return;
+    }
+
+    this.isSearching = true;
+    
+    // Preparar filtros para el backend
+    const backendFilters: any = {};
+    
+    if (this.currentFilters.status) {
+      backendFilters.status = this.currentFilters.status;
+    }
+    
+    if (this.currentFilters.specialty) {
+      backendFilters.specialty = this.currentFilters.specialty;
+    }
+
+    // Realizar búsqueda en el backend
+    this.appointmentService.searchAppointments(this.currentSearchTerm, backendFilters)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.isSearching = false;
+          if (response && response.data) {
+            // Filtrar los resultados para mostrar solo los válidos para gestión
+            this.filteredAppointments = response.data.filter(
+              (appointment) => this.isValidAppointmentForManagement(appointment)
+            );
+          } else {
+            this.filteredAppointments = [];
+          }
+        },
+        error: (error) => {
+          this.isSearching = false;
+          console.error('Error en la búsqueda:', error);
+          this.connectionError = 'Error al realizar la búsqueda';
+          // En caso de error, mostrar las citas locales filtradas
+          this.filterAppointments();
+        }
+      });
   }
 
   /**

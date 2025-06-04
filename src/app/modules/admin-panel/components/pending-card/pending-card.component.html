@@ -122,8 +122,11 @@
     }
 
     <div class="appointment-footer">
-      <p class="request-date">
-        {{ appointment.created_at || "Sin fecha de solicitud" }}
+      <p class="request-date">Solicitada:
+        {{
+          (appointment.created_at | date : "EEEE, dd MMMM yyyy" : "es-ES") ??
+            "Sin fecha de solicitud"
+        }}
       </p>
 
       <!-- Botón para citas PENDING -->

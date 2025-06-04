@@ -58,7 +58,7 @@ const routes: Routes = [
   },
 
   {
-    path: 'admin-panel',
+    path: 'schedule-panel',
     loadChildren: () =>
       import('./modules/admin-panel/admin-panel.module').then(
         (m) => m.AdminPanelModule

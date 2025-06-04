@@ -30,7 +30,8 @@ export class AuthInterceptor implements HttpInterceptor {
     'api/email/resend',
     '/api/auth/delete-account',
     'api/auth/account-deletion-info',
-    'api/auth/verify-password'
+    'api/auth/verify-password',
+    'api/password/request-reset'
   ];
 
   constructor(

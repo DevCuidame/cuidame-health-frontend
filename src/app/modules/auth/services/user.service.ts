@@ -232,7 +232,7 @@ export class UserService {
    * @returns Observable con la respuesta
    */
   updateProfile(userData: any): Observable<any> {
-    const apiUrl = `${this.baseUrl}api/user/update/${userData.id}`;
+    const apiUrl = `${this.baseUrl}api/users/profile-complete`;
 
     return this.http.put(apiUrl, userData).pipe(
       switchMap((response: any) => {
@@ -253,11 +253,6 @@ export class UserService {
               ...response.data,
             };
           }
-
-          // Normalizar datos
-          // if (updatedUser.location && Array.isArray(updatedUser.location)) {
-          //   updatedUser.location = updatedUser.location[0] || updatedUser.location;
-          // }
 
           // Actualizar en memoria
           this.userSubject.next(updatedUser);

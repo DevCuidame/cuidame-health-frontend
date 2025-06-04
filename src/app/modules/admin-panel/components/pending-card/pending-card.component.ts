@@ -59,12 +59,10 @@ export class PendingCardComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeCardData();
-    this.logInitialState(); // Para consistencia y depuración
   }
 
   private initializeCardData(): void {
     if (!this.appointment) {
-      console.error('Error: No se proporcionó la cita (appointment) para PendingCardComponent.');
       this.patientFullName = 'Error: Datos no disponibles';
       this.professionalFullName = 'Error: Datos no disponibles';
       this.formattedDate = 'Error';
@@ -82,17 +80,7 @@ export class PendingCardComponent implements OnInit {
     this.hasValidSchedule = this.tryProcessSchedule(this.appointment.start_time);
   }
 
-  private logInitialState(): void {
-    console.log('PendingCardComponent initialized with:', {
-      appointmentId: this.appointment?.id,
-      patient: this.patientFullName,
-      professional: this.professionalFullName,
-      date: this.formattedDate,
-      time: this.formattedTime,
-      hasValidSchedule: this.hasValidSchedule,
-      status: this.appointment?.status
-    });
-  }
+
 
   private isValidAppointmentData(appointment: Appointment): boolean {
     // Validaciones más robustas

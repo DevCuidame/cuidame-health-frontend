@@ -185,6 +185,32 @@ cancelAppointment(id: number): Observable<any> {
     return this.http.get<ApiResponse<Appointment[]>>(`${this.api}api/patient/appointments/all`);
   }
 
+  /**
+   * Busca citas en el backend usando filtros
+   * @param searchTerm Término de búsqueda
+   * @param filters Filtros adicionales (especialidad, estado, etc.)
+   */
+  searchAppointments(searchTerm: string, filters?: any): Observable<ApiResponse<Appointment[]>> {
+    const params: any = {};
+    
+    if (searchTerm && searchTerm.trim()) {
+      params.search = searchTerm.trim();
+    }
+    
+    if (filters) {
+      Object.assign(params, filters);
+    }
+
+    return this.http.get<ApiResponse<Appointment[]>>(`${this.api}api/appointments/search`, {
+      params
+    }).pipe(
+      catchError((error) => {
+        console.error('Error al buscar citas:', error);
+        return of({ data: [], message: 'Error en la búsqueda', statusCode: 500, success: false } as ApiResponse<Appointment[]>);
+      })
+    );
+  }
+
   clearCache(): void {
     this.appointments.set([]);
     localStorage.removeItem(this.cacheKey);

@@ -22,7 +22,7 @@ import { TabBarComponent } from 'src/app/shared/components/tab-bar/tab-bar.compo
       [isVisible]="true"
       [buttons]="[
         { icon: 'arrow-back-outline', route: '/home', visible: true },
-        { icon: 'menu-outline', route: '/', visible: true },
+        { icon: 'ellipsis-horizontal', route: '/', visible: true },
         { icon: 'exit-outline', route: '/', visible: true }
       ]"
       [background]="'var(--ion-color-light)'"
