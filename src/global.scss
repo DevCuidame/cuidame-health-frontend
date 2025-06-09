@@ -247,3 +247,60 @@ ion-input,
   --ion-toolbar-background: var(--ion-color-step-150, transparent);
   --ion-toolbar-border-color: var(--ion-color-step-250,transparent);
 }
+
+
+/* Safe Area Variables para dispositivos móviles */
+:root {
+  --safe-area-top: env(safe-area-inset-top);
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --safe-area-left: env(safe-area-inset-left);
+  --safe-area-right: env(safe-area-inset-right);
+  
+  /* Variables para componentes específicos */
+  --ion-safe-area-top: var(--safe-area-top);
+  --ion-safe-area-bottom: var(--safe-area-bottom);
+  --ion-safe-area-left: var(--safe-area-left);
+  --ion-safe-area-right: var(--safe-area-right);
+}
+
+/* Clase de utilidad para safe area */
+.safe-area-padding {
+  padding-top: var(--ion-safe-area-top);
+  padding-bottom: var(--ion-safe-area-bottom);
+  padding-left: var(--ion-safe-area-left);
+  padding-right: var(--ion-safe-area-right);
+}
+
+.safe-area-padding-top {
+  padding-top: var(--ion-safe-area-top);
+}
+
+.safe-area-padding-bottom {
+  padding-bottom: var(--ion-safe-area-bottom);
+}
+
+.safe-area-margin-top {
+  margin-top: var(--ion-safe-area-top);
+}
+
+.safe-area-margin-bottom {
+  margin-bottom: var(--ion-safe-area-bottom);
+}
+
+/* Ajustes para ion-content */
+ion-content {
+  --padding-top: var(--ion-safe-area-top);
+  --padding-bottom: var(--ion-safe-area-bottom);
+  --padding-start: var(--ion-safe-area-left);
+  --padding-end: var(--ion-safe-area-right);
+}
+
+/* Ajustes para ion-footer */
+ion-footer {
+  padding-bottom: var(--ion-safe-area-bottom);
+}
+
+/* Ajustes para ion-header */
+ion-header {
+  padding-top: var(--ion-safe-area-top);
+}

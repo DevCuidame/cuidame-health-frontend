@@ -1,7 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { catchError, finalize, tap } from 'rxjs/operators';
 import { of, Subscription } from 'rxjs';
 import { EmergencyContactsService } from 'src/app/core/services/emergency-contacts.service';
@@ -13,32 +18,39 @@ import { UserService } from '../../../auth/services/user.service';
     <div class="contacts-container" [class.desktop-mode]="isDesktop">
       <div class="header-section" *ngIf="!hideHeaderInDesktop">
         <h2>Contactos de Emergencia</h2>
-        <p class="description">Registra hasta 3 contactos de emergencia para que puedan ser notificados en caso necesario.</p>
+        <p class="description">
+          Registra hasta 3 contactos de emergencia para que puedan ser
+          notificados en caso necesario.
+        </p>
       </div>
-    
+
       <div *ngIf="isLoading" class="loader">
         <ion-spinner name="circular"></ion-spinner>
         <p>Cargando contactos...</p>
       </div>
-    
+
       <div *ngIf="!isLoading" class="contacts-form">
         <form [formGroup]="contactsForm" (ngSubmit)="saveContacts()">
           <!-- Contacto 1 -->
           <div class="contact-card" [class.filled]="hasContact(1)">
             <div class="contact-header">
               <div class="header-content">
-                <ion-icon name="person-circle-outline" class="contact-icon primary"></ion-icon>
+                <ion-icon
+                  name="person-circle-outline"
+                  class="contact-icon primary"
+                ></ion-icon>
                 <div class="header-text">
                   <h3>Contacto Principal</h3>
                   <span class="contact-priority">Prioritario</span>
                 </div>
               </div>
-              <ion-icon 
+              <ion-icon
                 *ngIf="hasContact(1)"
-                name="trash-outline" 
-                class="delete-icon" 
+                name="trash-outline"
+                class="delete-icon"
                 (click)="deleteContact(1)"
-                title="Eliminar contacto">
+                title="Eliminar contacto"
+              >
               </ion-icon>
             </div>
             <div class="contact-fields">
@@ -47,15 +59,16 @@ import { UserService } from '../../../auth/services/user.service';
                   <ion-icon name="person-outline"></ion-icon>
                   Nombre completo
                 </label>
-                <input 
-                  type="text" 
-                  id="nombre1" 
-                  formControlName="nombre1" 
+                <input
+                  type="text"
+                  id="nombre1"
+                  formControlName="nombre1"
                   placeholder="Ej: María García López"
-                  [class.error]="formErrors.nombre1">
+                  [class.error]="formErrors.nombre1"
+                />
                 <small *ngIf="formErrors.nombre1" class="error-message">
                   <ion-icon name="alert-circle-outline"></ion-icon>
-                  {{formErrors.nombre1}}
+                  {{ formErrors.nombre1 }}
                 </small>
               </div>
               <div class="form-group">
@@ -63,36 +76,41 @@ import { UserService } from '../../../auth/services/user.service';
                   <ion-icon name="call-outline"></ion-icon>
                   Teléfono
                 </label>
-                <input 
-                  type="tel" 
-                  id="telefono1" 
-                  formControlName="telefono1" 
+                <input
+                  type="tel"
+                  id="telefono1"
+                  formControlName="telefono1"
                   placeholder="Ej: 3001234567"
-                  [class.error]="formErrors.telefono1">
+                  [class.error]="formErrors.telefono1"
+                />
                 <small *ngIf="formErrors.telefono1" class="error-message">
                   <ion-icon name="alert-circle-outline"></ion-icon>
-                  {{formErrors.telefono1}}
+                  {{ formErrors.telefono1 }}
                 </small>
               </div>
             </div>
           </div>
-          
+
           <!-- Contacto 2 -->
           <div class="contact-card" [class.filled]="hasContact(2)">
             <div class="contact-header">
               <div class="header-content">
-                <ion-icon name="person-circle-outline" class="contact-icon secondary"></ion-icon>
+                <ion-icon
+                  name="person-circle-outline"
+                  class="contact-icon secondary"
+                ></ion-icon>
                 <div class="header-text">
                   <h3>Contacto Secundario</h3>
                   <span class="contact-priority">Alternativo</span>
                 </div>
               </div>
-              <ion-icon 
+              <ion-icon
                 *ngIf="hasContact(2)"
-                name="trash-outline" 
-                class="delete-icon" 
+                name="trash-outline"
+                class="delete-icon"
                 (click)="deleteContact(2)"
-                title="Eliminar contacto">
+                title="Eliminar contacto"
+              >
               </ion-icon>
             </div>
             <div class="contact-fields">
@@ -101,15 +119,16 @@ import { UserService } from '../../../auth/services/user.service';
                   <ion-icon name="person-outline"></ion-icon>
                   Nombre completo
                 </label>
-                <input 
-                  type="text" 
-                  id="nombre2" 
-                  formControlName="nombre2" 
+                <input
+                  type="text"
+                  id="nombre2"
+                  formControlName="nombre2"
                   placeholder="Ej: Carlos Rodríguez Pérez"
-                  [class.error]="formErrors.nombre2">
+                  [class.error]="formErrors.nombre2"
+                />
                 <small *ngIf="formErrors.nombre2" class="error-message">
                   <ion-icon name="alert-circle-outline"></ion-icon>
-                  {{formErrors.nombre2}}
+                  {{ formErrors.nombre2 }}
                 </small>
               </div>
               <div class="form-group">
@@ -117,36 +136,41 @@ import { UserService } from '../../../auth/services/user.service';
                   <ion-icon name="call-outline"></ion-icon>
                   Teléfono
                 </label>
-                <input 
-                  type="tel" 
-                  id="telefono2" 
-                  formControlName="telefono2" 
+                <input
+                  type="tel"
+                  id="telefono2"
+                  formControlName="telefono2"
                   placeholder="Ej: 3009876543"
-                  [class.error]="formErrors.telefono2">
+                  [class.error]="formErrors.telefono2"
+                />
                 <small *ngIf="formErrors.telefono2" class="error-message">
                   <ion-icon name="alert-circle-outline"></ion-icon>
-                  {{formErrors.telefono2}}
+                  {{ formErrors.telefono2 }}
                 </small>
               </div>
             </div>
           </div>
-          
+
           <!-- Contacto 3 -->
           <div class="contact-card" [class.filled]="hasContact(3)">
             <div class="contact-header">
               <div class="header-content">
-                <ion-icon name="person-circle-outline" class="contact-icon additional"></ion-icon>
+                <ion-icon
+                  name="person-circle-outline"
+                  class="contact-icon additional"
+                ></ion-icon>
                 <div class="header-text">
                   <h3>Contacto Adicional</h3>
                   <span class="contact-priority">Opcional</span>
                 </div>
               </div>
-              <ion-icon 
+              <ion-icon
                 *ngIf="hasContact(3)"
-                name="trash-outline" 
-                class="delete-icon" 
+                name="trash-outline"
+                class="delete-icon"
                 (click)="deleteContact(3)"
-                title="Eliminar contacto">
+                title="Eliminar contacto"
+              >
               </ion-icon>
             </div>
             <div class="contact-fields">
@@ -155,15 +179,16 @@ import { UserService } from '../../../auth/services/user.service';
                   <ion-icon name="person-outline"></ion-icon>
                   Nombre completo
                 </label>
-                <input 
-                  type="text" 
-                  id="nombre3" 
-                  formControlName="nombre3" 
+                <input
+                  type="text"
+                  id="nombre3"
+                  formControlName="nombre3"
                   placeholder="Ej: Ana Martínez Sánchez"
-                  [class.error]="formErrors.nombre3">
+                  [class.error]="formErrors.nombre3"
+                />
                 <small *ngIf="formErrors.nombre3" class="error-message">
                   <ion-icon name="alert-circle-outline"></ion-icon>
-                  {{formErrors.nombre3}}
+                  {{ formErrors.nombre3 }}
                 </small>
               </div>
               <div class="form-group">
@@ -171,46 +196,58 @@ import { UserService } from '../../../auth/services/user.service';
                   <ion-icon name="call-outline"></ion-icon>
                   Teléfono
                 </label>
-                <input 
-                  type="tel" 
-                  id="telefono3" 
-                  formControlName="telefono3" 
+                <input
+                  type="tel"
+                  id="telefono3"
+                  formControlName="telefono3"
                   placeholder="Ej: 3155647382"
-                  [class.error]="formErrors.telefono3">
+                  [class.error]="formErrors.telefono3"
+                />
                 <small *ngIf="formErrors.telefono3" class="error-message">
                   <ion-icon name="alert-circle-outline"></ion-icon>
-                  {{formErrors.telefono3}}
+                  {{ formErrors.telefono3 }}
                 </small>
               </div>
             </div>
           </div>
-    
+
           <div class="contact-validation-error" *ngIf="formErrors.general">
             <ion-icon name="alert-circle" class="error-icon"></ion-icon>
             <div class="error-content">
               <strong>Error de validación</strong>
-              <span>{{formErrors.general}}</span>
+              <span>{{ formErrors.general }}</span>
             </div>
           </div>
 
           <!-- Información útil -->
           <div class="info-section" *ngIf="isDesktop">
             <div class="info-card">
-              <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
+              <ion-icon
+                name="information-circle-outline"
+                class="info-icon"
+              ></ion-icon>
               <div class="info-content">
                 <h4>¿Por qué es importante?</h4>
-                <p>Los contactos de emergencia serán notificados automáticamente en caso de situaciones críticas o emergencias médicas.</p>
+                <p>
+                  Los contactos de emergencia serán notificados automáticamente
+                  en caso de situaciones críticas o emergencias médicas.
+                </p>
               </div>
             </div>
           </div>
-    
+
           <div class="buttons-container">
-            <button 
-              type="submit" 
-              [disabled]="isSaving || !isFormValid()" 
-              class="save-button">
+            <button
+              type="submit"
+              [disabled]="isSaving || !isFormValid()"
+              class="save-button"
+            >
               <ion-icon name="save-outline" *ngIf="!isSaving"></ion-icon>
-              <ion-spinner *ngIf="isSaving" name="circular" class="spinner-button"></ion-spinner>
+              <ion-spinner
+                *ngIf="isSaving"
+                name="circular"
+                class="spinner-button"
+              ></ion-spinner>
               <span *ngIf="!isSaving">Guardar Contactos</span>
               <span *ngIf="isSaving">Guardando...</span>
             </button>
@@ -221,7 +258,7 @@ import { UserService } from '../../../auth/services/user.service';
   `,
   styleUrls: ['./emergency-contacts.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule]
+  imports: [CommonModule, IonicModule, ReactiveFormsModule],
 })
 export class EmergencyContactsComponent implements OnInit, OnDestroy {
   contactsForm: FormGroup;
@@ -230,7 +267,7 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
   isDesktop: boolean = false;
   hideHeaderInDesktop: boolean = false;
   private subscriptions: Subscription = new Subscription();
-  
+
   formErrors: {
     nombre1?: string;
     telefono1?: string;
@@ -253,9 +290,9 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
       nombre2: ['', []],
       telefono2: ['', []],
       nombre3: ['', []],
-      telefono3: ['', []]
+      telefono3: ['', []],
     });
-    
+
     this.checkScreenSize();
     this.checkIfDesktopShouldHideHeader();
   }
@@ -290,90 +327,100 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
   /**
    * Configura la validación del formulario para detectar errores en tiempo real
    */
+
   setupFormValidation() {
     const phoneRegex = /^\d{7,15}$/;
-    
-    // Validar nombre1 cuando telefono1 tiene contenido
-    const telefono1Sub = this.contactsForm.get('telefono1')?.valueChanges.subscribe(value => {
-      const nombre1Control = this.contactsForm.get('nombre1');
-      if (value && value.trim()) {
-        nombre1Control?.setValidators([Validators.required]);
-      } else {
-        nombre1Control?.clearValidators();
-      }
-      nombre1Control?.updateValueAndValidity();
-    });
 
-    // Validar telefono1 cuando nombre1 tiene contenido
-    const nombre1Sub = this.contactsForm.get('nombre1')?.valueChanges.subscribe(value => {
-      const telefono1Control = this.contactsForm.get('telefono1');
-      if (value && value.trim()) {
-        telefono1Control?.setValidators([Validators.required, Validators.pattern(phoneRegex)]);
-      } else {
-        telefono1Control?.clearValidators();
-      }
-      telefono1Control?.updateValueAndValidity();
-    });
+    // Validar contacto 1
+    const contact1Sub = this.contactsForm.valueChanges
+      .pipe(
+        tap(() => {
+          const nombre1 = this.contactsForm.get('nombre1')?.value?.trim();
+          const telefono1 = this.contactsForm.get('telefono1')?.value?.trim();
 
-    // Validar nombre2 cuando telefono2 tiene contenido
-    const telefono2Sub = this.contactsForm.get('telefono2')?.valueChanges.subscribe(value => {
-      const nombre2Control = this.contactsForm.get('nombre2');
-      if (value && value.trim()) {
-        nombre2Control?.setValidators([Validators.required]);
-      } else {
-        nombre2Control?.clearValidators();
-      }
-      nombre2Control?.updateValueAndValidity();
-    });
+          const nombre1Control = this.contactsForm.get('nombre1');
+          const telefono1Control = this.contactsForm.get('telefono1');
 
-    // Validar telefono2 cuando nombre2 tiene contenido
-    const nombre2Sub = this.contactsForm.get('nombre2')?.valueChanges.subscribe(value => {
-      const telefono2Control = this.contactsForm.get('telefono2');
-      if (value && value.trim()) {
-        telefono2Control?.setValidators([Validators.required, Validators.pattern(phoneRegex)]);
-      } else {
-        telefono2Control?.clearValidators();
-      }
-      telefono2Control?.updateValueAndValidity();
-    });
+          // Si cualquiera de los dos tiene valor, ambos son requeridos
+          if (nombre1 || telefono1) {
+            nombre1Control?.setValidators([Validators.required]);
+            telefono1Control?.setValidators([
+              Validators.required,
+              Validators.pattern(phoneRegex),
+            ]);
+          } else {
+            nombre1Control?.clearValidators();
+            telefono1Control?.clearValidators();
+          }
 
-    // Validar nombre3 cuando telefono3 tiene contenido
-    const telefono3Sub = this.contactsForm.get('telefono3')?.valueChanges.subscribe(value => {
-      const nombre3Control = this.contactsForm.get('nombre3');
-      if (value && value.trim()) {
-        nombre3Control?.setValidators([Validators.required]);
-      } else {
-        nombre3Control?.clearValidators();
-      }
-      nombre3Control?.updateValueAndValidity();
-    });
+          // Actualizar validación sin disparar valueChanges nuevamente
+          nombre1Control?.updateValueAndValidity({ emitEvent: false });
+          telefono1Control?.updateValueAndValidity({ emitEvent: false });
+        })
+      )
+      .subscribe(() => {
+        this.updateFormErrors();
+      });
 
-    // Validar telefono3 cuando nombre3 tiene contenido
-    const nombre3Sub = this.contactsForm.get('nombre3')?.valueChanges.subscribe(value => {
-      const telefono3Control = this.contactsForm.get('telefono3');
-      if (value && value.trim()) {
-        telefono3Control?.setValidators([Validators.required, Validators.pattern(phoneRegex)]);
-      } else {
-        telefono3Control?.clearValidators();
-      }
-      telefono3Control?.updateValueAndValidity();
-    });
+    // Validar contacto 2
+    const contact2Sub = this.contactsForm.valueChanges
+      .pipe(
+        tap(() => {
+          const nombre2 = this.contactsForm.get('nombre2')?.value?.trim();
+          const telefono2 = this.contactsForm.get('telefono2')?.value?.trim();
 
-    // Actualizar errores cuando cambian los valores
-    const formSub = this.contactsForm.valueChanges.subscribe(() => {
-      this.updateFormErrors();
-    });
+          const nombre2Control = this.contactsForm.get('nombre2');
+          const telefono2Control = this.contactsForm.get('telefono2');
 
-    // Agregar todas las suscripciones
-    if (telefono1Sub) this.subscriptions.add(telefono1Sub);
-    if (nombre1Sub) this.subscriptions.add(nombre1Sub);
-    if (telefono2Sub) this.subscriptions.add(telefono2Sub);
-    if (nombre2Sub) this.subscriptions.add(nombre2Sub);
-    if (telefono3Sub) this.subscriptions.add(telefono3Sub);
-    if (nombre3Sub) this.subscriptions.add(nombre3Sub);
-    if (formSub) this.subscriptions.add(formSub);
+          if (nombre2 || telefono2) {
+            nombre2Control?.setValidators([Validators.required]);
+            telefono2Control?.setValidators([
+              Validators.required,
+              Validators.pattern(phoneRegex),
+            ]);
+          } else {
+            nombre2Control?.clearValidators();
+            telefono2Control?.clearValidators();
+          }
+
+          nombre2Control?.updateValueAndValidity({ emitEvent: false });
+          telefono2Control?.updateValueAndValidity({ emitEvent: false });
+        })
+      )
+      .subscribe();
+
+    // Validar contacto 3
+    const contact3Sub = this.contactsForm.valueChanges
+      .pipe(
+        tap(() => {
+          const nombre3 = this.contactsForm.get('nombre3')?.value?.trim();
+          const telefono3 = this.contactsForm.get('telefono3')?.value?.trim();
+
+          const nombre3Control = this.contactsForm.get('nombre3');
+          const telefono3Control = this.contactsForm.get('telefono3');
+
+          if (nombre3 || telefono3) {
+            nombre3Control?.setValidators([Validators.required]);
+            telefono3Control?.setValidators([
+              Validators.required,
+              Validators.pattern(phoneRegex),
+            ]);
+          } else {
+            nombre3Control?.clearValidators();
+            telefono3Control?.clearValidators();
+          }
+
+          nombre3Control?.updateValueAndValidity({ emitEvent: false });
+          telefono3Control?.updateValueAndValidity({ emitEvent: false });
+        })
+      )
+      .subscribe();
+
+    // Agregar suscripciones
+    this.subscriptions.add(contact1Sub);
+    this.subscriptions.add(contact2Sub);
+    this.subscriptions.add(contact3Sub);
   }
-
   /**
    * Carga los contactos del usuario actual
    */
@@ -385,7 +432,8 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.contactsService.getMyContacts()
+    this.contactsService
+      .getMyContacts()
       .pipe(
         tap((response: any) => {
           if (response && response.data) {
@@ -396,11 +444,11 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
               nombre2: contactData.nombre2 || '',
               telefono2: contactData.telefono2 || '',
               nombre3: contactData.nombre3 || '',
-              telefono3: contactData.telefono3 || ''
+              telefono3: contactData.telefono3 || '',
             });
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           console.error('Error loading contacts:', error);
           // No mostramos error si es 404 (significa que aún no tiene contactos)
           if (error.status !== 404) {
@@ -437,21 +485,22 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
     this.isSaving = true;
     this.formErrors = {};
 
-    this.contactsService.createOrUpdateContacts(this.contactsForm.value)
+    this.contactsService
+      .createOrUpdateContacts(this.contactsForm.value)
       .pipe(
         tap((response: any) => {
           if (response && response.success) {
             this.presentToast('Contactos guardados con éxito', 'success');
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           console.error('Error saving contacts:', error);
           let errorMessage = 'Error al guardar los contactos';
-          
+
           if (error.error && error.error.message) {
             errorMessage = error.error.message;
           }
-          
+
           this.formErrors.general = errorMessage;
           this.presentToast(errorMessage, 'danger');
           return of(null);
@@ -478,7 +527,7 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
         this.contactsForm.patchValue({ nombre3: '', telefono3: '' });
         break;
     }
-    
+
     // Validar que al menos quede un contacto
     if (!this.hasAnyContact()) {
       this.formErrors.general = 'Debe mantener al menos un contacto';
@@ -497,7 +546,7 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
       nombre2: '',
       telefono2: '',
       nombre3: '',
-      telefono3: ''
+      telefono3: '',
     });
     this.formErrors = {};
   }
@@ -537,9 +586,15 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
 
     // Verificar que los pares de campos estén completos o vacíos
     const formValues = this.contactsForm.value;
-    const isContact1Valid = (!formValues.nombre1 && !formValues.telefono1) || (formValues.nombre1 && formValues.telefono1);
-    const isContact2Valid = (!formValues.nombre2 && !formValues.telefono2) || (formValues.nombre2 && formValues.telefono2);
-    const isContact3Valid = (!formValues.nombre3 && !formValues.telefono3) || (formValues.nombre3 && formValues.telefono3);
+    const isContact1Valid =
+      (!formValues.nombre1 && !formValues.telefono1) ||
+      (formValues.nombre1 && formValues.telefono1);
+    const isContact2Valid =
+      (!formValues.nombre2 && !formValues.telefono2) ||
+      (formValues.nombre2 && formValues.telefono2);
+    const isContact3Valid =
+      (!formValues.nombre3 && !formValues.telefono3) ||
+      (formValues.nombre3 && formValues.telefono3);
 
     return isContact1Valid && isContact2Valid && isContact3Valid;
   }
@@ -549,42 +604,45 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
    */
   updateFormErrors() {
     this.formErrors = {};
-    
+
     const controls = this.contactsForm.controls;
-    
+
     if (controls['nombre1'].errors && controls['nombre1'].touched) {
       this.formErrors.nombre1 = 'El nombre es requerido';
     }
-    
+
     if (controls['telefono1'].errors && controls['telefono1'].touched) {
       if (controls['telefono1'].errors['required']) {
         this.formErrors.telefono1 = 'El teléfono es requerido';
       } else if (controls['telefono1'].errors['pattern']) {
-        this.formErrors.telefono1 = 'Formato de teléfono inválido (7-15 dígitos)';
+        this.formErrors.telefono1 =
+          'Formato de teléfono inválido (7-15 dígitos)';
       }
     }
-    
+
     if (controls['nombre2'].errors && controls['nombre2'].touched) {
       this.formErrors.nombre2 = 'El nombre es requerido';
     }
-    
+
     if (controls['telefono2'].errors && controls['telefono2'].touched) {
       if (controls['telefono2'].errors['required']) {
         this.formErrors.telefono2 = 'El teléfono es requerido';
       } else if (controls['telefono2'].errors['pattern']) {
-        this.formErrors.telefono2 = 'Formato de teléfono inválido (7-15 dígitos)';
+        this.formErrors.telefono2 =
+          'Formato de teléfono inválido (7-15 dígitos)';
       }
     }
-    
+
     if (controls['nombre3'].errors && controls['nombre3'].touched) {
       this.formErrors.nombre3 = 'El nombre es requerido';
     }
-    
+
     if (controls['telefono3'].errors && controls['telefono3'].touched) {
       if (controls['telefono3'].errors['required']) {
         this.formErrors.telefono3 = 'El teléfono es requerido';
       } else if (controls['telefono3'].errors['pattern']) {
-        this.formErrors.telefono3 = 'Formato de teléfono inválido (7-15 dígitos)';
+        this.formErrors.telefono3 =
+          'Formato de teléfono inválido (7-15 dígitos)';
       }
     }
   }
@@ -592,7 +650,10 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
   /**
    * Muestra un mensaje toast
    */
-  async presentToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
+  async presentToast(
+    message: string,
+    color: 'success' | 'danger' | 'warning' = 'success'
+  ) {
     const toast = await this.toastCtrl.create({
       message,
       duration: 3000,
@@ -601,11 +662,11 @@ export class EmergencyContactsComponent implements OnInit, OnDestroy {
       buttons: [
         {
           icon: 'close',
-          role: 'cancel'
-        }
-      ]
+          role: 'cancel',
+        },
+      ],
     });
-    
+
     await toast.present();
   }
 }

@@ -5,6 +5,8 @@ ion-content {
 
 .container {
   padding: 0 20px;
+  padding-left: calc(20px + var(--ion-safe-area-left));
+  padding-right: calc(20px + var(--ion-safe-area-right));
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -14,8 +16,8 @@ ion-content {
 .scrollable-content {
   flex: 1;
   overflow-y: auto;
-  max-height: calc(100vh - 300px);
-  padding-bottom: 80px;
+  max-height: calc(100vh - 300px - var(--ion-safe-area-bottom));
+  padding-bottom: calc(80px + var(--ion-safe-area-bottom));
   scrollbar-width: none;
 }
 

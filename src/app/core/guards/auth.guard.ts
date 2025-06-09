@@ -7,7 +7,7 @@ import {
 } from '@angular/router';
 import { AuthService } from '../../modules/auth/services/auth.service';
 import { Observable, of } from 'rxjs';
-import { map, take, catchError, tap } from 'rxjs/operators';
+import { map, take, catchError, tap, switchMap } from 'rxjs/operators';
 import { NavController } from '@ionic/angular';
 
 @Injectable({ providedIn: 'root' })
@@ -76,18 +76,22 @@ export class AutoRedirectGuard implements CanActivate {
   }
 
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {
-    const redirectTo = route.data['redirectTo'] || '/home/dashboard';  // Leer la ruta de redirección desde los datos de la ruta
-
     return this.getAuthService().isAuthenticated$().pipe(
       take(1),
       tap(isAuthenticated => {
       }),
-      map((isAuthenticated) => {
+      switchMap((isAuthenticated) => {
         if (isAuthenticated) {
-          // Si está autenticado, redirige a la ruta específica
-          return this.router.createUrlTree([redirectTo]);
+          // Verificar el rol del usuario para determinar la ruta de redirección
+          return this.getAuthService().getUserData().pipe(
+            map(user => {
+              const redirectTo = user && user.role === 'Admin' ? '/schedule-panel' : '/home/dashboard';
+              // Si está autenticado, redirige a la ruta específica según el rol
+              return this.router.createUrlTree([redirectTo]);
+            })
+          );
         }
-        return true;  // Si no está autenticado, permite el acceso a login
+        return of(true);  // Si no está autenticado, permite el acceso a login
       }),
       catchError((error) => {
         return of(true); // Si hay error, permitir acceso por defecto

@@ -1,12 +1,14 @@
 # Generate Android Studio files
 ionic capacitor copy android
 ionic capacitor sync android
+npx capacitor-assets generate
 npx cap open android
 
 # First time setup - copies Android folder to Android Studio workspace
 
 # Icon generation
 npm install -g cordova-res
+npm install --save-dev @capacitor/assets
 cordova-res android --skip-config --copy
 
 # Add iOS platform

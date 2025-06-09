@@ -12,7 +12,11 @@ import { UserService } from 'src/app/modules/auth/services/user.service';
   selector: 'app-contacts',
   template: `
     <!-- Desktop Layout -->
-    <div class="desktop-layout" *ngIf="!isMobile" [style.display]="isMobile ? 'none' : 'block'">
+    <div
+      class="desktop-layout"
+      *ngIf="!isMobile"
+      [style.display]="isMobile ? 'none' : 'block'"
+    >
       <div class="desktop-container">
         <!-- Sidebar -->
         <app-dashboard-sidebar [user]="currentUser"> </app-dashboard-sidebar>
@@ -41,8 +45,13 @@ import { UserService } from 'src/app/modules/auth/services/user.service';
     </div>
 
     <!-- Mobile Layout -->
-    <div class="mobile-layout" *ngIf="isMobile" [style.display]="!isMobile ? 'none' : 'block'">
-      <ion-content>
+    <div
+      class="mobile-layout"
+      *ngIf="isMobile"
+      [style.display]="!isMobile ? 'none' : 'block'"
+    >
+      <ion-content class="sage-area-padding">
+        <!-- Tab Bar -->
         <div class="page-container">
           <app-emergency-contacts></app-emergency-contacts>
         </div>

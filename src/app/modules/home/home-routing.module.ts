@@ -4,7 +4,6 @@ import { AuthGuard } from 'src/app/core/guards/auth.guard';
 
 // Pages
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { AppointmentsComponent } from './pages/appointments/appointments.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { UpdateProfileComponent } from './pages/profile/update-profile.component';
 
@@ -17,11 +16,6 @@ const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
-    canActivate: [AuthGuard], 
-  },
-  {
-    path: 'appointments',
-    component: AppointmentsComponent,
     canActivate: [AuthGuard], 
   },
   {

@@ -81,40 +81,39 @@ export class LoginComponent {
             const success = response.success || (response.data && response.data.access_token);
             
             if (success) {
-              // Usar múltiples estrategias de navegación
-              this.ngZone.run(() => {
-                // 1. Usar el Router directamente
-                this.router.navigate(['/home/dashboard'], { replaceUrl: true })
-                  .then(() => {
-                  })
-                  .catch(error => {
-                    
-                    // 2. Si falla, intentar con NavController
-                    this.navCtrl.navigateRoot(['/home/dashboard'])
-                      .then(() => {
-                      })
-                      .catch(error => {
-                        
-                        // 3. Como último recurso, usar la API del navegador
-                        setTimeout(() => {
-                          window.location.href = '/home/dashboard';
-                        }, 300);
-                      });
-                  });
+              // Verificar si el usuario es Admin para redirigirlo a schedule-panel
+              this.authService.getUserData().subscribe(user => {
+                const targetRoute = user && user.role === 'Admin' ? '/schedule-panel' : '/home/dashboard';
+                
+                // Usar múltiples estrategias de navegación
+                this.ngZone.run(() => {
+                  // 1. Usar el Router directamente
+                  this.router.navigate([targetRoute], { replaceUrl: true })
+                    .then(() => {
+                    })
+                    .catch(error => {
+                      
+                      // 2. Si falla, intentar con NavController
+                      this.navCtrl.navigateRoot([targetRoute])
+                        .then(() => {
+                        })
+                        .catch(error => {
+                          
+                          // 3. Como último recurso, usar la API del navegador
+                          setTimeout(() => {
+                            window.location.href = targetRoute;
+                          }, 300);
+                        });
+                    });
+                });
               });
+              
             } else {
-              // Si llegamos aquí pero no hay éxito, mostrar un mensaje genérico
               this.showError('Inicio de sesión fallido. Verifica tus credenciales.');
             }
           },
           async (error) => {
-            let errorMessage = 'Error al iniciar sesión';
-
-            if (error.error && error.error.error) {
-              errorMessage = error.error.error;
-            } else if (error.message) {
-              errorMessage = error.message;
-            }
+            let errorMessage = 'Inicio de sesión fallido. Verifica tus credenciales.';
 
             if (
               errorMessage.includes('verifica tu correo') ||

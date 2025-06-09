@@ -13,7 +13,7 @@
 
 <!-- Versión móvil (mantiene el diseño actual) -->
 <div class="mobile-layout" *ngIf="!isDesktop">
-  <ion-content scroll-y="false">
+  <ion-content scroll-y="false" class="safe-area-padding">
     <app-greeting [userName]="user?.name" [icon]="false"></app-greeting>
   
     <div class="card">

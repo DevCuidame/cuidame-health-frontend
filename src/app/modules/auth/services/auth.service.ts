@@ -148,11 +148,10 @@ login(credentials: { email: string; password: string }): Observable<any> {
     .post(`${apiUrl}api/auth/login`, normalizedCredentials)
     .pipe(
       catchError(error => {
-        console.error('Error en la solicitud de login:', error);
         return throwError(() => ({
           status: error.status,
           error: error.error,
-          message: error.error?.error || 'Authentication error',
+          message: error.error?.error || 'Inicio de sesión fallido. Verifica tus credenciales.',
         }));
       }),
       tap(),

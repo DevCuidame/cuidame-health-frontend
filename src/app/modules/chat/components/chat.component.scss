@@ -15,21 +15,24 @@ $breakpoint-large: 1200px;
   
   // Mobile layout (default)
   padding: 12px;
+  padding-top: calc(12px + var(--ion-safe-area-top));
+  padding-bottom: calc(12px + var(--ion-safe-area-bottom));
+  padding-left: calc(12px + var(--ion-safe-area-left));
+  padding-right: calc(12px + var(--ion-safe-area-right));
   
   // Tablet layout
   @media (min-width: ($breakpoint-mobile + 1)) and (max-width: ($breakpoint-tablet - 1)) {
     padding: 16px 24px;
+    padding-top: calc(16px + var(--ion-safe-area-top));
+    padding-bottom: calc(16px + var(--ion-safe-area-bottom));
+    padding-left: calc(24px + var(--ion-safe-area-left));
+    padding-right: calc(24px + var(--ion-safe-area-right));
   }
   
   // Desktop layout
   @media (min-width: $breakpoint-tablet) {
     padding: 20px;
     margin: 0 auto;
-  }
-  
-  // Large desktop layout
-  @media (min-width: $breakpoint-large) {
-    padding: 24px 32px;
   }
 }
 
@@ -40,6 +43,7 @@ $breakpoint-large: 1200px;
     --color: white; 
     --border-width: 0;
     --min-height: 56px;
+    padding-top: var(--ion-safe-area-top);
     
     @media (min-width: $breakpoint-tablet) {
       --min-height: 64px;

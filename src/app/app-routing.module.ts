@@ -63,6 +63,7 @@ const routes: Routes = [
       import('./modules/admin-panel/admin-panel.module').then(
         (m) => m.AdminPanelModule
       ),
+    canActivate: [AdminGuard],
   },
 
 

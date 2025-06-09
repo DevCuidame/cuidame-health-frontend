@@ -33,7 +33,7 @@ export class AdminGuard implements CanActivate {
         // Verificar si el usuario es administrador usando observable
         return this.getAuthService().getUserData().pipe(
           map(user => {
-            if (user && user.isAdmin === true) {
+            if (user && (user.isAdmin === true || user.role === 'Admin')) {
               // Si es administrador, permitir acceso
               return true;
             } else {

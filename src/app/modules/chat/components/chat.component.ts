@@ -140,12 +140,11 @@ export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   
   getContainerClasses(): any {
     return {
-      'desktop-layout': this.isDesktop,
-      'mobile-layout': this.isMobile,
-      'tablet-layout': this.screenWidth >= 481 && this.screenWidth < 768
+      'desktop-view': this.isDesktop,
+      'mobile-view': this.isMobile,
+      'safe-area-padding': this.isMobile // Solo aplicar en móviles
     };
   }
-  
   trackByFn(index: number, item: ChatMessage): string {
     return item.id || `${item.sender}-${item.timestamp}-${index}`;
   }
